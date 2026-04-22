@@ -7,113 +7,217 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f0f2f5; }
-        .container { max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1, h2 { text-align: center; color: #2c3e50; }
-        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; cursor: pointer; color: #777; }
-        .tab-btn.active { color: #007bff; border-bottom: 3px solid #007bff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f0f2f5; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        /* Header */
+        .header { background: #2e7d32; color: white; padding: 20px; border-radius: 12px; text-align: center; position: relative; margin-bottom: 20px; }
+        .header h1 { font-size: 28px; margin-bottom: 5px; }
+        .header .subtitle { font-size: 14px; opacity: 0.9; }
+        .btn-keluar { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; width: auto; }
+        
+        /* Cards */
+        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .card-title { font-size: 20px; color: #2e7d32; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-card { color: white; padding: 15px; border-radius: 10px; text-align: center; }
+        .stat-card.green { background: #2e7d32; }
+        .stat-card.blue { background: #2196f3; }
+        .stat-card.orange { background: #ff9800; }
+        .stat-card.red { background: #f44336; }
+        .stat-card .label { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
+        .stat-card .value { font-size: 24px; font-weight: bold; }
+        
+        /* Action Buttons */
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .action-btn { flex: 1; min-width: 150px; padding: 12px 20px; border: none; border-radius: 8px; color: white; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .action-btn.green { background: #2e7d32; }
+        .action-btn.red { background: #d32f2f; }
+        .action-btn.blue { background: #1976d2; }
+        
+        /* Table */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #e0e0e0; color: #555; font-weight: 600; }
+        tbody td { padding: 12px; border-bottom: 1px solid #e0e0e0; vertical-align: middle; }
+        tbody tr:hover { background: #f9f9f9; }
+        .foto-thumb { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #e8f5e9; }
+        .btn-hapus { background: #d32f2f; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        
+        /* Login Page */
+        #login-page { max-width: 400px; margin: 60px auto; }
+        .login-header { text-align: center; margin-bottom: 25px; }
+        .login-header h1 { color: #2e7d32; }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; cursor: pointer; color: #888; }
+        .tab-btn.active { color: #2e7d32; border-bottom: 3px solid #2e7d32; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 500; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background: #0056b3; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .btn-primary { background: #2e7d32; color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-wa { background: #25D366; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 10px; cursor: pointer; font-weight: bold; }
         .hidden { display: none; }
-        .success { color: green; text-align: center; margin-top: 10px; }
-        .stats { display: flex; justify-content: space-around; background: #e9ecef; padding: 15px; border-radius: 8px; margin: 20px 0; }
-        .stat-item { text-align: center; }
-        .stat-num { font-size: 24px; font-weight: bold; color: #007bff; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-        th { background: #f8f9fa; }
+        
+        /* Input Form */
+        .input-section { max-width: 500px; margin: 40px auto; }
+        .input-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .action-buttons { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN -->
+    <!-- LOGIN PAGE -->
     <div id="login-page" class="container">
-        <h1>📋 Absensi Musyrif</h1>
-        <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('musyrif')">Musyrif</button>
-            <button class="tab-btn" onclick="showTab('admin')">Admin</button>
-        </div>
-
-        <div id="form-musyrif">
-            <div class="form-group">
-                <label>Asrama</label>
-                <select id="asrama" onchange="updateNamaList()">
-                    <option value="">-- Pilih Asrama --</option>
-                    <option value="Al Hakim">Al Hakim</option>
-                    <option value="Al Fattah">Al Fattah</option>
-                    <option value="Al Karim">Al Karim</option>
-                </select>
+        <div class="card">
+            <div class="login-header">
+                <h1>📋 Absensi Musyrif</h1>
+                <p style="color: #666;">Silakan login untuk melanjutkan</p>
             </div>
-            <div class="form-group">
-                <label>Nama</label>
-                <select id="nama">
-                    <option value="">-- Pilih Asrama Dulu --</option>
-                </select>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('musyrif')">👤 Musyrif</button>
+                <button class="tab-btn" onclick="switchTab('admin')">🛡️ Admin</button>
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="Masukkan password">
+            
+            <div id="form-musyrif">
+                <div class="form-group">
+                    <label>Asrama</label>
+                    <select id="asrama" onchange="updateNamaList()">
+                        <option value="">-- Pilih Asrama --</option>
+                        <option value="Al Hakim">Al Hakim</option>
+                        <option value="Al Fattah">Al Fattah</option>
+                        <option value="Al Karim">Al Karim</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nama Musyrif</label>
+                    <select id="nama">
+                        <option value="">-- Pilih Asrama Dulu --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Masukkan password">
+                </div>
+                <button class="btn-primary" onclick="loginMusyrif()">🔐 Masuk Musyrif</button>
+                <button class="btn-wa" onclick="lupaPass()">💬 Lupa Password (WA)</button>
             </div>
-            <button onclick="loginMusyrif()">Masuk Musyrif</button>
-            <p style="text-align:center; font-size:12px; margin-top:10px;">Lupa Password? Hubungi WA Admin</p>
-        </div>
-
-        <div id="form-admin" class="hidden">
-            <div class="form-group">
-                <label>PIN Admin</label>
-                <input type="password" id="pin" placeholder="1234">
+            
+            <div id="form-admin" class="hidden">
+                <div class="form-group">
+                    <label>PIN Admin</label>
+                    <input type="password" id="pin" placeholder="Masukkan PIN (1234)">
+                </div>
+                <button class="btn-primary" onclick="loginAdmin()">🛡️ Masuk Admin</button>
             </div>
-            <button onclick="loginAdmin()">Masuk Admin</button>
         </div>
     </div>
 
-    <!-- MUSYRIF PAGE -->
-    <div id="musyrif-page" class="container hidden">
-        <h2>📝 Input Absensi</h2>
-        <div class="form-group">
-            <label>Kegiatan</label>
-            <select id="kegiatan">
-                <option value="Sholat Subuh">Sholat Subuh</option>
-                <option value="Sholat Dzuhur">Sholat Dzuhur</option>
-                <option value="Sholat Ashar">Sholat Ashar</option>
-                <option value="Sholat Maghrib">Sholat Maghrib</option>
-                <option value="Sholat Isya">Sholat Isya</option>
-                <option value="Kajian Rutin">Kajian Rutin</option>
-                <option value="Piket Dapur">Piket Dapur</option>
-            </select>
+    <!-- MUSYRIF INPUT PAGE -->
+    <div id="musyrif-page" class="container input-section hidden">
+        <div class="input-card">
+            <h2 style="text-align:center; color:#2e7d32; margin-bottom:20px;">📝 Input Absensi</h2>
+            <div class="form-group">
+                <label>Kegiatan</label>
+                <select id="kegiatan">
+                    <option value="Membangunkan Santri">Membangunkan Santri</option>
+                    <option value="Sholat Subuh">Sholat Subuh</option>
+                    <option value="Sholat Dzuhur">Sholat Dzuhur</option>
+                    <option value="Sholat Ashar">Sholat Ashar</option>
+                    <option value="Sholat Maghrib">Sholat Maghrib</option>
+                    <option value="Sholat Isya">Sholat Isya</option>
+                    <option value="Kajian Rutin">Kajian Rutin</option>
+                    <option value="Piket Dapur">Piket Dapur</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Foto Bukti</label>
+                <input type="file" id="foto" accept="image/*" capture="user">
+                <small style="color:#666">*Foto akan dikompres otomatis</small>
+            </div>
+            <div class="form-group">
+                <label>Catatan</label>
+                <textarea id="catatan" rows="3" placeholder="Catatan tambahan..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="kirimAbsensi()">✅ Kirim Absensi</button>
+            <div id="msg" style="color:green; text-align:center; margin-top:10px;"></div>
+            <button class="btn-wa" style="background:#6c757d; margin-top:20px;" onclick="logout()">🚪 Keluar</button>
         </div>
-        <div class="form-group">
-            <label>Catatan</label>
-            <textarea id="catatan" rows="3"></textarea>
-        </div>
-        <button onclick="kirimAbsensi()">✅ Kirim Absensi</button>
-        <div id="msg" class="success"></div>
-        <button onclick="logout()" style="background:#6c757d; margin-top:20px;">Keluar</button>
     </div>
 
     <!-- ADMIN DASHBOARD -->
     <div id="dashboard" class="container hidden">
-        <h1>📊 Dashboard Admin</h1>
-        <div class="stats">
-            <div class="stat-item"><div class="stat-num" id="st-today">0</div><div>Hari Ini</div></div>
-            <div class="stat-item"><div class="stat-num" id="st-week">0</div><div>Minggu Ini</div></div>
-            <div class="stat-item"><div class="stat-num" id="st-total">0</div><div>Total</div></div>
+        <!-- Header -->
+        <div class="header">
+            <h1>🛡️ Dashboard Admin</h1>
+            <div class="subtitle">Admin | Administrator</div>
+            <button class="btn-keluar" onclick="logout()">Keluar</button>
         </div>
-        <h3>📜 Data Absensi</h3>
-        <table id="tabel">
-            <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kegiatan</th></tr></thead>
-            <tbody><tr><td colspan="4" style="text-align:center;">Loading...</td></tr></tbody>
-        </table>
-        <button onclick="logout()" style="background:#dc3545; margin-top:20px;">Keluar</button>
+
+        <!-- Aksi Admin -->
+        <div class="card">
+            <div class="card-title">⚙️ Aksi Admin</div>
+            <div class="action-buttons">
+                <button class="action-btn green" onclick="loadDashboard()">🔄 Refresh Data</button>
+                <button class="action-btn red" onclick="alert('Fitur PDF akan segera hadir')">📄 PDF Asrama</button>
+                <button class="action-btn blue" onclick="alert('Fitur PDF akan segera hadir')">📄 PDF Individu</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card green">
+                <div class="label">Hari Ini</div>
+                <div class="value" id="st-today">0</div>
+            </div>
+            <div class="stat-card blue">
+                <div class="label">Minggu Ini</div>
+                <div class="value" id="st-week">0</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="label">Bulan Ini</div>
+                <div class="value" id="st-month">0</div>
+            </div>
+            <div class="stat-card red">
+                <div class="label">Aktif</div>
+                <div class="value" id="st-active">0/12</div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card">
+            <div class="card-title">📜 Semua Data</div>
+            <div class="table-wrapper">
+                <table id="tabel-data">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Nama</th>
+                            <th>Asrama</th>
+                            <th>Kegiatan</th>
+                            <th>Foto</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-data">
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:20px;">Loading data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
         // ============================================
-        // ⚠️ PASTE FIREBASE CONFIG DI SINI (HANYA 1x)
+        // ⚠️ PASTE FIREBASE CONFIG DI SINI
         // ============================================
         const firebaseConfig = {
             apiKey: "GANTI_DENGAN_API_KEY",
@@ -125,42 +229,35 @@
             appId: "APP_ID"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const ref = db.ref('absensi');
 
-        // Data Musyrif
         const dataMusyrif = {
-            "Al Hakim": ["Ustadz Ahmad", "Ustadz Budi", "Ustadz Candra"],
-            "Al Fattah": ["Ustadz Dedi", "Ustadz Eko", "Ustadz Fajar"],
-            "Al Karim": ["Ustadz Guntur", "Ustadz Hendra", "Ustadz Indra"]
+            "Al Hakim": ["Ali Mashuri", "Ali Zahid", "Reva Dwi", "Imam Syafi'i"],
+            "Al Fattah": ["Fattahilah", "Brian Adi", "Babil Yasar", "Fahmi", "Wawan Febi"],
+            "Al Karim": ["Bima Julian", "Irfan Khoirul", "Rizki Alfian"]
         };
 
-        // UI Functions
-        function showTab(tab) {
+        function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
             if(tab === 'musyrif') {
                 document.getElementById('form-musyrif').classList.remove('hidden');
                 document.getElementById('form-admin').classList.add('hidden');
-                event.target.classList.add('active');
             } else {
                 document.getElementById('form-musyrif').classList.add('hidden');
                 document.getElementById('form-admin').classList.remove('hidden');
-                event.target.classList.add('active');
             }
         }
 
         function updateNamaList() {
             const asrama = document.getElementById('asrama').value;
-            const select = document.getElementById('nama');
-            select.innerHTML = '<option value="">-- Pilih Nama --</option>';
+            const sel = document.getElementById('nama');
+            sel.innerHTML = '<option value="">-- Pilih Nama --</option>';
             if(dataMusyrif[asrama]) {
                 dataMusyrif[asrama].forEach(nama => {
-                    const opt = document.createElement('option');
-                    opt.value = nama;
-                    opt.textContent = nama;
-                    select.appendChild(opt);
+                    sel.innerHTML += `<option value="${nama}">${nama}</option>`;
                 });
             }
         }
@@ -189,6 +286,7 @@
         }
 
         function logout() { location.reload(); }
+        function lupaPass() { alert("Hubungi Admin via WhatsApp"); }
 
         function kirimAbsensi() {
             const nama = document.getElementById('nama').value;
@@ -198,50 +296,69 @@
 
             if(!nama) return alert("Pilih nama dulu!");
 
-            const data = {
+            ref.push({
                 nama: nama,
                 asrama: asrama,
                 kegiatan: kegiatan,
-                catatan: catatan,
+                catatan: catatan || '-',
                 timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            ref.push(data).then(() => {
+            }).then(() => {
                 document.getElementById('msg').textContent = "✅ Berhasil!";
                 setTimeout(() => document.getElementById('msg').textContent = "", 2000);
-            }).catch(err => alert("Error: " + err.message));
+                document.getElementById('catatan').value = "";
+            });
         }
 
         function loadDashboard() {
             ref.on('value', snap => {
                 const data = snap.val();
-                const tbody = document.querySelector('#tabel tbody');
+                const tbody = document.getElementById('tbody-data');
                 tbody.innerHTML = "";
                 
-                let today = 0, week = 0, total = 0;
+                let today = 0, week = 0, month = 0, total = 0;
                 const now = new Date();
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
+                const todayStr = now.toDateString();
+                const weekAgo = new Date(now - 7*864e5);
+                const monthAgo = new Date(now - 30*864e5);
 
                 if(data) {
-                    Object.values(data).reverse().forEach(item => {
-                        const date = new Date(item.timestamp);
+                    const list = Object.values(data).reverse();
+                    list.forEach(item => {
+                        const d = new Date(item.timestamp);
                         total++;
-                        if(date.toDateString() === now.toDateString()) today++;
-                        if(date >= weekAgo) week++;
+                        if(d.toDateString() === todayStr) today++;
+                        if(d >= weekAgo) week++;
+                        if(d >= monthAgo) month++;
 
                         const tr = document.createElement('tr');
-                        tr.innerHTML = `<td>${date.toLocaleString()}</td><td>${item.nama}</td><td>${item.asrama}</td><td>${item.kegiatan}</td>`;
+                        const tanggal = d.toLocaleDateString('id-ID') + ', ' + d.toLocaleTimeString('id-ID');
+                        tr.innerHTML = `
+                            <td>${tanggal}</td>
+                            <td>${item.nama}</td>
+                            <td>${item.asrama}</td>
+                            <td>${item.kegiatan}</td>
+                            <td><div class="foto-thumb">🐸</div></td>
+                            <td><button class="btn-hapus" onclick="hapusData('${item.timestamp}')">Hapus</button></td>
+                        `;
                         tbody.appendChild(tr);
                     });
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Belum ada data</td></tr>';
                 }
 
                 document.getElementById('st-today').textContent = today;
                 document.getElementById('st-week').textContent = week;
-                document.getElementById('st-total').textContent = total;
+                document.getElementById('st-month').textContent = month;
+                document.getElementById('st-active').textContent = `${Math.min(total, 12)}/12`;
             });
+        }
+
+        function hapusData(ts) {
+            if(confirm('Hapus data ini?')) {
+                ref.orderByChild('timestamp').equalTo(parseInt(ts)).once('value', snap => {
+                    snap.forEach(child => child.ref.remove());
+                });
+            }
         }
     </script>
 </body>
