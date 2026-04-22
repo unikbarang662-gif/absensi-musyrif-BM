@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Musyrif - Firebase</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        /* CSS STYLING */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: #2c3e50; }
+        .tabs { display: flex; justify-content: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 16px; font-weight: bold; color: #777; }
+        .tab-btn.active { color: #007bff; border-bottom: 3px solid #007bff; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        #dashboard { display: none; }
+        .stats { display: flex; justify-content: space-around; background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .stat-item { text-align: center; }
+        .stat-num { font-size: 24px; font-weight: bold; color: #007bff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .hidden { display: none; }
+        .success-msg { color: green; text-align: center; margin-top: 10px; font-weight: bold; }
+        .error-msg { color: red; text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. HALAMAN LOGIN -->
+    <div id="login-page" class="container">
+        <h1>📋 Absensi Musyrif</h1>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('musyrif')">Musyrif</button>
+            <button class="tab-btn" onclick="showTab('admin')">Admin</button>
+        </div>
+
+        <!-- Form Musyrif -->
+        <div id="form-musyrif">
+            <div class="form-group">
+                <label>Asrama</label>
+                <select id="asrama" onchange="updateNamaList()">
+                    <option value="">-- Pilih Asrama --</option>
+                    <option value="Al Hakim">Al Hakim</option>
+                    <option value="Al Fattah">Al Fattah</option>
+                    <option value="Al Karim">Al Karim</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nama</label>
+                <select id="nama">
+                    <option value="">-- Pilih Asrama Dulu --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Masukkan password">
+            </div>
+            <button onclick="loginMusyrif()">Masuk Musyrif</button>
+        </div>
+
+        <!-- Form Admin -->
+        <div id="form-admin" class="hidden">
+            <div class="form-group">
+                <label>PIN Admin</label>
+                <input type="password" id="pin" placeholder="Masukkan PIN (1234)">
+            </div>
+            <button onclick="loginAdmin()">Masuk Admin</button>
+        </div>
+    </div>
+
+    <!-- 2. HALAMAN INPUT MUSYRIF -->
+    <div id="musyrif-page" class="container hidden">
+        <h2>📝 Input Absensi</h2>
+        <div class="form-group">
+            <label>Kegiatan</label>
+            <select id="kegiatan">
+                <option value="Sholat Subuh">Sholat Subuh</option>
+                <option value="Sholat Dzuhur">Sholat Dzuhur</option>
+                <option value="Sholat Ashar">Sholat Ashar</option>
+                <option value="Sholat Maghrib">Sholat Maghrib</option>
+                <option value="Sholat Isya">Sholat Isya</option>
+                <option value="Kajian Rutin">Kajian Rutin</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Catatan</label>
+            <textarea id="catatan" rows="3" placeholder="Catatan tambahan..."></textarea>
+        </div>
+        <button onclick="kirimAbsensi()">✅ Kirim Absensi</button>
+        <div id="msg-musyrif" class="success-msg"></div>
+        <button onclick="logout()" style="background-color: #6c757d; margin-top: 20px;">Keluar</button>
+    </div>
+
+    <!-- 3. HALAMAN DASHBOARD ADMIN -->
+    <div id="dashboard" class="container">
+        <h1>📊 Dashboard Admin</h1>
+        <div class="stats">
+            <div class="stat-item"><div class="stat-num" id="st-today">0</div><div>Hari Ini</div></div>
+            <div class="stat-item"><div class="stat-num" id="st-week">0</div><div>Minggu Ini</div></div>
+            <div class="stat-item"><div class="stat-num" id="st-total">0</div><div>Total Data</div></div>
+        </div>
+        
+        <h3>📜 Data Masuk (Real-time)</h3>
+        <table id="tabel-data">
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Nama</th>
+                    <th>Asrama</th>
+                    <th>Kegiatan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="4" style="text-align:center;">Menunggu data...</td></tr>
+            </tbody>
+        </table>
+        <button onclick="logout()" style="background-color: #dc3545; margin-top: 20px;">Keluar</button>
+    </div>
+
+    <script>
+        // ==========================================
+        const firebaseConfig = {
+    apiKey: "API_KEY_ANDA_DISINI",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "PROJECT_ID",
+    storageBucket: "PROJECT_ID.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+};
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "GANTI_DENGAN_API_KEY_FIREBASE",
+            authDomain: "GANTI_DENGAN_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://GANTI_DENGAN_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "GANTI_DENGAN_PROJECT_ID",
+            storageBucket: "GANTI_DENGAN_PROJECT_ID.appspot.com",
+            messagingSenderId: "GANTI_DENGAN_SENDER_ID",
+            appId: "GANTI_DENGAN_APP_ID"
+        };
+        // ==========================================
+
+        // Inisialisasi Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const absensiRef = db.ref('absensi');
+
+        // --- LOGIKA TAMPILAN ---
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(tab === 'musyrif') {
+                document.getElementById('form-musyrif').classList.remove('hidden');
+                document.getElementById('form-admin').classList.add('hidden');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('form-musyrif').classList.add('hidden');
+                document.getElementById('form-admin').classList.remove('hidden');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            }
+        }
+
+        // Data Nama Musyrif
+        const dataNama = {
+            "Al Hakim": ["Ustadz Ahmad", "Ustadz Budi"],
+            "Al Fattah": ["Ustadz Candra", "Ustadz Dedi"],
+            "Al Karim": ["Ustadz Eko", "Ustadz Fajar"]
+        };
+
+        function updateNamaList() {
+            const asrama = document.getElementById('asrama').value;
+            const selectNama = document.getElementById('nama');
+            selectNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
+            if (dataNama[asrama]) {
+                dataNama[asrama].forEach(nama => {
+                    const opt = document.createElement('option');
+                    opt.value = nama;
+                    opt.textContent = nama;
+                    selectNama.appendChild(opt);
+                });
+            }
+        }
+
+        // --- LOGIKA LOGIN ---
+        function loginMusyrif() {
+            const nama = document.getElementById('nama').value;
+            const pass = document.getElementById('password').value;
+            if (!nama || !pass) return alert("Lengkapi data!");
+            // Password sederhana untuk demo
+            if (pass === "musyrif123") { 
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('musyrif-page').classList.remove('hidden');
+            } else {
+                alert("Password salah! (Coba: musyrif123)");
+            }
+        }
+
+        function loginAdmin() {
+            const pin = document.getElementById('pin').value;
+            if (pin === "1234") {
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('dashboard').style.display = 'block';
+                loadDashboard();
+            } else {
+                alert("PIN salah! (Coba: 1234)");
+            }
+        }
+
+        function logout() { location.reload(); }
+
+        // --- LOGIKA KIRIM DATA ---
+        function kirimAbsensi() {
+            const nama = document.getElementById('nama').value;
+            const asrama = document.getElementById('asrama').value;
+            const kegiatan = document.getElementById('kegiatan').value;
+            const catatan = document.getElementById('catatan').value;
+
+            if(!nama) return alert("Pilih nama dulu!");
+
+            const dataBaru = {
+                nama: nama,
+                asrama: asrama,
+                kegiatan: kegiatan,
+                catatan: catatan,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            absensiRef.push(dataBaru).then(() => {
+                document.getElementById('msg-musyrif').textContent = "✅ Berhasil Disimpan!";
+                setTimeout(() => document.getElementById('msg-musyrif').textContent = "", 2000);
+            }).catch(err => alert("Gagal: " + err.message));
+        }
+
+        // --- LOGIKA ADMIN (REAL-TIME) ---
+        function loadDashboard() {
+            absensiRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                const tbody = document.querySelector('#tabel-data tbody');
+                tbody.innerHTML = "";
+                
+                let todayCount = 0, weekCount = 0, totalCount = 0;
+                const now = new Date();
+                const todayStr = now.toDateString();
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+                if (data) {
+                    const list = Object.values(data).reverse();
+                    list.forEach(item => {
+                        const itemDate = new Date(item.timestamp);
+                        totalCount++;
+                        if (itemDate.toDateString() === todayStr) todayCount++;
+                        if (itemDate >= oneWeekAgo) weekCount++;
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${itemDate.toLocaleDateString()} ${itemDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                            <td>${item.nama}</td>
+                            <td>${item.asrama}</td>
+                            <td>${item.kegiatan}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data</td></tr>';
+                }
+
+                document.getElementById('st-today').textContent = todayCount;
+                document.getElementById('st-week').textContent = weekCount;
+                document.getElementById('st-total').textContent = totalCount;
+            });
+        }
+    </script>
+</body>
+</html>
