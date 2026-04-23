@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absensi Musyrif - Firebase</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; padding: 30px; text-align: center; }
+    .header h1 { font-size: 28px; margin-bottom: 10px; }
+    .header p { opacity: 0.9; }
+    .content { padding: 30px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+    input, select, textarea { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #2ecc71; box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1); }
+    button { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%; transition: transform 0.2s; }
+    button:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4); }
+    .data-section { margin-top: 40px; }
+    .data-section h2 { color: #333; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #2ecc71; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #2ecc71; color: white; padding: 15px; text-align: left; font-weight: 600; }
+    td { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; }
+    tr:hover { background: #f8f9fa; }
+    .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-hadir { background: #d4edda; color: #155724; }
+    .badge-izin { background: #fff3cd; color: #856404; }
+    .badge-sakit { background: #f8d7da; color: #721c24; }
+    .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
+    .alert-success { background: #d4edda; color: #155724; }
+    .alert-error { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📋 Absensi Musyrif</h1>
+      <p>Real-Time Database - Firebase</p>
+    </div>
+    
+    <div class="content">
+      <div id="alertSuccess" class="alert alert-success"></div>
+      <div id="alertError" class="alert alert-error"></div>
+      
+      <form id="formAbsensi">
+        <div class="form-group">
+          <label for="nama">Nama Musyrif:</label>
+          <input type="text" id="nama" required placeholder="Masukkan nama lengkap">
+        </div>
+        
+        <div class="form-group">
+          <label for="asrama">Asrama:</label>
+          <select id="asrama" required>
+            <option value="">-- Pilih Asrama --</option>
+            <option value="Asrama Al Hakim">Asrama Al Hakim</option>
+            <option value="Asrama Al Fattah">Asrama Al Fattah</option>
+            <option value="Asrama Al Karim">Asrama Al Karim</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="status">Status Kehadiran:</label>
+          <select id="status" required>
+            <option value="Hadir">Hadir</option>
+            <option value="Izin">Izin</option>
+            <option value="Sakit">Sakit</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="keterangan">Keterangan:</label>
+          <textarea id="keterangan" rows="3" placeholder="Keterangan tambahan"></textarea>
+        </div>
+        
+        <button type="submit">✅ Kirim Absensi</button>
+      </form>
+      
+      <div class="data-section">
+        <h2>📊 Data Absensi Real-Time</h2>
+        <table>
+          <thead>
+            <tr><th>No</th><th>Nama</th><th>Asrama</th><th>Status</th><th>Tanggal</th><th>Waktu</th></tr>
+          </thead>
+          <tbody id="tbodyAbsensi">
+            <tr><td colspan="6" style="text-align:center;">⏳ Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAFjL4-LBkmh4wLmHHFXd4jK6wikIMv0_0",
+      authDomain: "absensi-musyrif.firebaseapp.com",
+      databaseURL: "https://absensi-musyrif-default-rtdb.firebaseio.com",
+      projectId: "absensi-musyrif",
+      storageBucket: "absensi-musyrif.firebasestorage.app",
+      messagingSenderId: "65142296942",
+      appId: "1:65142296942:web:a06e766c476eae32b1717f"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    console.log("✅ Firebase tersambung!");
+
+    async function simpanAbsensi(nama, asrama, status, keterangan) {
+      const sekarang = new Date();
+      const dataAbsensi = {
+        nama: nama,
+        asrama: asrama,
+        status: status,
+        keterangan: keterangan,
+        tanggal: sekarang.toLocaleDateString('id-ID'),
+        waktu: sekarang.toLocaleTimeString('id-ID'),
+        timestamp: sekarang.getTime()
+      };
+      await database.ref('absensi').push().set(dataAbsensi);
+    }
+
+    function loadDataAbsensi() {
+      database.ref('absensi').orderByChild('timestamp').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const tbody = document.getElementById('tbodyAbsensi');
+        tbody.innerHTML = '';
+        if (data) {
+          let no = 1;
+          Object.values(data).reverse().forEach(item => {
+            const badgeClass = item.status === 'Hadir' ? 'badge-hadir' : item.status === 'Izin' ? 'badge-izin' : 'badge-sakit';
+            tbody.innerHTML += `<tr><td>${no++}</td><td>${item.nama}</td><td>${item.asrama}</td><td><span class="badge ${badgeClass}">${item.status}</span></td><td>${item.tanggal}</td><td>${item.waktu}</td></tr>`;
+          });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">📭 Belum ada data</td></tr>';
+        }
+      });
+    }
+
+    document.getElementById('formAbsensi').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      try {
+        await simpanAbsensi(
+          document.getElementById('nama').value,
+          document.getElementById('asrama').value,
+          document.getElementById('status').value,
+          document.getElementById('keterangan').value
+        );
+        document.getElementById('alertSuccess').textContent = '✅ Berhasil disimpan!';
+        document.getElementById('alertSuccess').style.display = 'block';
+        setTimeout(() => { document.getElementById('alertSuccess').style.display = 'none'; }, 3000);
+        this.reset();
+      } catch (error) {
+        document.getElementById('alertError').textContent = '❌ Error: ' + error.message;
+        document.getElementById('alertError').style.display = 'block';
+      }
+    });
+
+    window.addEventListener('load', loadDataAbsensi);
+  </script>
+</body>
+</html>
