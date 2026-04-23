@@ -75,10 +75,10 @@
             <button class="tab" onclick="switchTab('admin')">🛡️ Admin</button>
         </div>
         
-        <div id="alertLogin" class="alert"></div>
+        <div id="alert-login" class="alert"></div>
         
         <!-- Form Musyrif -->
-        <form id="formMusyrif" onsubmit="loginMusyrif(event)">
+        <form id="musyrif-form" onsubmit="loginMusyrif(event)">
             <div class="form-group">
                 <label>Asrama</label>
                 <select id="loginAsrama" onchange="updateMusyrifSelect()" required>
@@ -103,7 +103,7 @@
         </form>
         
         <!-- Form Admin -->
-        <form id="formAdmin" class="hidden" onsubmit="loginAdmin(event)">
+        <form id="admin-form" class="hidden" onsubmit="loginAdmin(event)">
             <div class="form-group">
                 <label>PIN Admin</label>
                 <input type="password" id="adminPin" maxlength="4" required>
@@ -233,7 +233,7 @@
 
 <script>
 // ==========================================
-// FIREBASE CONFIGURATION - TAMBAHAN BARU
+// FIREBASE CONFIGURATION
 // ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyAFjL4-LBkmh4wLmHHFXd4jK6wikIMv0_0",
@@ -251,7 +251,7 @@ const database = firebase.database();
 console.log("✅ Firebase berhasil tersambung!");
 
 // ==========================================
-// DATA CONSTANTS - SAMA PERSIS DENGAN FILE ASLI
+// DATA CONSTANTS
 // ==========================================
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwS4GCCIZsYVmlMw7Fz6XOvZZ0J8qKXJ5qKXJ5qKXJ5qKXJ5qK/exec";
 const ADMIN_PIN = "1234";
@@ -289,7 +289,7 @@ const JOBS = [
 ];
 
 // ==========================================
-// GLOBAL VARIABLES - SAMA PERSIS
+// GLOBAL VARIABLES
 // ==========================================
 let currentUser = null;
 let currentAsrama = null;
@@ -297,7 +297,7 @@ let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let chartInstance = null;
 
 // ==========================================
-// INITIALIZATION - SAMA PERSIS
+// INITIALIZATION
 // ==========================================
 window.onload = function() {
     console.log("✅ Aplikasi siap digunakan!");
@@ -305,14 +305,20 @@ window.onload = function() {
 };
 
 // ==========================================
-// AUTHENTICATION FUNCTIONS - SAMA PERSIS
+// AUTHENTICATION FUNCTIONS
 // ==========================================
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-    document.querySelector(`.tab:nth-child(${tab === 'admin' ? 2 : 1})`).classList.add('active');
-    document.getElementById('musyrif-form').style.display = tab === 'admin' ? 'none' : 'block';
-    document.getElementById('admin-form').style.display = tab === 'admin' ? 'block' : 'none';
-    document.getElementById('login-error').style.display = 'none';
+    if (tab === 'admin') {
+        document.querySelector('.tab:nth-child(2)').classList.add('active');
+        document.getElementById('musyrif-form').style.display = 'none';
+        document.getElementById('admin-form').style.display = 'block';
+    } else {
+        document.querySelector('.tab:nth-child(1)').classList.add('active');
+        document.getElementById('musyrif-form').style.display = 'block';
+        document.getElementById('admin-form').style.display = 'none';
+    }
+    document.getElementById('alert-login').style.display = 'none';
 }
 
 function updateMusyrifSelect() {
@@ -390,7 +396,7 @@ function showDashboard(type) {
 }
 
 function showAlert(elementId, message, type) {
-    const alert = document.getElementById('alert' + elementId);
+    const alert = document.getElementById('alert-' + elementId);
     alert.textContent = message;
     alert.className = 'alert alert-' + type;
     alert.style.display = 'block';
@@ -398,7 +404,7 @@ function showAlert(elementId, message, type) {
 }
 
 // ==========================================
-// FIREBASE HELPER FUNCTIONS - BARU
+// FIREBASE HELPER FUNCTIONS
 // ==========================================
 async function simpanKeFirebase(path, data) {
     try {
@@ -424,7 +430,7 @@ async function bacaDariFirebase(path) {
 }
 
 // ==========================================
-// MUSYRIF FUNCTIONS - DIMODIFIKASI SEDIKIT UNTUK FIREBASE
+// MUSYRIF FUNCTIONS
 // ==========================================
 function loadJadwal() {
     const today = new Date().getDay();
@@ -570,7 +576,7 @@ async function loadStatMusyrif() {
 }
 
 // ==========================================
-// ADMIN FUNCTIONS - DIMODIFIKASI SEDIKIT UNTUK FIREBASE
+// ADMIN FUNCTIONS
 // ==========================================
 async function refreshData() {
     await loadStatAdmin();
@@ -692,11 +698,11 @@ function loadChart(data) {
     
     chartInstance = new Chart(ctx, {
         type: 'bar',
-        data: {
+        data: {  // <-- FIXED: Added "data:" key
             labels: Object.keys(musyrifCount),
             datasets: [{
                 label: 'Jumlah Absensi',
-                 Object.values(musyrifCount),
+                data: Object.values(musyrifCount),  // <-- FIXED: Added "data:" key
                 backgroundColor: 'rgba(46, 204, 113, 0.6)',
                 borderColor: 'rgba(46, 204, 113, 1)',
                 borderWidth: 1
@@ -729,7 +735,7 @@ async function hapusData(timestamp) {
 }
 
 // ==========================================
-// PDF GENERATION - SAMA PERSIS DENGAN FILE ASLI
+// PDF GENERATION
 // ==========================================
 async function generatePDFPerAsrama() {
     const { jsPDF } = window.jspdf;
@@ -826,7 +832,7 @@ async function generatePDFPerIndividu() {
 }
 
 // ==========================================
-// WHATSAPP FUNCTIONS - SAMA PERSIS DENGAN FILE ASLI
+// WHATSAPP FUNCTIONS
 // ==========================================
 function cekWhatsApp() {
     // Baca dari Firebase
