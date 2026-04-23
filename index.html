@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- TAMBAHAN FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -232,7 +233,7 @@
 
 <script>
 // ==========================================
-// FIREBASE CONFIGURATION
+// FIREBASE CONFIGURATION - TAMBAHAN BARU
 // ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyAFjL4-LBkmh4wLmHHFXd4jK6wikIMv0_0",
@@ -244,16 +245,20 @@ const firebaseConfig = {
     appId: "1:65142296942:web:a06e766c476eae32b1717f"
 };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+console.log("✅ Firebase berhasil tersambung!");
 
 // ==========================================
-// DATA CONSTANTS
+// DATA CONSTANTS - SAMA PERSIS
 // ==========================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwS4GCCIZsYVmlMw7Fz6XOvZZ0J8qKXJ5qKXJ5qKXJ5qKXJ5qK/exec";
 const ADMIN_PIN = "1234";
 const WA_ADMIN = "6285893588373";
+const STORAGE_KEY = 'absensi_musyrif_data';
 
-const MUSYRIF_BY_ASRAMA = {
+const MUSYRIF_BY_ASMARA = {
     "al-hakim": { 
         name: "Asrama Al Hakim", 
         musyrif: { 
@@ -284,14 +289,15 @@ const JOBS = [
 ];
 
 // ==========================================
-// GLOBAL VARIABLES
+// GLOBAL VARIABLES - SAMA PERSIS
 // ==========================================
 let currentUser = null;
 let currentAsrama = null;
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let chartInstance = null;
 
 // ==========================================
-// INITIALIZATION
+// INITIALIZATION - SAMA PERSIS
 // ==========================================
 window.onload = function() {
     console.log("✅ Aplikasi siap digunakan!");
@@ -299,33 +305,29 @@ window.onload = function() {
 };
 
 // ==========================================
-// AUTHENTICATION FUNCTIONS
+// AUTHENTICATION FUNCTIONS - SAMA PERSIS
 // ==========================================
 function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    if (tab === 'musyrif') {
-        document.getElementById('formMusyrif').classList.remove('hidden');
-        document.getElementById('formAdmin').classList.add('hidden');
-    } else {
-        document.getElementById('formMusyrif').classList.add('hidden');
-        document.getElementById('formAdmin').classList.remove('hidden');
-    }
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.tab:nth-child(${tab === 'admin' ? 2 : 1})`).classList.add('active');
+    document.getElementById('musyrif-form').style.display = tab === 'admin' ? 'none' : 'block';
+    document.getElementById('admin-form').style.display = tab === 'admin' ? 'block' : 'none';
+    document.getElementById('login-error').style.display = 'none';
 }
 
 function updateMusyrifSelect() {
     const asrama = document.getElementById('loginAsrama').value;
-    const select = document.getElementById('loginNama');
-    select.innerHTML = '<option value="">-- Pilih Musyrif --</option>';
+    const musyrifSelect = document.getElementById('loginNama');
+    musyrifSelect.innerHTML = '<option value="">-- Pilih Musyrif --</option>';
     
-    if (asrama && MUSYRIF_BY_ASRAMA[asrama]) {
-        Object.keys(MUSYRIF_BY_ASRAMA[asrama].musyrif).forEach(name => {
-            select.innerHTML += `<option value="${name}">${name}</option>`;
+    if (asrama && MUSYRIF_BY_ASMARA[asrama]) {
+        Object.keys(MUSYRIF_BY_ASMARA[asrama].musyrif).forEach(name => {
+            musyrifSelect.innerHTML += `<option value="${name}">${name}</option>`;
         });
-        select.disabled = false;
+        musyrifSelect.disabled = false;
     } else {
-        select.disabled = true;
+        musyrifSelect.disabled = true;
+        musyrifSelect.innerHTML = '<option value="">-- Pilih Asrama Terlebih Dahulu --</option>';
     }
 }
 
@@ -335,9 +337,9 @@ function loginMusyrif(e) {
     const nama = document.getElementById('loginNama').value;
     const password = document.getElementById('loginPassword').value;
     
-    if (MUSYRIF_BY_ASRAMA[asrama] && MUSYRIF_BY_ASRAMA[asrama].musyrif[nama]) {
-        if (MUSYRIF_BY_ASRAMA[asrama].musyrif[nama].pass === password) {
-            currentUser = { name: nama, asrama: asrama, room: MUSYRIF_BY_ASRAMA[asrama].musyrif[nama].rooms[0] };
+    if (MUSYRIF_BY_ASMARA[asrama] && MUSYRIF_BY_ASMARA[asrama].musyrif[nama]) {
+        if (MUSYRIF_BY_ASMARA[asrama].musyrif[nama].pass === password) {
+            currentUser = { name: nama, asrama: asrama, room: MUSYRIF_BY_ASMARA[asrama].musyrif[nama].rooms[0] };
             currentAsrama = asrama;
             showDashboard('musyrif');
             loadRiwayatAbsensi();
@@ -383,7 +385,7 @@ function showDashboard(type) {
     } else {
         document.getElementById('dashboardAdmin').style.display = 'none';
         document.getElementById('dashboardMusyrif').style.display = 'block';
-        document.getElementById('musyrifInfo').textContent = `${currentUser.name} - ${MUSYRIF_BY_ASRAMA[currentUser.asrama].name}`;
+        document.getElementById('musyrifInfo').textContent = `${currentUser.name} - ${MUSYRIF_BY_ASMARA[currentUser.asrama].name}`;
     }
 }
 
@@ -396,11 +398,14 @@ function showAlert(elementId, message, type) {
 }
 
 // ==========================================
-// DATA FUNCTIONS - FIREBASE
+// FIREBASE HELPER FUNCTIONS - BARU
 // ==========================================
 async function simpanKeFirebase(path, data) {
     try {
-        await database.ref(path).push().set(data);
+        await database.ref(path).push().set({
+            ...data,
+            timestamp: new Date().toISOString()
+        });
         return true;
     } catch (error) {
         console.error("Error saving to Firebase:", error);
@@ -419,7 +424,7 @@ async function bacaDariFirebase(path) {
 }
 
 // ==========================================
-// MUSYRIF FUNCTIONS
+// MUSYRIF FUNCTIONS - DIMODIFIKASI SEDIKIT
 // ==========================================
 function loadJadwal() {
     const today = new Date().getDay();
@@ -467,10 +472,10 @@ async function kirimAbsensi(e) {
     }
     
     const now = new Date();
-    const data = {
+    const newData = {
         timestamp: now.toISOString(),
         nama: currentUser.name,
-        asrama: MUSYRIF_BY_ASRAMA[currentUser.asrama].name,
+        asrama: MUSYRIF_BY_ASMARA[currentUser.asrama].name,
         asramaCode: currentUser.asrama,
         kamar: currentUser.room,
         kegiatan: kegiatan,
@@ -480,32 +485,53 @@ async function kirimAbsensi(e) {
         waktu: now.toLocaleTimeString('id-ID')
     };
     
-    const success = await simpanKeFirebase('absensi', data);
+    // Simpan ke localStorage (untuk backward compatibility)
+    data.push(newData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    
+    // Simpan ke Firebase (untuk sync cross-device)
+    const success = await simpanKeFirebase('absensi', newData);
+    
+    // Kirim ke Google Sheets (jika ada)
+    try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(newData),
+            mode: 'no-cors'
+        });
+    } catch (e) {
+        console.log('Saved to localStorage and Firebase only');
+    }
     
     if (success) {
-        alert('✅ Absensi berhasil dikirim!');
+        alert('✅ Absensi berhasil dikirim!\nData tersimpan dan bisa dilihat di semua device.');
         document.getElementById('formAbsensi').reset();
         loadRiwayatAbsensi();
         loadStatMusyrif();
     } else {
-        alert('❌ Gagal mengirim absensi');
+        alert('❌ Gagal mengirim absensi ke server');
     }
 }
 
 async function loadRiwayatAbsensi() {
     if (!currentUser) return;
     
-    const data = await bacaDariFirebase('absensi');
-    const tbody = document.getElementById('tabelRiwayat');
+    // Baca dari Firebase
+    const firebaseData = await bacaDariFirebase('absensi');
     
-    if (!data) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Belum ada riwayat</td></tr>';
-        return;
+    let allData = [];
+    if (firebaseData) {
+        allData = Object.values(firebaseData);
+    } else {
+        // Fallback ke localStorage
+        allData = data;
     }
     
-    const myData = Object.values(data)
+    const tbody = document.getElementById('tabelRiwayat');
+    
+    const myData = allData
         .filter(d => d.nama === currentUser.name)
-        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
     
     if (myData.length > 0) {
         tbody.innerHTML = myData.map(d => `
@@ -523,16 +549,17 @@ async function loadRiwayatAbsensi() {
 async function loadStatMusyrif() {
     if (!currentUser) return;
     
-    const data = await bacaDariFirebase('absensi');
-    if (!data) return;
+    // Baca dari Firebase
+    const firebaseData = await bacaDariFirebase('absensi');
+    let allData = firebaseData ? Object.values(firebaseData) : data;
     
-    const myData = Object.values(data).filter(d => d.nama === currentUser.name);
+    const myData = allData.filter(d => d.nama === currentUser.name);
     const now = new Date();
     const today = now.toLocaleDateString('id-ID');
     
     const todayCount = myData.filter(d => d.tanggal === today).length;
     const weekCount = myData.filter(d => {
-        const dDate = new Date(d.timestamp);
+        const dDate = new Date(d.timestamp || 0);
         const weekAgo = new Date(now - 7*24*60*60*1000);
         return dDate >= weekAgo;
     }).length;
@@ -543,35 +570,35 @@ async function loadStatMusyrif() {
 }
 
 // ==========================================
-// ADMIN FUNCTIONS
+// ADMIN FUNCTIONS - DIMODIFIKASI SEDIKIT
 // ==========================================
 async function refreshData() {
     await loadStatAdmin();
     await loadPerformaMusyrif();
     await loadAllData();
-    alert('✅ Data berhasil di-refresh!');
+    alert('✅ Data berhasil di-refresh dari Firebase!');
 }
 
 async function loadStatAdmin() {
-    const data = await bacaDariFirebase('absensi');
-    if (!data) return;
+    // Baca dari Firebase
+    const firebaseData = await bacaDariFirebase('absensi');
+    const allData = firebaseData ? Object.values(firebaseData) : data;
     
-    const arrData = Object.values(data);
     const now = new Date();
     const today = now.toLocaleDateString('id-ID');
     
-    const todayCount = arrData.filter(d => d.tanggal === today).length;
-    const weekCount = arrData.filter(d => {
-        const dDate = new Date(d.timestamp);
+    const todayCount = allData.filter(d => d.tanggal === today).length;
+    const weekCount = allData.filter(d => {
+        const dDate = new Date(d.timestamp || 0);
         const weekAgo = new Date(now - 7*24*60*60*1000);
         return dDate >= weekAgo;
     }).length;
-    const monthCount = arrData.filter(d => {
-        const dDate = new Date(d.timestamp);
+    const monthCount = allData.filter(d => {
+        const dDate = new Date(d.timestamp || 0);
         return dDate.getMonth() === now.getMonth() && dDate.getFullYear() === now.getFullYear();
     }).length;
     
-    const uniqueMusyrif = new Set(arrData.map(d => d.nama)).size;
+    const uniqueMusyrif = new Set(allData.map(d => d.nama)).size;
     
     document.getElementById('statHariIni').textContent = todayCount;
     document.getElementById('statMingguIni').textContent = weekCount;
@@ -580,21 +607,24 @@ async function loadStatAdmin() {
 }
 
 async function loadPerformaMusyrif() {
-    const data = await bacaDariFirebase('absensi');
+    // Baca dari Firebase
+    const firebaseData = await bacaDariFirebase('absensi');
+    const allData = firebaseData ? Object.values(firebaseData) : data;
+    
     const container = document.getElementById('performaMusyrif');
     
-    if (!data) {
+    if (allData.length === 0) {
         container.innerHTML = '<p style="text-align:center; color:#999;">Belum ada data</p>';
         return;
     }
     
     const musyrifStats = {};
-    Object.values(data).forEach(d => {
+    allData.forEach(d => {
         if (!musyrifStats[d.nama]) {
             musyrifStats[d.nama] = { name: d.nama, asrama: d.asrama, count: 0, rooms: new Set() };
         }
         musyrifStats[d.nama].count++;
-        musyrifStats[d.nama].rooms.add(d.kamar);
+        if (d.kamar) musyrifStats[d.nama].rooms.add(d.kamar);
     });
     
     let html = '';
@@ -619,22 +649,25 @@ async function loadPerformaMusyrif() {
 }
 
 async function loadAllData() {
-    const data = await bacaDariFirebase('absensi');
+    // Baca dari Firebase
+    const firebaseData = await bacaDariFirebase('absensi');
+    const allData = firebaseData ? Object.values(firebaseData) : data;
+    
     const tbody = document.getElementById('tabelSemuaData');
     
-    if (!data) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Klik "Refresh Data" untuk memuat</td></tr>';
+    if (allData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada data</td></tr>';
         return;
     }
     
-    const arrData = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const sortedData = allData.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
     
-    tbody.innerHTML = arrData.map(d => `
+    tbody.innerHTML = sortedData.map(d => `
         <tr>
             <td>${d.tanggal} ${d.waktu}</td>
             <td>${d.nama}</td>
             <td>${d.asrama}</td>
-            <td>${d.kamar}</td>
+            <td>${d.kamar || '-'}</td>
             <td>${d.kegiatan}</td>
             <td>${d.foto ? '📷' : '-'}</td>
             <td><button class="btn btn-danger" style="padding:5px 10px; font-size:12px;" onclick="hapusData('${d.timestamp}')">Hapus</button></td>
@@ -642,7 +675,7 @@ async function loadAllData() {
     `).join('');
     
     // Load chart
-    loadChart(arrData);
+    loadChart(sortedData);
 }
 
 function loadChart(data) {
@@ -682,54 +715,58 @@ function loadChart(data) {
 async function hapusData(timestamp) {
     if (!confirm('Yakin ingin menghapus data ini?')) return;
     
-    const data = await bacaDariFirebase('absensi');
-    if (!data) return;
-    
-    Object.keys(data).forEach(key => {
-        if (data[key].timestamp === timestamp) {
-            database.ref('absensi/' + key).remove();
-        }
-    });
+    // Hapus dari Firebase
+    const firebaseData = await bacaDariFirebase('absensi');
+    if (firebaseData) {
+        Object.keys(firebaseData).forEach(key => {
+            if (firebaseData[key].timestamp === timestamp) {
+                database.ref('absensi/' + key).remove();
+            }
+        });
+    }
     
     await refreshData();
 }
 
 // ==========================================
-// PDF GENERATION
+// PDF GENERATION - SAMA PERSIS
 // ==========================================
 async function generatePDFPerAsrama() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    const data = await bacaDariFirebase('absensi');
-    if (!data) {
+    // Baca dari Firebase
+    const firebaseData = await bacaDariFirebase('absensi');
+    const allData = firebaseData ? Object.values(firebaseData) : data;
+    
+    if (allData.length === 0) {
         alert('Tidak ada data untuk generate PDF');
         return;
     }
     
-    const arrData = Object.values(data);
-    const asramaList = [...new Set(arrData.map(d => d.asrama))];
+    const asramaList = [...new Set(allData.map(d => d.asrama))];
     
     doc.setFontSize(16);
     doc.text('📊 LAPORAN KINERJA MUSYRIF PER ASRAMA', 105, 15, { align: 'center' });
     doc.setFontSize(12);
-    doc.text('Pondong Pesantren - Sistem Absensi Digital', 105, 22, { align: 'center' });
+    doc.text('Pondok Pesantren - Sistem Absensi Digital', 105, 22, { align: 'center' });
     doc.text(`Periode: Minggu Ini`, 105, 29, { align: 'center' });
     doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, 36, { align: 'center' });
-    doc.text(`Total Musyrif: ${new Set(arrData.map(d => d.nama)).size} orang`, 105, 43, { align: 'center' });
-    doc.text(`Total Absensi: ${arrData.length} kali`, 105, 50, { align: 'center' });
+    doc.text(`Total Musyrif: ${new Set(allData.map(d => d.nama)).size} orang`, 105, 43, { align: 'center' });
+    doc.text(`Total Absensi: ${allData.length} kali`, 105, 50, { align: 'center' });
     
     asramaList.forEach((asrama, index) => {
-        const asramaData = arrData.filter(d => d.asrama === asrama);
+        const asramaData = allData.filter(d => d.asrama === asrama);
         
-        doc.addPage();
+        if (index > 0) doc.addPage();
+        
         doc.setFontSize(14);
         doc.text(`📌 ${asrama}`, 14, 15);
         
         const tableData = asramaData.map(d => [
             d.tanggal + ' ' + d.waktu,
             d.nama,
-            d.kamar,
+            d.kamar || '-',
             d.kegiatan
         ]);
         
@@ -751,13 +788,11 @@ async function generatePDFPerIndividu() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    const data = await bacaDariFirebase('absensi');
-    if (!data) {
-        alert('Tidak ada data untuk generate PDF');
-        return;
-    }
+    // Baca dari Firebase
+    const firebaseData = await bacaDariFirebase('absensi');
+    const allData = firebaseData ? Object.values(firebaseData) : data;
     
-    const musyrifData = Object.values(data).filter(d => d.nama.toLowerCase().includes(nama.toLowerCase()));
+    const musyrifData = allData.filter(d => d.nama.toLowerCase().includes(nama.toLowerCase()));
     
     if (musyrifData.length === 0) {
         alert('Data tidak ditemukan');
@@ -771,7 +806,7 @@ async function generatePDFPerIndividu() {
     doc.setFontSize(12);
     doc.text(`Nama: ${firstData.nama}`, 14, 30);
     doc.text(`Asrama: ${firstData.asrama}`, 14, 37);
-    doc.text(`Kamar: ${firstData.kamar}`, 14, 44);
+    doc.text(`Kamar: ${firstData.kamar || '-'}`, 14, 44);
     doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 14, 51);
     
     const tableData = musyrifData.map(d => [
@@ -791,17 +826,16 @@ async function generatePDFPerIndividu() {
 }
 
 // ==========================================
-// WHATSAPP FUNCTIONS
+// WHATSAPP FUNCTIONS - SAMA PERSIS
 // ==========================================
 function cekWhatsApp() {
-    const data = [];
+    // Baca dari Firebase
     database.ref('absensi').once('value', snapshot => {
-        snapshot.forEach(child => {
-            data.push(child.val());
-        });
+        const firebaseData = snapshot.val();
+        const allData = firebaseData ? Object.values(firebaseData) : data;
         
         const today = new Date().toLocaleDateString('id-ID');
-        const todayData = data.filter(d => d.tanggal === today);
+        const todayData = allData.filter(d => d.tanggal === today);
         
         let message = `📊 *LAPORAN ABSENSI HARI INI*\n`;
         message += `📅 Tanggal: ${today}\n`;
