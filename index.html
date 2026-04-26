@@ -3,273 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi Musyrif - Sistem Cloud Lengkap</title>
+    <title>Sistem Absensi Musyrif - Real-Time</title>
+    
+    <!-- Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
-        };
-
+        // Konfigurasi Firebase dari environment
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : { apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
+        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'absensi-musyrif-pro-v2';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'siab-musyrif-v4';
 
-        window.db = db;
-        window.appId = appId;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.deleteDoc = deleteDoc;
-        window.doc = doc;
-        window.onSnapshot = onSnapshot;
+        // Referensi global agar bisa diakses script biasa
+        window.fb = { db, auth, collection, addDoc, deleteDoc, doc, onSnapshot, appId };
 
-        const initAuth = async () => {
-            const delays = [1000, 2000, 4000];
-            for (let i = 0; i < delays.length; i++) {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                    console.log("Koneksi Cloud Siap");
-                    return;
-                } catch (error) {
-                    if (i === delays.length - 1) {
-                        document.getElementById('loading-overlay').style.display = 'none';
-                        notify("Gagal Sinkronisasi Cloud. Coba Refresh.");
-                    } else {
-                        await new Promise(r => setTimeout(r, delays[i]));
-                    }
+        // Logika Autentikasi yang diperkuat untuk mengatasi network-request-failed
+        let authAttempted = false;
+        async function startAuth(retries = 5, delay = 3000) {
+            if (authAttempted) return;
+            
+            try {
+                // Memberikan jeda awal agar provider siap
+                if (retries === 5) await new Promise(r => setTimeout(r, 500));
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                authAttempted = true;
+                console.log("Koneksi Firebase Berhasil.");
+                updateStatusUI(true);
+            } catch (e) {
+                console.error(`Gagal autentikasi (Sisa percobaan: ${retries}):`, e.message);
+                
+                if (retries > 0) {
+                    // Exponential backoff dengan delay yang lebih lama untuk stabilitas
+                    setTimeout(() => startAuth(retries - 1, delay * 1.5), delay);
+                } else {
+                    updateStatusUI(false);
+                    showToast("Koneksi gagal. Silakan muat ulang halaman.");
                 }
             }
-        };
+        }
 
-        initAuth();
+        function updateStatusUI(online) {
+            const statusIcon = document.getElementById('status-icon');
+            if (statusIcon) {
+                statusIcon.style.background = online ? "#4caf50" : "#f44336";
+            }
+        }
+        
+        // Memulai proses Auth
+        startAuth();
 
-        onAuthStateChanged(auth, (user) => {
+        // Listener perubahan status auth untuk sinkronisasi data
+        onAuthStateChanged(auth, (user) => { 
+            window.userRef = user; 
             if (user) {
-                window.currentUser = user;
-                if (window.pendingSync) window.pendingSync();
+                updateStatusUI(true);
+                if (window.startDataSync) window.startDataSync();
             }
         });
     </script>
 
     <style>
-        :root { --primary:#1b5e20; --primary-light:#4caf50; --bg:#f0f2f0; --card:#fff; --text:#1b1b1b; --text-light:#616161; --border:#e0e0e0; --danger:#d32f2f; --success:#388e3c; --warning:#f57c00; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: var(--bg); color: var(--text); padding: 12px; min-height: 100vh; line-height: 1.5; }
+        :root { --primary:#2e7d32; --secondary:#43a047; --bg:#f4f7f4; --white:#ffffff; --text:#212121; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 30px; }
         
-        /* Loading Overlay */
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { width: 45px; height: 45px; border: 4px solid #eee; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Layout Dasar */
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
+        header { background: var(--primary); color: white; padding: 20px; border-radius: 0 0 25px 25px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card { background: var(--white); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .hidden { display: none !important; }
 
-        /* Login Screen */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1b5e20, #43a047); z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
-        .login-tabs { display: flex; margin-bottom: 25px; background: #f5f5f5; border-radius: 10px; padding: 5px; }
-        .tab-btn { flex: 1; padding: 12px; background: none; border: none; cursor: pointer; font-weight: 600; color: #757575; border-radius: 8px; transition: 0.3s; }
-        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        /* Komponen Login */
+        .login-box { text-align: center; padding-top: 50px; }
+        .tabs { display: flex; background: #e0e0e0; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 10px; cursor: pointer; border-radius: 8px; font-weight: bold; font-size: 0.9rem; transition: 0.2s; }
+        .tab.active { background: var(--white); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        /* General UI Elements */
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: var(--text-light); }
-        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; font-size: 1rem; transition: 0.3s; }
-        .form-group input:focus { border-color: var(--primary); outline: none; }
-
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        /* Komponen Form */
+        .input-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; color: #666; margin-bottom: 5px; }
+        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:active { transform: scale(0.98); }
-        .btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); margin-top: 10px; }
-
-        /* Dashboard */
-        #main-app { display: none; max-width: 1000px; margin: 0 auto; padding-bottom: 40px; }
-        header { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; position: relative; }
-        .logout-btn { position: absolute; right: 15px; top: 15px; border: none; background: #f5f5f5; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; }
-
-        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .card h2 { font-size: 1.1rem; color: var(--primary); }
-
-        /* Admin Specific */
-        .admin-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-        @media (min-width: 600px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
-        .stat-card { background: #f8faf8; padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--primary); }
-        .stat-card .val { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
-        .stat-card .label { font-size: 0.75rem; color: var(--text-light); }
-
-        /* Table */
-        .table-container { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th { background: #f5f5f5; padding: 12px; text-align: left; font-size: 0.85rem; color: var(--text-light); }
-        td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
-        .img-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .img-thumb:hover { transform: scale(1.1); }
-
-        #img-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20000; justify-content: center; align-items: center; flex-direction: column; }
-        #img-modal img { max-width: 95%; max-height: 80vh; border-radius: 10px; box-shadow: 0 0 30px rgba(255,255,255,0.1); }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-admin { background: #1565c0; color: white; }
+        .btn-danger { background: #c62828; color: white; padding: 8px; font-size: 0.75rem; width: auto; border-radius: 5px; }
         
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; }
-        .badge-asrama { background: #e8f5e9; color: #2e7d32; }
+        /* Statistik */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: var(--white); padding: 15px; border-radius: 12px; text-align: center; border-left: 5px solid var(--primary); }
+        .stat-val { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+        .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
+
+        /* Tabel Data */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; padding: 12px 8px; background: #f8f9fa; border-bottom: 2px solid #eee; }
+        td { padding: 10px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        .img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .img-preview:hover { opacity: 0.8; }
+
+        /* Notifikasi Toast */
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 25px; border-radius: 30px; font-size: 0.9rem; z-index: 9999; display: none; }
+        .status-dot { width: 8px; height: 8px; background: #bbb; border-radius: 50%; display: inline-block; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="spinner"></div>
-        <p style="margin-top: 15px; font-weight: 600; color: var(--primary);">Menghubungkan Data Cloud...</p>
-    </div>
+    <div id="toast"></div>
 
-    <!-- Login Area -->
-    <div id="login-screen">
+    <!-- Halaman Login -->
+    <div id="page-login" class="container">
         <div class="login-box">
-            <h2 style="text-align: center; margin-bottom: 8px; color: var(--primary);">Absensi Musyrif Online</h2>
-            <p style="text-align: center; font-size: 0.8rem; color: #757575; margin-bottom: 25px;">Sistem Monitoring Terpadu</p>
+            <h1 style="color: var(--primary); margin-bottom: 5px;">SIAB MUSYRIF</h1>
+            <p style="color: #888; font-size: 0.85rem; margin-bottom: 25px;">Sistem Absensi Terintegrasi</p>
             
-            <div class="login-tabs">
-                <button id="tab-m" class="tab-btn active" onclick="setRole('musyrif')">Musyrif</button>
-                <button id="tab-a" class="tab-btn" onclick="setRole('admin')">Admin</button>
-            </div>
-            
-            <div id="form-musyrif">
-                <div class="form-group">
-                    <label>Pilih Asrama</label>
-                    <select id="login-asrama" onchange="updateNames()">
-                        <option value="">-- Pilih Asrama --</option>
-                        <option value="Al Hakim">Asrama Al Hakim</option>
-                        <option value="Al Fattah">Asrama Al Fattah</option>
-                        <option value="Al Karim">Asrama Al Karim</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Nama Musyrif</label>
-                    <select id="login-nama" disabled>
-                        <option value="">Pilih asrama dahulu...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Kata Sandi</label>
-                    <input type="password" id="login-pass" placeholder="Password asrama">
-                </div>
-                <button class="btn btn-primary" onclick="login()">Masuk Sekarang</button>
-                <a href="https://wa.me/6285893588373" target="_blank" class="btn btn-outline" style="text-decoration:none">Hubungi IT Pusat</a>
+            <div class="tabs">
+                <div id="tab-m" class="tab active" onclick="switchLogin('m')">Musyrif</div>
+                <div id="tab-a" class="tab" onclick="switchLogin('a')">Admin</div>
             </div>
 
-            <div id="form-admin" style="display: none;">
-                <div class="form-group">
-                    <label>PIN Administrator</label>
-                    <input type="password" id="login-pin" placeholder="PIN 4 Digit">
+            <div id="form-musyrif">
+                <div class="card">
+                    <div class="input-group">
+                        <label>Pilih Asrama</label>
+                        <select id="login-asrama" onchange="loadNames()">
+                            <option value="">-- Pilih Asrama --</option>
+                            <option>Al Hakim</option>
+                            <option>Al Fattah</option>
+                            <option>Al Karim</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Nama Lengkap</label>
+                        <select id="login-nama" disabled><option value="">Pilih Asrama Dulu</option></select>
+                    </div>
+                    <button class="btn btn-primary" onclick="login('musyrif')">MASUK SEKARANG</button>
                 </div>
-                <button class="btn btn-primary" onclick="loginAdmin()">Masuk Panel Admin</button>
             </div>
+
+            <div id="form-admin" class="hidden">
+                <div class="card">
+                    <div class="input-group">
+                        <label>PIN Administrator</label>
+                        <input type="password" id="login-pin" placeholder="****">
+                    </div>
+                    <button class="btn btn-admin" onclick="login('admin')">AKSES DASHBOARD</button>
+                </div>
+            </div>
+            
+            <p style="font-size: 0.65rem; color: #bbb; margin-top: 20px;">
+                <span id="status-icon" class="status-dot"></span> Database Online
+            </p>
         </div>
     </div>
 
-    <!-- Dashboard Area -->
-    <div id="main-app">
+    <!-- Halaman Utama -->
+    <div id="page-main" class="hidden">
         <header>
-            <button class="logout-btn" onclick="location.reload()">Log Out</button>
-            <h1 id="header-name">Dashboard</h1>
-            <p id="header-info" style="font-size: 0.85rem; color: #757575;"></p>
+            <div class="container" style="display:flex; justify-content:space-between; align-items:center; padding:0;">
+                <div>
+                    <h2 id="user-display" style="font-size: 1.2rem;">Nama Musyrif</h2>
+                    <p id="asrama-display" style="font-size: 0.8rem; opacity: 0.9;">Asrama</p>
+                </div>
+                <button onclick="location.reload()" style="background:rgba(255,255,255,0.2); border:1px solid white; color:white; padding:5px 12px; border-radius:8px; font-size:0.7rem;">LOGOUT</button>
+            </div>
         </header>
 
-        <!-- View Musyrif -->
-        <div id="musyrif-view">
-            <div class="card">
-                <h2>📸 Kirim Absensi</h2>
-                <div class="form-group">
-                    <label>Kegiatan</label>
-                    <select id="abs-kegiatan">
-                        <option value="Membangunkan Subuh">Membangunkan Subuh</option>
-                        <option value="Imam Sholat/Kultum">Imam Sholat/Kultum</option>
-                        <option value="Gobraki Sekolah">Gobraki Sekolah</option>
-                        <option value="Pendampingan Belajar">Pendampingan Belajar</option>
-                        <option value="Kontrol Jam Tidur">Kontrol Jam Tidur</option>
-                    </select>
+        <div class="container" style="padding-top: 0;">
+            <!-- View Khusus Musyrif -->
+            <div id="view-musyrif" class="hidden">
+                <div class="card">
+                    <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--primary);">📝 Isi Presensi</h3>
+                    <div class="input-group">
+                        <label>Jenis Kegiatan</label>
+                        <select id="f-kegiatan">
+                            <option>Membangunkan Subuh</option>
+                            <option>Imam Sholat/Kultum</option>
+                            <option>Gobraki Sekolah</option>
+                            <option>Pendampingan Belajar</option>
+                            <option>Kontrol Jam Tidur</option>
+                            <option>Kegiatan Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Ambil Foto Bukti</label>
+                        <input type="file" id="f-foto" accept="image/*" capture="camera">
+                    </div>
+                    <button id="btn-submit" class="btn btn-primary" onclick="submitPresensi()">KIRIM DATA</button>
                 </div>
-                <div class="form-group">
-                    <label>Ambil Foto Selfie</label>
-                    <input type="file" id="abs-file" accept="image/*" capture="user">
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-val" id="m-total">0</div>
+                        <div class="stat-label">Total Absen</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-val" id="m-today">0</div>
+                        <div class="stat-label">Hari Ini</div>
+                    </div>
                 </div>
-                <button id="btn-absen" class="btn btn-primary" onclick="kirimAbsen()">Kirim Absensi</button>
+
+                <div class="card" style="padding: 10px;">
+                    <h4 style="margin: 10px; font-size: 0.9rem;">Riwayat Terbaru</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
+                            <tbody id="m-table"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card"><div class="val" id="stat-total-me">0</div><div class="label">Total Absen</div></div>
-                <div class="stat-card"><div class="val" id="stat-today-me">0</div><div class="label">Hari Ini</div></div>
-            </div>
+            <!-- View Dashboard Admin -->
+            <div id="view-admin" class="hidden">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-val" id="a-total">0</div><div class="stat-label">Total Data</div></div>
+                    <div class="stat-card"><div class="stat-val" id="a-today">0</div><div class="stat-label">Masuk Hari Ini</div></div>
+                </div>
 
-            <div class="card">
-                <div class="card-header"><h2>Riwayat Saya</h2></div>
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                        <tbody id="table-me"></tbody>
-                    </table>
+                <div class="card" style="padding: 10px;">
+                    <div style="display:flex; gap:10px; margin-bottom:15px; padding:5px;">
+                        <button class="btn btn-admin" style="font-size:0.8rem; padding:10px;" onclick="generateReport()">📥 PDF LAPORAN</button>
+                        <button class="btn" style="background:#25d366; color:white; font-size:0.8rem; padding:10px;" onclick="sendWAReminder()">🔔 WA REMINDER</button>
+                    </div>
+                    
+                    <div class="input-group" style="padding:0 5px;">
+                        <input type="text" id="admin-search" placeholder="Cari nama musyrif..." onkeyup="renderAdmin()">
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Nama/Waktu</th><th>Asrama</th><th>Foto</th><th>Aksi</th></tr></thead>
+                            <tbody id="a-table"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- View Admin -->
-        <div id="admin-view" style="display: none;">
-            <div class="stats-grid">
-                <div class="stat-card"><div class="val" id="adm-total">0</div><div class="label">Total Data</div></div>
-                <div class="stat-card"><div class="val" id="adm-today">0</div><div class="label">Hari Ini</div></div>
-                <div class="stat-card"><div class="val" id="adm-musyrif">0</div><div class="label">Musyrif Aktif</div></div>
-                <div class="stat-card"><div class="val" id="adm-last">--:--</div><div class="label">Update Terakhir</div></div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2>⚙️ Kontrol & Filter</h2>
-                </div>
-                <div class="admin-controls">
-                    <select id="filt-asrama" onchange="renderAdmin()">
-                        <option value="Semua">Semua Asrama</option>
-                        <option value="Al Hakim">Al Hakim</option>
-                        <option value="Al Fattah">Al Fattah</option>
-                        <option value="Al Karim">Al Karim</option>
-                    </select>
-                    <input type="text" id="filt-cari" placeholder="Cari nama musyrif..." onkeyup="renderAdmin()">
-                    <button class="btn btn-primary" onclick="downloadPDF()" style="padding: 10px;">📄 Cetak Laporan</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header"><h2>Daftar Kehadiran Realtime</h2></div>
-                <div class="table-container">
-                    <table id="full-table">
-                        <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kegiatan</th><th>Foto</th><th>Aksi</th></tr></thead>
-                        <tbody id="table-admin"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Image -->
-    <div id="img-modal" onclick="this.style.display='none'">
-        <img id="modal-content" src="">
-        <p style="color:white; margin-top:15px; font-weight:bold;">Klik di mana saja untuk menutup</p>
     </div>
 
     <script>
-        const DATABASE_MUSYRIF = {
+        const DATA_MUSYRIF = {
             "Al Hakim": ["Ali Mashuri", "Ali Zahid", "Reva Dwi", "Imam Syafi'i"],
             "Al Fattah": ["Fattahilah", "Brian Adi Waskito", "Babil Yasar", "Fahmi", "Wawan Febi"],
             "Al Karim": ["Bima Julian", "Irfan Khoirul Aziz", "Rizki Alfian"]
@@ -278,223 +270,186 @@
         let userSession = null;
         let masterData = [];
 
-        function setRole(r) {
-            document.getElementById('tab-m').className = r==='musyrif'?'tab-btn active':'tab-btn';
-            document.getElementById('tab-a').className = r==='admin'?'tab-btn active':'tab-btn';
-            document.getElementById('form-musyrif').style.display = r==='musyrif'?'block':'none';
-            document.getElementById('form-admin').style.display = r==='admin'?'block':'none';
+        function switchLogin(mode) {
+            document.getElementById('tab-m').className = mode === 'm' ? 'tab active' : 'tab';
+            document.getElementById('tab-a').className = mode === 'a' ? 'tab active' : 'tab';
+            document.getElementById('form-musyrif').classList.toggle('hidden', mode !== 'm');
+            document.getElementById('form-admin').classList.toggle('hidden', mode !== 'a');
         }
 
-        function updateNames() {
+        function loadNames() {
             const asrama = document.getElementById('login-asrama').value;
             const sel = document.getElementById('login-nama');
             sel.innerHTML = '<option value="">-- Pilih Nama --</option>';
-            if(asrama) {
+            if (asrama) {
                 sel.disabled = false;
-                DATABASE_MUSYRIF[asrama].forEach(n => sel.innerHTML += `<option value="${n}">${n}</option>`);
+                DATA_MUSYRIF[asrama].forEach(n => sel.innerHTML += `<option>${n}</option>`);
             } else { sel.disabled = true; }
         }
 
-        function login() {
-            const a = document.getElementById('login-asrama').value;
-            const n = document.getElementById('login-nama').value;
-            const p = document.getElementById('login-pass').value;
-            if(!a || !n || !p) return notify("Lengkapi data!");
-            if(p !== "musyrif123") return notify("Password salah!");
-            
-            userSession = { role: 'musyrif', name: n, asrama: a };
-            initDashboard();
-        }
-
-        function loginAdmin() {
-            if(document.getElementById('login-pin').value === "1234") {
-                userSession = { role: 'admin', name: 'Administrator' };
-                initDashboard();
-            } else { notify("PIN Salah!"); }
-        }
-
-        function initDashboard() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            document.getElementById('header-name').textContent = userSession.name;
-            document.getElementById('header-info').textContent = userSession.role === 'admin' ? 'Akses Administrator Penuh' : `Asrama ${userSession.asrama}`;
-            
-            if(userSession.role === 'admin') {
-                document.getElementById('admin-view').style.display = 'block';
-                document.getElementById('musyrif-view').style.display = 'none';
+        function login(type) {
+            if (type === 'musyrif') {
+                const asrama = document.getElementById('login-asrama').value;
+                const nama = document.getElementById('login-nama').value;
+                if (!nama) return showToast("Pilih nama Anda!");
+                userSession = { type: 'musyrif', name: nama, group: asrama };
+            } else {
+                const pin = document.getElementById('login-pin').value;
+                if (pin !== "1234") return showToast("PIN Admin Salah!");
+                userSession = { type: 'admin', name: 'Administrator', group: 'Pusat' };
             }
 
-            window.pendingSync = syncData;
+            document.getElementById('page-login').classList.add('hidden');
+            document.getElementById('page-main').classList.remove('hidden');
+            document.getElementById('user-display').textContent = userSession.name;
+            document.getElementById('asrama-display').textContent = userSession.group;
+
+            if (userSession.type === 'admin') document.getElementById('view-admin').classList.remove('hidden');
+            else document.getElementById('view-musyrif').classList.remove('hidden');
+
+            window.startDataSync = syncData;
             syncData();
         }
 
         function syncData() {
-            if(!window.currentUser) return;
-            document.getElementById('loading-overlay').style.display = 'flex';
+            // Guard: Memastikan auth selesai sebelum query
+            if (!window.fb || !window.userRef) return;
             
-            const colRef = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'absensi_musyrif');
-            window.onSnapshot(colRef, (snap) => {
+            const col = window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'absensi');
+            
+            // Listener real-time dengan penanganan error
+            window.fb.onSnapshot(col, (snap) => {
                 masterData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                // Urutkan data berdasarkan waktu terbaru (sort in-memory)
                 masterData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
                 
-                if(userSession.role === 'admin') renderAdmin();
+                if (userSession.type === 'admin') renderAdmin();
                 else renderMusyrif();
-                
-                document.getElementById('loading-overlay').style.display = 'none';
             }, (err) => {
-                console.error(err);
-                notify("Gagal memuat data cloud.");
-                document.getElementById('loading-overlay').style.display = 'none';
+                console.error("Sinkronisasi gagal:", err.message);
+                showToast("Koneksi database terganggu.");
             });
         }
 
-        function renderMusyrif() {
-            const mine = masterData.filter(d => d.nama === userSession.name);
-            document.getElementById('stat-total-me').textContent = mine.length;
-            document.getElementById('stat-today-me').textContent = mine.filter(d => new Date(d.timestamp).toDateString() === new Date().toDateString()).length;
-            
-            const tbody = document.getElementById('table-me');
-            tbody.innerHTML = mine.slice(0,15).map(d => `
-                <tr>
-                    <td>${new Date(d.timestamp).toLocaleTimeString('id-ID')}</td>
-                    <td>${d.kegiatan}</td>
-                    <td><img src="${d.foto}" class="img-thumb" onclick="openImg('${d.foto}')"></td>
-                </tr>
-            `).join('');
-        }
+        async function submitPresensi() {
+            const file = document.getElementById('f-foto').files[0];
+            if (!file) return showToast("Harap lampirkan foto bukti!");
 
-        function renderAdmin() {
-            const asrama = document.getElementById('filt-asrama').value;
-            const cari = document.getElementById('filt-cari').value.toLowerCase();
-            
-            let filtered = masterData;
-            if(asrama !== 'Semua') filtered = filtered.filter(d => d.asrama === asrama);
-            if(cari) filtered = filtered.filter(d => d.nama.toLowerCase().includes(cari));
-
-            document.getElementById('adm-total').textContent = masterData.length;
-            document.getElementById('adm-today').textContent = masterData.filter(d => new Date(d.timestamp).toDateString() === new Date().toDateString()).length;
-            document.getElementById('adm-musyrif').textContent = [...new Set(masterData.map(d => d.nama))].length;
-            if(masterData[0]) document.getElementById('adm-last').textContent = new Date(masterData[0].timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
-            const tbody = document.getElementById('table-admin');
-            tbody.innerHTML = filtered.map(d => `
-                <tr>
-                    <td>${new Date(d.timestamp).toLocaleString('id-ID', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'})}</td>
-                    <td><strong>${d.nama}</strong></td>
-                    <td><span class="badge badge-asrama">${d.asrama}</span></td>
-                    <td>${d.kegiatan}</td>
-                    <td><img src="${d.foto}" class="img-thumb" onclick="openImg('${d.foto}')"></td>
-                    <td><button onclick="hapusData('${d.id}')" style="color:red; background:none; border:none; cursor:pointer;">Hapus</button></td>
-                </tr>
-            `).join('');
-        }
-
-        async function kirimAbsen() {
-            const file = document.getElementById('abs-file').files[0];
-            const keg = document.getElementById('abs-kegiatan').value;
-            if(!file) return notify("Ambil foto selfie dulu!");
-
-            const btn = document.getElementById('btn-absen');
+            const btn = document.getElementById('btn-submit');
             btn.disabled = true;
-            btn.textContent = "Mengompres & Mengirim...";
+            btn.textContent = "MENGIRIM...";
 
             try {
-                const base64 = await compress(file);
-                const docData = {
+                if (!window.userRef) throw new Error("Akses ditolak");
+
+                const base64 = await compressImg(file);
+                const payload = {
                     nama: userSession.name,
-                    asrama: userSession.asrama,
-                    kegiatan: keg,
+                    asrama: userSession.group,
+                    kegiatan: document.getElementById('f-kegiatan').value,
                     foto: base64,
                     timestamp: new Date().toISOString()
                 };
 
-                const colRef = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'absensi_musyrif');
-                await window.addDoc(colRef, docData);
+                const col = window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'absensi');
+                await window.fb.addDoc(col, payload);
                 
-                notify("✅ Absensi berhasil terkirim!");
-                document.getElementById('abs-file').value = "";
+                showToast("✅ Berhasil dikirim!");
+                document.getElementById('f-foto').value = "";
             } catch (e) {
-                notify("Gagal mengirim data.");
+                console.error("Gagal kirim:", e);
+                showToast("❌ Gagal kirim! Cek koneksi Anda.");
             } finally {
                 btn.disabled = false;
-                btn.textContent = "Kirim Absensi";
+                btn.textContent = "KIRIM DATA";
             }
         }
 
-        function compress(file) {
-            return new Promise(res => {
+        function compressImg(file) {
+            return new Promise((res) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = e => {
+                reader.onload = (e) => {
                     const img = new Image();
                     img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const scale = 600 / img.width;
-                        canvas.width = 600;
-                        canvas.height = img.height * scale;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const size = 500;
+                        let w = img.width, h = img.height;
+                        if (w > h) { h = (h/w)*size; w = size; } else { w = (w/h)*size; h = size; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                         res(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
             });
         }
 
-        async function hapusData(id) {
-            if(!confirm("Hapus permanen data ini?")) return;
+        function renderMusyrif() {
+            const mine = masterData.filter(d => d.nama === userSession.name);
+            const todayStr = new Date().toDateString();
+            const today = mine.filter(d => new Date(d.timestamp).toDateString() === todayStr);
+            
+            document.getElementById('m-total').textContent = mine.length;
+            document.getElementById('m-today').textContent = today.length;
+
+            const html = mine.slice(0, 10).map(d => `
+                <tr>
+                    <td>${new Date(d.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+                    <td><b>${d.kegiatan}</b></td>
+                    <td><img src="${d.foto}" class="img-preview" onclick="window.open(this.src)"></td>
+                </tr>
+            `).join('');
+            document.getElementById('m-table').innerHTML = html || '<tr><td colspan="3" style="text-align:center">Belum ada riwayat</td></tr>';
+        }
+
+        function renderAdmin() {
+            const search = document.getElementById('admin-search').value.toLowerCase();
+            const filtered = masterData.filter(d => d.nama.toLowerCase().includes(search));
+            
+            document.getElementById('a-total').textContent = masterData.length;
+            document.getElementById('a-today').textContent = masterData.filter(d => new Date(d.timestamp).toDateString() === new Date().toDateString()).length;
+
+            const html = filtered.map(d => `
+                <tr>
+                    <td><b>${d.nama}</b><br><small style="color:#888">${new Date(d.timestamp).toLocaleString('id-ID')}</small></td>
+                    <td>${d.asrama}</td>
+                    <td><img src="${d.foto}" class="img-preview" onclick="window.open(this.src)"></td>
+                    <td><button class="btn-danger" onclick="deleteData('${d.id}')">Hapus</button></td>
+                </tr>
+            `).join('');
+            document.getElementById('a-table').innerHTML = html || '<tr><td colspan="4" style="text-align:center">Tidak ada data sesuai</td></tr>';
+        }
+
+        async function deleteData(id) {
+            if (!confirm("Hapus data laporan ini secara permanen?")) return;
             try {
-                const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'absensi_musyrif', id);
-                await window.deleteDoc(docRef);
-                notify("Data terhapus.");
-            } catch (e) { notify("Gagal menghapus."); }
+                const ref = window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'absensi', id);
+                await window.fb.deleteDoc(ref);
+                showToast("🗑️ Berhasil dihapus");
+            } catch (e) { showToast("Gagal menghapus!"); }
         }
 
-        function openImg(src) {
-            document.getElementById('modal-content').src = src;
-            document.getElementById('img-modal').style.display = 'flex';
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            if (t) {
+                t.textContent = m; t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 3000);
+            }
         }
 
-        function downloadPDF() {
+        function generateReport() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
-            doc.setFontSize(18);
-            doc.text("LAPORAN ABSENSI MUSYRIF ONLINE", 105, 15, { align: 'center' });
+            doc.text("REKAPITULASI ABSENSI MUSYRIF", 10, 10);
             doc.setFontSize(10);
-            doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 105, 22, { align: 'center' });
+            doc.text(`Dicetak pada: ${new Date().toLocaleString()}`, 10, 18);
             
-            doc.line(10, 25, 200, 25);
-            
-            let y = 35;
-            doc.setFont(undefined, 'bold');
-            doc.text("Waktu", 10, y);
-            doc.text("Nama Musyrif", 45, y);
-            doc.text("Asrama", 90, y);
-            doc.text("Kegiatan", 130, y);
-            doc.setFont(undefined, 'normal');
-            
-            y += 7;
-            masterData.slice(0,50).forEach(d => {
-                if(y > 280) { doc.addPage(); y = 20; }
-                const t = new Date(d.timestamp).toLocaleString('id-ID', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
-                doc.text(t, 10, y);
-                doc.text(d.nama.substring(0,20), 45, y);
-                doc.text(d.asrama, 90, y);
-                doc.text(d.kegiatan.substring(0,30), 130, y);
+            let y = 30;
+            masterData.forEach((d, i) => {
+                if (y > 280) { doc.addPage(); y = 20; }
+                doc.text(`${i+1}. [${new Date(d.timestamp).toLocaleDateString()}] ${d.nama} (${d.asrama}) - ${d.kegiatan}`, 10, y);
                 y += 8;
             });
-            
-            doc.save(`Laporan_Absensi_${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save("Rekap_Absensi_Musyrif.pdf");
         }
-
-        function notify(m) {
-            const n = document.createElement('div');
-            n.style = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#333; color:white; padding:12px 25px; border-radius:30px; font-size:0.9rem; z-index:100000; box-shadow:0 5px 15px rgba(0,0,0,0.2);";
-            n.textContent = m;
-            document.body.appendChild(n);
-            setTimeout(() => n.remove(), 3000);
-        }
-    </script>
-</body>
-</html>
