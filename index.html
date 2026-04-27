@@ -130,7 +130,7 @@
 
     <div id="loading-overlay" class="loading-overlay">
         <div class="spinner"></div>
-        <p style="margin-top: 15px;">Menyimpan data...</p>
+        <p style="margin-top: 15px;">Memuat data...</p>
     </div>
 
     <div id="main-app">
@@ -148,7 +148,6 @@
                     <button class="btn btn-pdf" onclick="generatePDF()">📄 Laporan PDF Per Asrama</button>
                     <button class="btn btn-pdf" onclick="generateIndividualPDF()">📄 Laporan PDF Per Individu</button>
                     <button class="btn btn-wa" onclick="waReminder()">🔔 Cek & WA</button>
-                    <button class="btn btn-primary" onclick="syncToServer()" id="btn-sync">☁️ Sinkronisasi Server</button>
                 </div>
             </div>
             <div class="stats-grid">
@@ -164,7 +163,7 @@
                 <div style="overflow-x:auto;">
                     <table class="history-table">
                         <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kamar</th><th>Kegiatan</th><th>Foto</th><th>Aksi</th></tr></thead>
-                        <tbody id="admin-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;">Loading data...</td></tr></tbody>
+                        <tbody id="admin-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;">Klik Refresh Data</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -225,7 +224,7 @@
     </div>
 
     <div class="modal" id="p-modal" onclick="this.classList.remove('active')"><img id="p-img"></div>
-    <div class="sync-status" id="sync-status">🟢 Terhubung</div>
+    <div class="sync-status" id="sync-status">🟢 Aplikasi Siap</div>
 
     <script>
         // Konfigurasi
@@ -254,17 +253,18 @@
         let role = null, user = null, data = [], myChart = null, adminChart = null, currentAsrama = null;
         
         function switchTab(t) {
-            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(btn => btn.classList.remove('active'));
             if(t === 'admin') {
-                document.querySelector('.tab-btn:last-child').classList.add('active');
+                tabs[1].classList.add('active');
                 document.getElementById('musyrif-form').style.display = 'none';
                 document.getElementById('admin-form').style.display = 'block';
             } else {
-                document.querySelector('.tab-btn:first-child').classList.add('active');
+                tabs[0].classList.add('active');
                 document.getElementById('musyrif-form').style.display = 'block';
                 document.getElementById('admin-form').style.display = 'none';
             }
-            document.getElementById('login-error').style.display='none';
+            document.getElementById('login-error').style.display = 'none';
         }
 
         function updateMusyrifSelect() {
@@ -273,9 +273,10 @@
             musyrifSelect.innerHTML = '<option value="">-- Pilih Musyrif --</option>';
             if (asrama && MUSYRIF_BY_ASMARA[asrama]) {
                 musyrifSelect.disabled = false;
-                Object.keys(MUSYRIF_BY_ASMARA[asrama].musyrif).forEach(name => {
-                    musyrifSelect.innerHTML += `<option value="${name}">${name}</option>`;
-                });
+                const names = Object.keys(MUSYRIF_BY_ASMARA[asrama].musyrif);
+                for(let i = 0; i < names.length; i++) {
+                    musyrifSelect.innerHTML += '<option value="' + names[i] + '">' + names[i] + '</option>';
+                }
             } else {
                 musyrifSelect.disabled = true;
                 musyrifSelect.innerHTML = '<option value="">-- Pilih Asrama Terlebih Dahulu --</option>';
@@ -285,7 +286,7 @@
         function waForgot() {
             const n = document.getElementById('m-name').value;
             if(!n) return alert('Pilih nama dulu!');
-            window.open(`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(`Halo Admin, saya ${n} lupa password absensi.`)}`);
+            window.open('https://wa.me/' + WA_ADMIN + '?text=' + encodeURIComponent('Halo Admin, saya ' + n + ' lupa password absensi.'));
         }
 
         document.getElementById('musyrif-form').onsubmit = function(e) {
@@ -295,13 +296,18 @@
             const p = document.getElementById('m-pass').value;
             if (MUSYRIF_BY_ASMARA[asrama] && MUSYRIF_BY_ASMARA[asrama].musyrif[n] && MUSYRIF_BY_ASMARA[asrama].musyrif[n].pass === p) {
                 login(n, MUSYRIF_BY_ASMARA[asrama].musyrif[n].rooms.join(', '), 'musyrif', asrama);
-            } else { showError('Nama atau password salah!'); }
+            } else { 
+                showError('Nama atau password salah!'); 
+            }
         };
 
         document.getElementById('admin-form').onsubmit = function(e) {
             e.preventDefault();
-            if(document.getElementById('a-pin').value === ADMIN_PIN) login('Admin', 'Full Access', 'admin', null);
-            else showError('PIN Admin salah!');
+            if(document.getElementById('a-pin').value === ADMIN_PIN) {
+                login('Admin', 'Full Access', 'admin', null);
+            } else { 
+                showError('PIN Admin salah!'); 
+            }
         };
 
         function login(name, room, r, asrama) {
@@ -310,8 +316,8 @@
             currentAsrama = asrama;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            document.getElementById('app-title').textContent = r === 'admin' ? '🛡️ Dashboard Admin' : '📋 Absensi Musyrif';
-            document.getElementById('user-label').textContent = `${name} | ${room} ${asrama ? '| '+MUSYRIF_BY_ASMARA[asrama].name : ''}`;
+            document.getElementById('app-title').innerHTML = r === 'admin' ? '🛡️ Dashboard Admin' : '📋 Absensi Musyrif';
+            document.getElementById('user-label').innerHTML = name + ' | ' + room + (asrama ? ' | ' + MUSYRIF_BY_ASMARA[asrama].name : '');
             if(r === 'admin') {
                 document.getElementById('admin-panel').style.display = 'block';
                 document.getElementById('musyrif-view').style.display = 'none';
@@ -326,7 +332,7 @@
         
         function showError(m) { 
             const e = document.getElementById('login-error'); 
-            e.textContent = m; 
+            e.innerHTML = m; 
             e.style.display = 'block'; 
             setTimeout(function() { e.style.display = 'none'; }, 3000); 
         }
@@ -338,28 +344,31 @@
             const schedGrid = document.getElementById('sched-grid');
             if(!schedGrid) return;
             
-            const filteredJobs = JOBS.filter(function(j) { return j.days.includes(day); });
             let html = '';
-            for(let i = 0; i < filteredJobs.length; i++) {
-                const j = filteredJobs[i];
-                const s = j.tf ? j.tf : j.t;
-                const [sh, sm] = s.split(':').map(Number);
-                const [eh, em] = j.e.split(':').map(Number);
-                const st = sh * 60 + sm;
-                const et = eh * 60 + em;
-                let cls = '';
-                let txt = '';
-                if(nm >= st && nm <= et) {
-                    cls = 'active';
-                    txt = '🟢 Berjalan';
-                } else if(nm > et) {
-                    cls = 'done';
-                    txt = '✅ Selesai';
-                } else {
-                    cls = '';
-                    txt = '⏳ Belum';
+            for(let i = 0; i < JOBS.length; i++) {
+                const j = JOBS[i];
+                if(j.days.includes(day)) {
+                    const s = j.tf ? j.tf : j.t;
+                    const sh = parseInt(s.split(':')[0]);
+                    const sm = parseInt(s.split(':')[1]);
+                    const eh = parseInt(j.e.split(':')[0]);
+                    const em = parseInt(j.e.split(':')[1]);
+                    const st = sh * 60 + sm;
+                    const et = eh * 60 + em;
+                    let cls = '';
+                    let txt = '';
+                    if(nm >= st && nm <= et) {
+                        cls = 'active';
+                        txt = '🟢 Berjalan';
+                    } else if(nm > et) {
+                        cls = 'done';
+                        txt = '✅ Selesai';
+                    } else {
+                        cls = '';
+                        txt = '⏳ Belum';
+                    }
+                    html += '<div class="schedule-item ' + cls + '"><div class="time">' + s + ' - ' + j.e + '</div><div style="margin:4px 0;font-weight:500;">' + j.n + '</div><div style="font-size:0.8rem;color:var(--text-light);">' + txt + '</div></div>';
                 }
-                html += '<div class="schedule-item ' + cls + '"><div class="time">' + s + ' - ' + j.e + '</div><div style="margin:4px 0;font-weight:500;">' + j.n + '</div><div style="font-size:0.8rem;color:var(--text-light);">' + txt + '</div></div>';
             }
             schedGrid.innerHTML = html;
         }
@@ -373,38 +382,54 @@
             
             sel.innerHTML = '<option value="">-- Pilih Kegiatan --</option>';
             
-            const filteredJobs = JOBS.filter(function(j) { return j.days.includes(day); });
-            for(let i = 0; i < filteredJobs.length; i++) {
-                const j = filteredJobs[i];
-                const s = j.tf ? j.tf : j.t;
-                const option = document.createElement('option');
-                option.value = j.n;
-                option.textContent = j.n + ' (' + s + '-' + j.e + ')';
-                if(i === 0) option.selected = true;
-                sel.appendChild(option);
+            for(let i = 0; i < JOBS.length; i++) {
+                const j = JOBS[i];
+                if(j.days.includes(day)) {
+                    const s = j.tf ? j.tf : j.t;
+                    const option = document.createElement('option');
+                    option.value = j.n;
+                    option.textContent = j.n + ' (' + s + '-' + j.e + ')';
+                    if(i === 0) option.selected = true;
+                    sel.appendChild(option);
+                }
             }
             
             if(msg) {
-                msg.textContent = '✅ Pilih kegiatan yang tersedia';
+                msg.innerHTML = '✅ Pilih kegiatan yang tersedia';
                 msg.style.color = 'var(--success)';
             }
         }
 
         function getStats(nm) {
-            const my = data.filter(function(d) { return d && d['Nama Musyrif'] === nm; });
+            const my = [];
+            for(let i = 0; i < data.length; i++) {
+                if(data[i] && data[i]['Nama Musyrif'] === nm) my.push(data[i]);
+            }
             const td = new Date().toDateString();
             const wk = Date.now() - 7 * 86400000;
             const mo = Date.now() - 30 * 86400000;
-            const d = my.some(function(x) { return x && new Date(x.Timestamp).toDateString() === td; }) ? 1 : 0;
-            const w = my.filter(function(x) { return x && new Date(x.Timestamp) >= wk; }).length;
-            const m = my.filter(function(x) { return x && new Date(x.Timestamp) >= mo; }).length;
+            
+            let hasDaily = false;
+            for(let i = 0; i < my.length; i++) {
+                if(new Date(my[i].Timestamp).toDateString() === td) {
+                    hasDaily = true;
+                    break;
+                }
+            }
+            const d = hasDaily ? 1 : 0;
+            
+            let weeklyCount = 0;
+            for(let i = 0; i < my.length; i++) {
+                if(new Date(my[i].Timestamp) >= wk) weeklyCount++;
+            }
+            const w = weeklyCount;
+            
+            let monthlyCount = 0;
+            for(let i = 0; i < my.length; i++) {
+                if(new Date(my[i].Timestamp) >= mo) monthlyCount++;
+            }
+            const m = monthlyCount;
+            
             return { 
                 d: Math.min(100, d * 100), 
-                w: Math.min(100, Math.round(w / 7 * 100)), 
-                m: Math.min(100, Math.round(m / 30 * 100)), 
-                raw: { daily: d, weekly: w, monthly: m } 
-            };
-        }
-
-        function getAssessment(percentage) {
-            if (percentage >= 70)
+                w: Math.min(100, Math
