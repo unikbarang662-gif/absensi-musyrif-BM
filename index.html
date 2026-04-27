@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Absensi Musyrif - Sistem Lengkap</title>
+    <title>Absensi Musyrif - Online Database</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -12,17 +12,14 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; padding: 16px; }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* Login Screen */
         .login-card { max-width: 400px; margin: 60px auto; background: white; border-radius: 24px; padding: 28px 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
         .login-card h2 { text-align: center; color: #2e7d32; margin-bottom: 8px; }
-        .login-card p { text-align: center; color: #666; margin-bottom: 24px; }
         .tab-bar { display: flex; gap: 8px; margin-bottom: 24px; background: #f0f0f0; border-radius: 40px; padding: 4px; }
         .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; font-size: 16px; font-weight: 600; border-radius: 40px; cursor: pointer; color: #666; }
         .tab-btn.active { background: #2e7d32; color: white; }
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 14px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #2e7d32; }
         .btn { width: 100%; padding: 14px; border: none; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; transition: transform 0.2s; }
         .btn:active { transform: scale(0.97); }
         .btn-primary { background: #2e7d32; color: white; }
@@ -32,10 +29,7 @@
         .error-box { background: #ffebee; color: #d32f2f; padding: 12px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: center; }
         .success-box { background: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: center; }
         
-        /* Main App */
         .header { background: linear-gradient(135deg, #2e7d32, #4caf50); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; position: relative; }
-        .header h2 { font-size: 20px; }
-        .header p { font-size: 13px; opacity: 0.9; margin-top: 5px; }
         .logout-btn { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 40px; cursor: pointer; }
         .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .card h3 { color: #2e7d32; font-size: 18px; margin-bottom: 16px; border-left: 4px solid #2e7d32; padding-left: 12px; }
@@ -46,7 +40,6 @@
         .stat-card.orange { background: linear-gradient(135deg, #fb8c00, #ffb74d); }
         .stat-card.red { background: linear-gradient(135deg, #e53935, #ef5350); }
         .stat-card .val { font-size: 28px; font-weight: bold; }
-        .stat-card .label { font-size: 12px; opacity: 0.9; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-group .btn { flex: 1; margin-bottom: 0; }
         .perf-list { display: flex; flex-direction: column; gap: 10px; }
@@ -61,7 +54,7 @@
         .schedule-item .name { font-weight: 600; font-size: 14px; margin-top: 5px; }
         .chart-container { height: 250px; margin-bottom: 15px; }
         .stats-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-        .stat-box { background: white; padding: 12px; border-radius: 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-box { background: #f5f5f5; padding: 12px; border-radius: 12px; text-align: center; }
         .stat-box .value { font-size: 22px; font-weight: bold; color: #2e7d32; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; }
@@ -71,23 +64,27 @@
         .modal.active { display: flex; }
         .modal img { max-width: 90%; max-height: 90%; border-radius: 12px; }
         .admin-section { display: none; }
-        .sync-status { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; z-index: 100; }
-        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; gap: 15px; color: white; }
         .loading.active { display: flex; }
         .spinner { width: 50px; height: 50px; border: 5px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .btn-group { flex-direction: column; } }
+        .text-center { text-align: center; }
+        .sync-status { position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; z-index: 100; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading"><div class="spinner"></div></div>
+<div id="loading" class="loading">
+    <div class="spinner"></div>
+    <div id="loadingText">Memuat data...</div>
+</div>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen">
     <div class="login-card">
         <h2>📋 Absensi Musyrif</h2>
-        <p>Sistem Absensi Digital Online</p>
+        <p>Sistem Absensi Online</p>
         
         <div class="tab-bar">
             <button class="tab-btn active" onclick="switchTab('musyrif')">👤 Musyrif</button>
@@ -117,7 +114,7 @@
                 <input type="password" id="loginPass" placeholder="Masukkan password" required>
             </div>
             <button type="submit" class="btn btn-primary">🔐 Masuk</button>
-            <button type="button" class="btn btn-wa" onclick="lupaPassword()">💬 Lupa Password? Hubungi Admin</button>
+            <button type="button" class="btn btn-wa" onclick="lupaPassword()">💬 Lupa Password?</button>
         </form>
         
         <form id="formAdmin" style="display:none;">
@@ -171,9 +168,9 @@
             <div class="card">
                 <h3>📜 Semua Data Absensi</h3>
                 <div style="overflow-x: auto;">
-                    <table class="history-table">
+                    <table style="width:100%">
                         <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kamar</th><th>Kegiatan</th><th>Foto</th><th>Aksi</th></tr></thead>
-                        <tbody id="adminTableBody"><tr><td colspan="7" style="text-align:center;">Loading...</td></tr></tbody>
+                        <tbody id="adminTableBody"><tr><td colspan="7" class="text-center">Loading...</td></tr>
                     </table>
                 </div>
             </div>
@@ -221,9 +218,9 @@
             <div class="card">
                 <h3>📜 Riwayat Absensi Saya</h3>
                 <div style="overflow-x: auto;">
-                    <table class="history-table">
+                    <table style="width:100%">
                         <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                        <tbody id="riwayatBody"><tr><td colspan="3">Belum ada data</td></tr>
+                        <tbody id="riwayatBody"><tr><td colspan="3" class="text-center">Belum ada data</td></tr>
                     </table>
                 </div>
             </div>
@@ -236,17 +233,17 @@
     <img id="modalImg" src="">
 </div>
 
-<div class="sync-status" id="syncStatus">🟢 Online</div>
+<div class="sync-status" id="syncStatus">🟡 Menghubungkan...</div>
 
 <script>
     // ==================== KONFIGURASI ====================
-    // Google Sheets Web App URL (backend untuk menyimpan data online)
-    const API_URL = "https://script.google.com/macros/s/AKfycbxw54GCCIzsYVmlMw7Fz6XOvZZ0lpuhaA_hkhfKzu5DIb6rKozM-hMnKH4o5ZkP645Z/exec";
+    // GANTI URL INI DENGAN LINK DEPLOY ANDA DARI apps-script.google.com
+    const API_URL = "https://script.google.com/macros/s/AKfycbwWxIuZzWqF_m1Ff_JMTj24bODqKf2g_9oP9f8Yo5FWnA4g4NSU7sEk_2crZ4aF14eM/exec";
     const ADMIN_PIN = "1234";
     const WA_ADMIN = "6285893588373";
-    const STORAGE_KEY = "absensi_data_online";
+    const STORAGE_KEY = "absensi_cache";
     
-    // DATA MUSYRIF
+    // DATA MUSYRIF LENGKAP
     const MUSYRIF_DATA = {
         "al-hakim": {
             nama: "Asrama Al Hakim",
@@ -279,14 +276,14 @@
     
     // JADWAL KEGIATAN
     const JADWAL = [
-        { nama: "Membangunkan Santri", jam: "03:30-04:15", days: [0,1,2,3,4,5,6] },
-        { nama: "Pengajian Ba'da Subuh", jam: "05:00-05:45", days: [0,1,2,3,4,5,6] },
-        { nama: "Menggobraki Berangkat Sekolah", jam: "06:30-07:00", days: [0,1,2,3,4,5,6] },
-        { nama: "Piket Kamar & Persiapan Maghrib", jam: "16:30-17:30", days: [0,1,2,3,4,5,6] },
-        { nama: "Pendampingan Dalail (Kamis Malam)", jam: "18:00-19:30", days: [4] },
-        { nama: "Pendampingan Tawasulan (Malam Jumat)", jam: "21:00-23:30", days: [4] },
-        { nama: "Pendampingan Jam Muthola'ah", jam: "19:30-20:30", days: [0,2,3,6] },
-        { nama: "Menertibkan Jam Tidur", jam: "21:30-22:00", days: [0,1,2,3,4,5,6] }
+        { nama: "Membangunkan Santri", jam: "03:30-04:15" },
+        { nama: "Pengajian Ba'da Subuh", jam: "05:00-05:45" },
+        { nama: "Menggobraki Berangkat Sekolah", jam: "06:30-07:00" },
+        { nama: "Piket Kamar & Persiapan Maghrib", jam: "16:30-17:30" },
+        { nama: "Pendampingan Dalail", jam: "18:00-19:30" },
+        { nama: "Pendampingan Tawasulan", jam: "21:00-23:30" },
+        { nama: "Pendampingan Jam Muthola'ah", jam: "19:30-20:30" },
+        { nama: "Menertibkan Jam Tidur", jam: "21:30-22:00" }
     ];
     
     // VARIABEL GLOBAL
@@ -296,6 +293,53 @@
     let allData = [];
     let myChart = null;
     let adminChart = null;
+    
+    // ==================== FUNGSI API ONLINE ====================
+    async function fetchDataFromServer() {
+        try {
+            document.getElementById('syncStatus').innerHTML = "🟡 Mengambil data...";
+            const response = await fetch(API_URL + "?action=get");
+            if (response.ok) {
+                const data = await response.json();
+                if (data && Array.isArray(data)) {
+                    allData = data;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
+                    document.getElementById('syncStatus').innerHTML = "🟢 Online";
+                    document.getElementById('syncStatus').style.background = "rgba(0,0,0,0.6)";
+                    return true;
+                }
+            }
+            throw new Error("Gagal fetch");
+        } catch(e) {
+            console.log("Gagal koneksi server, pakai cache:", e);
+            const cached = localStorage.getItem(STORAGE_KEY);
+            if (cached) {
+                allData = JSON.parse(cached);
+                document.getElementById('syncStatus').innerHTML = "🟠 Offline (cache)";
+                document.getElementById('syncStatus').style.background = "rgba(255,100,0,0.8)";
+            } else {
+                allData = [];
+                document.getElementById('syncStatus').innerHTML = "🔴 No data";
+            }
+            return false;
+        }
+    }
+    
+    async function saveDataToServer(dataBaru) {
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataBaru)
+            });
+            console.log("Data dikirim ke server");
+            return true;
+        } catch(e) {
+            console.log("Gagal kirim ke server:", e);
+            return false;
+        }
+    }
     
     // ==================== FUNGSI LOGIN ====================
     function switchTab(tab) {
@@ -313,7 +357,6 @@
         document.getElementById('loginError').style.display = 'none';
     }
     
-    // Update dropdown nama
     document.getElementById('loginAsrama').addEventListener('change', function() {
         const asrama = this.value;
         const namaSelect = document.getElementById('loginNama');
@@ -329,7 +372,6 @@
         }
     });
     
-    // Login Musyrif
     document.getElementById('formMusyrif').addEventListener('submit', async function(e) {
         e.preventDefault();
         const asrama = document.getElementById('loginAsrama').value;
@@ -346,7 +388,6 @@
         }
     });
     
-    // Login Admin
     document.getElementById('formAdmin').addEventListener('submit', async function(e) {
         e.preventDefault();
         const pin = document.getElementById('adminPin').value;
@@ -367,11 +408,11 @@
     }
     
     function showToast(msg, isError = false) {
-        const div = document.createElement('div');
-        div.textContent = msg;
-        div.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${isError ? '#d32f2f' : '#2e7d32'}; color:white; padding:10px 20px; border-radius:30px; z-index:2000; font-size:14px;`;
-        document.body.appendChild(div);
-        setTimeout(() => div.remove(), 3000);
+        const toast = document.createElement('div');
+        toast.textContent = msg;
+        toast.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${isError ? '#d32f2f' : '#2e7d32'}; color:white; padding:10px 20px; border-radius:30px; z-index:2000; font-size:14px;`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
     
     function lupaPassword() {
@@ -383,54 +424,11 @@
         window.open(`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(`Halo Admin, saya ${nama} lupa password. Tolong bantu reset.`)}`);
     }
     
-    // ==================== FUNGSI DATA ONLINE ====================
-    async function loadDataFromServer() {
-        try {
-            document.getElementById('syncStatus').innerHTML = "🟡 Loading...";
-            const response = await fetch(API_URL + "?action=get");
-            if (response.ok) {
-                const data = await response.json();
-                if (Array.isArray(data)) {
-                    allData = data;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
-                    document.getElementById('syncStatus').innerHTML = "🟢 Online";
-                    return true;
-                }
-            }
-            throw new Error("Gagal load dari server");
-        } catch(e) {
-            console.log("Gagal load dari server, pakai cache lokal");
-            const cached = localStorage.getItem(STORAGE_KEY);
-            if (cached) {
-                allData = JSON.parse(cached);
-            } else {
-                allData = [];
-            }
-            document.getElementById('syncStatus').innerHTML = "🟡 Offline (cache)";
-            return false;
-        }
-    }
-    
-    async function saveDataToServer(dataBaru) {
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataBaru)
-            });
-            return true;
-        } catch(e) {
-            console.log("Simpan ke server gagal, simpan ke cache");
-            return false;
-        }
-    }
-    
     async function startApp() {
         document.getElementById('loading').classList.add('active');
+        document.getElementById('loadingText').innerHTML = "Mengambil data dari server...";
         
-        // Load data dari server
-        await loadDataFromServer();
+        await fetchDataFromServer();
         
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
@@ -438,7 +436,6 @@
         if (currentRole === "admin") {
             document.getElementById('appTitle').innerHTML = "🛡️ Dashboard Admin";
             document.getElementById('userInfo').innerHTML = "Administrator | Akses Penuh";
-            document.getElementById('adminPanel').classList.add('admin-section');
             document.getElementById('adminPanel').style.display = 'block';
             document.getElementById('musyrifPanel').style.display = 'none';
             renderAdmin();
@@ -507,11 +504,11 @@
                 `;
             }
         }
-        document.getElementById('performaList').innerHTML = htmlPerforma || "<p>Loading...</p>";
+        document.getElementById('performaList').innerHTML = htmlPerforma || "<p class='text-center'>Belum ada data</p>";
         
         // Tabel Admin
         if (allData.length === 0) {
-            document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data</td></tr>';
+            document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="7" class="text-center">Belum ada data absensi</td></tr>';
         } else {
             let htmlTable = "";
             const sorted = [...allData].reverse();
@@ -570,7 +567,8 @@
     
     async function loadData() {
         document.getElementById('loading').classList.add('active');
-        await loadDataFromServer();
+        document.getElementById('loadingText').innerHTML = "Menyegarkan data...";
+        await fetchDataFromServer();
         if (currentRole === "admin") {
             renderAdmin();
         } else {
@@ -600,4 +598,20 @@
         } else {
             window.open(`https://wa.me/?text=${encodeURIComponent(`*PENGINGAT ABSENSI*\n\nBelum absen hari ini:\n${belum.join('\n')}\n\nSegera lakukan absensi!`)}`);
         }
-   
+    }
+    
+    // ==================== RENDER MUSYRIF ====================
+    function renderJadwal() {
+        let html = "";
+        for (let i = 0; i < JADWAL.length; i++) {
+            html += `
+                <div class="schedule-item">
+                    <div class="time">⏰ ${JADWAL[i].jam}</div>
+                    <div class="name">${JADWAL[i].nama}</div>
+                </div>
+            `;
+        }
+        document.getElementById('jadwalList').innerHTML = html;
+    }
+    
+    function
