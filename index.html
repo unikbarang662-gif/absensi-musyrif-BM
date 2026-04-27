@@ -2,289 +2,135 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Absensi Musyrif - Sistem Absensi Digital</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Musyrif</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #e8f5e9;
-            min-height: 100vh;
-            padding: 16px;
+            font-family: Arial, sans-serif;
+            background: #e0f2e0;
+            padding: 15px;
         }
-        
-        /* Login Screen */
-        .login-card {
-            max-width: 400px;
-            margin: 60px auto;
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .card {
             background: white;
-            border-radius: 24px;
-            padding: 28px 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
-        .login-card h2 {
-            text-align: center;
+        .card h2 {
             color: #2e7d32;
-            font-size: 26px;
-            margin-bottom: 8px;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2e7d32;
+            padding-left: 10px;
         }
-        
-        .login-card p {
-            text-align: center;
-            color: #666;
-            margin-bottom: 24px;
-        }
-        
-        .tab-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            background: #f0f0f0;
-            border-radius: 40px;
-            padding: 4px;
-        }
-        
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #666;
-        }
-        
-        .tab-btn.active {
-            background: #2e7d32;
-            color: white;
-            box-shadow: 0 2px 8px rgba(46,125,50,0.3);
-        }
-        
         .form-group {
-            margin-bottom: 18px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-        
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 15px;
-            transition: all 0.3s;
-        }
-        
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #2e7d32;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 40px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
             margin-bottom: 12px;
         }
-        
-        .btn:active {
-            transform: scale(0.97);
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 13px;
         }
-        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
         .btn-primary {
             background: #2e7d32;
             color: white;
         }
-        
         .btn-wa {
             background: #25D366;
             color: white;
         }
-        
         .btn-danger {
             background: #d32f2f;
             color: white;
         }
-        
-        .btn-outline {
-            background: white;
-            color: #2e7d32;
-            border: 2px solid #2e7d32;
-        }
-        
-        .error-box {
+        .error {
             background: #ffebee;
             color: #d32f2f;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
             display: none;
             text-align: center;
-            font-size: 14px;
-        }
-        
-        /* Main App */
-        .app-container {
-            max-width: 900px;
-            margin: 0 auto;
-            display: none;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #2e7d32, #4caf50);
-            color: white;
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .header h2 {
-            font-size: 20px;
-            margin-bottom: 6px;
-        }
-        
-        .header p {
-            font-size: 13px;
-            opacity: 0.9;
-        }
-        
-        .logout-btn {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 40px;
-            cursor: pointer;
             font-size: 13px;
         }
-        
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
-        
-        .card h3 {
+        .success {
+            background: #e8f5e9;
             color: #2e7d32;
-            font-size: 18px;
-            margin-bottom: 16px;
-            border-left: 4px solid #2e7d32;
-            padding-left: 12px;
-        }
-        
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-item {
-            background: linear-gradient(135deg, #43a047, #2e7d32);
-            color: white;
-            padding: 16px;
-            border-radius: 16px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
             text-align: center;
+            font-size: 13px;
         }
-        
-        .stat-item .label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-bottom: 6px;
-        }
-        
-        .stat-item .value {
-            font-size: 28px;
-            font-weight: bold;
-        }
-        
-        .btn-group {
+        .stats {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
+            margin-bottom: 15px;
         }
-        
-        .btn-group .btn {
+        .stat-box {
             flex: 1;
-            margin-bottom: 0;
-        }
-        
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-        }
-        
-        .schedule-item {
-            background: #f9f9f9;
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            color: white;
             padding: 12px;
-            border-radius: 12px;
-            border-left: 3px solid #2e7d32;
+            border-radius: 10px;
+            text-align: center;
         }
-        
-        .schedule-item .time {
-            font-size: 11px;
-            color: #2e7d32;
+        .stat-box .angka {
+            font-size: 22px;
             font-weight: bold;
-            margin-bottom: 4px;
         }
-        
-        .schedule-item .name {
-            font-weight: 600;
-            font-size: 14px;
+        .stat-box .label {
+            font-size: 11px;
         }
-        
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12px;
         }
-        
         th, td {
-            padding: 10px 8px;
+            padding: 8px 5px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #ddd;
         }
-        
         th {
             background: #f5f5f5;
-            font-weight: 600;
         }
-        
-        .photo-thumb {
-            width: 36px;
-            height: 36px;
+        .foto-thumb {
+            width: 35px;
+            height: 35px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
         }
-        
         .modal {
             display: none;
             position: fixed;
@@ -297,373 +143,356 @@
             justify-content: center;
             align-items: center;
         }
-        
-        .modal.active {
-            display: flex;
-        }
-        
         .modal img {
             max-width: 90%;
             max-height: 90%;
-            border-radius: 12px;
         }
-        
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+        .modal.active {
+            display: flex;
+        }
+        .header {
+            background: #2e7d32;
             color: white;
-            font-size: 30px;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
             cursor: pointer;
         }
-        
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 40px;
-            font-size: 14px;
-            z-index: 1100;
-            display: none;
+        .tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
         }
-        
-        @media (max-width: 550px) {
-            body { padding: 12px; }
-            .stats-row { gap: 8px; }
-            .stat-item .value { font-size: 22px; }
-            .btn-group { flex-direction: column; }
-            .btn-group .btn { width: 100%; }
-            table { font-size: 11px; }
-            th, td { padding: 6px 4px; }
-        }
-        
-        .text-center { text-align: center; }
-        .mt-2 { margin-top: 8px; }
-        .mb-2 { margin-bottom: 8px; }
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: #ddd;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: bold;
         }
-        .badge-success { background: #4caf50; color: white; }
-        .badge-warning { background: #ff9800; color: white; }
-        .badge-danger { background: #f44336; color: white; }
+        .tab.active {
+            background: #2e7d32;
+            color: white;
+        }
+        .hidden {
+            display: none;
+        }
+        .jadwal-item {
+            background: #f9f9f9;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #2e7d32;
+            font-size: 13px;
+        }
+        @media (max-width: 500px) {
+            body { padding: 10px; }
+            .stats { gap: 5px; }
+            .stat-box { padding: 8px; }
+        }
     </style>
 </head>
 <body>
-
-<!-- LOGIN SCREEN -->
-<div id="loginScreen">
-    <div class="login-card">
-        <h2>📋 Absensi Musyrif</h2>
-        <p>Sistem Absensi Digital</p>
-        
-        <div class="tab-bar">
-            <button class="tab-btn active" onclick="showTab('musyrif')">👤 Musyrif</button>
-            <button class="tab-btn" onclick="showTab('admin')">🛡️ Admin</button>
-        </div>
-        
-        <div id="loginError" class="error-box"></div>
-        
-        <!-- Form Musyrif -->
-        <form id="formMusyrif">
-            <div class="form-group">
-                <label>🏢 Asrama</label>
-                <select id="selectAsrama" required>
-                    <option value="">-- Pilih Asrama --</option>
-                    <option value="al-hakim">Asrama Al Hakim</option>
-                    <option value="al-fattah">Asrama Al Fattah</option>
-                    <option value="al-karim">Asrama Al Karim</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>👤 Nama Musyrif</label>
-                <select id="selectMusyrif" required disabled>
-                    <option value="">-- Pilih Asrama dulu --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>🔒 Password</label>
-                <input type="password" id="inputPassword" placeholder="Masukkan password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">🔐 Masuk</button>
-            <button type="button" class="btn btn-wa" onclick="lupaPassword()">💬 Lupa Password? Hubungi Admin</button>
-        </form>
-        
-        <!-- Form Admin -->
-        <form id="formAdmin" style="display:none;">
-            <div class="form-group">
-                <label>🔑 PIN Admin</label>
-                <input type="password" id="inputPin" placeholder="Masukkan PIN Admin" required>
-            </div>
-            <button type="submit" class="btn btn-primary">🛡️ Masuk sebagai Admin</button>
-        </form>
-    </div>
-</div>
-
-<!-- MAIN APP -->
-<div id="mainApp" class="app-container">
-    <div class="header">
-        <h2 id="appTitle">Dashboard</h2>
-        <p id="userInfo">-</p>
-        <button class="logout-btn" onclick="logout()">Keluar</button>
-    </div>
-    
-    <!-- ADMIN PANEL -->
-    <div id="adminPanel">
+<div class="container" id="app">
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
         <div class="card">
-            <h3>⚙️ Panel Kontrol</h3>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh Data</button>
-                <button class="btn btn-wa" onclick="kirimPengingatWA()">📱 Kirim Pengingat WA</button>
+            <h2 style="text-align:center; border-left:none;">📋 ABSENSI MUSYRIF</h2>
+            <div class="tab-bar">
+                <button class="tab active" onclick="pilihTab('musyrif')">MUSYRIF</button>
+                <button class="tab" onclick="pilihTab('admin')">ADMIN</button>
             </div>
-        </div>
-        
-        <div class="stats-row">
-            <div class="stat-item"><div class="label">📅 Hari Ini</div><div class="value" id="statHari">0</div></div>
-            <div class="stat-item"><div class="label">📆 Minggu Ini</div><div class="value" id="statMinggu">0</div></div>
-            <div class="stat-item"><div class="label">📊 Bulan Ini</div><div class="value" id="statBulan">0</div></div>
-        </div>
-        
-        <div class="card">
-            <h3>📋 Daftar Performa Musyrif (Minggu Ini)</h3>
-            <div id="performaList" style="margin-top: 12px;">Loading...</div>
-        </div>
-        
-        <div class="card">
-            <h3>📜 Semua Data Absensi</h3>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kegiatan</th><th>Foto</th><th>Aksi</th></tr>
-                    </thead>
-                    <tbody id="adminTableBody"><tr><td colspan="6" class="text-center">Memuat data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <!-- MUSYRIF PANEL -->
-    <div id="musyrifPanel" style="display:none;">
-        <div class="stats-row">
-            <div class="stat-item"><div class="label">⭐ Harian</div><div class="value" id="myHarian">0%</div></div>
-            <div class="stat-item"><div class="label">⭐ Mingguan</div><div class="value" id="myMingguan">0%</div></div>
-            <div class="stat-item"><div class="label">⭐ Bulanan</div><div class="value" id="myBulanan">0%</div></div>
-        </div>
-        
-        <div class="card">
-            <h3>📅 Jadwal Kegiatan Hari Ini</h3>
-            <div id="jadwalContainer" class="schedule-grid">Loading...</div>
-        </div>
-        
-        <div class="card">
-            <h3>📝 Form Absensi</h3>
-            <form id="absensiForm">
+            <div id="loginError" class="error"></div>
+            
+            <!-- Form Musyrif -->
+            <form id="formMusyrif">
                 <div class="form-group">
-                    <label>📌 Pilih Kegiatan</label>
-                    <select id="kegiatanSelect" required>
-                        <option value="">-- Pilih Kegiatan --</option>
+                    <label>ASRAMA</label>
+                    <select id="loginAsrama" required>
+                        <option value="">-- Pilih Asrama --</option>
+                        <option value="al-hakim">Asrama Al Hakim</option>
+                        <option value="al-fattah">Asrama Al Fattah</option>
+                        <option value="al-karim">Asrama Al Karim</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>📸 Foto Selfie / Dokumentasi</label>
-                    <input type="file" id="fotoInput" accept="image/*" capture="user" required>
-                    <small style="color:#666;">Gunakan kamera depan untuk selfie</small>
+                    <label>NAMA MUSYRIF</label>
+                    <select id="loginNama" required disabled>
+                        <option value="">-- Pilih Asrama dulu --</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label>📝 Catatan (Opsional)</label>
-                    <textarea id="catatanInput" rows="3" placeholder="Tulis catatan jika perlu..."></textarea>
+                    <label>PASSWORD</label>
+                    <input type="password" id="loginPass" placeholder="Masukkan password">
                 </div>
-                <button type="submit" class="btn btn-primary" id="submitAbsen">✅ Kirim Absensi</button>
+                <button type="submit" class="btn btn-primary">MASUK</button>
+                <button type="button" class="btn btn-wa" onclick="lupaPassword()">LUPA PASSWORD? (WA)</button>
+            </form>
+            
+            <!-- Form Admin -->
+            <form id="formAdmin" class="hidden">
+                <div class="form-group">
+                    <label>PIN ADMIN</label>
+                    <input type="password" id="loginPin" placeholder="Masukkan PIN">
+                </div>
+                <button type="submit" class="btn btn-primary">MASUK ADMIN</button>
             </form>
         </div>
+    </div>
+    
+    <!-- MAIN APP -->
+    <div id="mainApp" style="display:none;">
+        <div class="header">
+            <h3 id="appTitle">Dashboard</h3>
+            <p id="userInfo" style="font-size:12px; margin-top:5px;"></p>
+            <button class="logout-btn" onclick="keluar()">Keluar</button>
+        </div>
         
-        <div class="card">
-            <h3>📜 Riwayat Absensi Saya</h3>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                    <tbody id="riwayatBody"><tr><td colspan="3" class="text-center">Belum ada data</td></tr>
-                    </tbody>
-                </table>
+        <!-- ADMIN PANEL -->
+        <div id="adminPanel">
+            <div class="card">
+                <h2>⚙️ MENU ADMIN</h2>
+                <button class="btn btn-primary" onclick="refreshData()" style="margin-bottom:10px;">🔄 REFRESH DATA</button>
+                <button class="btn btn-wa" onclick="kirimWA()">📱 KIRIM PENGINGAT WA</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box"><div class="angka" id="statHari">0</div><div class="label">HARI INI</div></div>
+                <div class="stat-box"><div class="angka" id="statMinggu">0</div><div class="label">MINGGU INI</div></div>
+                <div class="stat-box"><div class="angka" id="statBulan">0</div><div class="label">BULAN INI</div></div>
+            </div>
+            
+            <div class="card">
+                <h2>📊 PERFORM MUSYRIF</h2>
+                <div id="performaList"></div>
+            </div>
+            
+            <div class="card">
+                <h2>📜 SEMUA DATA ABSENSI</h2>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%">
+                        <thead><tr><th>Waktu</th><th>Nama</th><th>Kegiatan</th><th>Foto</th><th>Aksi</th></tr></thead>
+                        <tbody id="adminTableBody"><tr><td colspan="5" style="text-align:center;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MUSYRIF PANEL -->
+        <div id="musyrifPanel" style="display:none;">
+            <div class="stats">
+                <div class="stat-box"><div class="angka" id="myHarian">0%</div><div class="label">HARIAN</div></div>
+                <div class="stat-box"><div class="angka" id="myMingguan">0%</div><div class="label">MINGGUAN</div></div>
+                <div class="stat-box"><div class="angka" id="myBulanan">0%</div><div class="label">BULANAN</div></div>
+            </div>
+            
+            <div class="card">
+                <h2>📅 JADWAL HARI INI</h2>
+                <div id="jadwalList"></div>
+            </div>
+            
+            <div class="card">
+                <h2>📝 INPUT ABSENSI</h2>
+                <form id="absensiForm">
+                    <div class="form-group">
+                        <label>KEGIATAN</label>
+                        <select id="inputKegiatan" required>
+                            <option value="">-- Pilih Kegiatan --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>FOTO (Selfie/Dokumentasi)</label>
+                        <input type="file" id="inputFoto" accept="image/*" capture="user" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CATATAN</label>
+                        <textarea id="inputCatatan" rows="2" placeholder="Catatan (opsional)"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btnKirim">✅ KIRIM ABSENSI</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2>📜 RIWAYAT SAYA</h2>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%">
+                        <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
+                        <tbody id="riwayatBody"><tr><td colspan="3" style="text-align:center;">Belum ada data</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- MODAL FOTO -->
-<div id="modalFoto" class="modal" onclick="closeModal()">
-    <span class="close-modal">&times;</span>
+<div id="modalFoto" class="modal" onclick="tutupModal()">
     <img id="modalImg" src="">
 </div>
 
-<div id="toastMessage" class="toast"></div>
-
 <script>
-    // ==================== KONFIGURASI ====================
-    const STORAGE_KEY = 'absensi_musyrif_app';
-    const ADMIN_PIN = '1234';
-    const WA_ADMIN = '6285893588373';
+    // ==================== DATA ====================
+    const STORAGE = "absensi_data";
+    const PIN_ADMIN = "1234";
+    const WA_ADMIN = "6285893588373";
     
-    // DATA MUSYRIF LENGKAP
-    const DATA_MUSYRIF = {
-        'al-hakim': {
-            namaAsrama: 'Asrama Al Hakim',
-            daftar: {
-                'Ali Mashuri': { password: 'ali123', kamar: 'Khondak, Uhud' },
-                'Ali Zahid': { password: 'zahid123', kamar: 'Badar' },
-                'Reva Dwi': { password: 'reva123', kamar: 'Khoibar' },
-                'Imam Syafi\'i': { password: 'imam123', kamar: 'Multazam' }
+    // Data Musyrif (Hardcoded)
+    const MUSYRIF_LIST = {
+        "al-hakim": {
+            nama: "Asrama Al Hakim",
+            anggota: {
+                "Ali Mashuri": { pass: "ali123", kamar: "Khondak, Uhud" },
+                "Ali Zahid": { pass: "zahid123", kamar: "Badar" },
+                "Reva Dwi": { pass: "reva123", kamar: "Khoibar" },
+                "Imam Syafi'i": { pass: "imam123", kamar: "Multazam" }
             }
         },
-        'al-fattah': {
-            namaAsrama: 'Asrama Al Fattah',
-            daftar: {
-                'Fattahilah': { password: 'fattah123', kamar: 'Quba, Mekkah, Madinah, Raudhoh' },
-                'Brian Adi Waskito': { password: 'brian123', kamar: 'Bir\'Ali, Zam-zam, Tan\'im, Thoif' },
-                'Babil Yasar': { password: 'babil123', kamar: 'Mina, Hudaibiyah, Jeddah, Ji\'ronah' },
-                'Fahmi': { password: 'fahmi123', kamar: 'Arofah' },
-                'Wawan Febi': { password: 'wawan123', kamar: 'RBQ' }
+        "al-fattah": {
+            nama: "Asrama Al Fattah",
+            anggota: {
+                "Fattahilah": { pass: "fattah123", kamar: "Quba, Mekkah, Madinah, Raudhoh" },
+                "Brian Adi Waskito": { pass: "brian123", kamar: "Bir'Ali, Zam-zam, Tan'im, Thoif" },
+                "Babil Yasar": { pass: "babil123", kamar: "Mina, Hudaibiyah, Jeddah, Ji'ronah" },
+                "Fahmi": { pass: "fahmi123", kamar: "Arofah" },
+                "Wawan Febi": { pass: "wawan123", kamar: "RBQ" }
             }
         },
-        'al-karim': {
-            namaAsrama: 'Asrama Al Karim',
-            daftar: {
-                'Bima Julian': { password: 'bima123', kamar: '101, 102, 103' },
-                'Irfan Khoirul Aziz': { password: 'irfan123', kamar: '104, 201, 202' },
-                'Rizki Alfian': { password: 'rizki123', kamar: '203, 204' }
+        "al-karim": {
+            nama: "Asrama Al Karim",
+            anggota: {
+                "Bima Julian": { pass: "bima123", kamar: "101, 102, 103" },
+                "Irfan Khoirul Aziz": { pass: "irfan123", kamar: "104, 201, 202" },
+                "Rizki Alfian": { pass: "rizki123", kamar: "203, 204" }
             }
         }
     };
     
-    // JADWAL KEGIATAN
-    const JADWAL_KEGIATAN = [
-        { nama: 'Membangunkan Santri', jam: '03:30 - 04:15' },
-        { nama: 'Pengajian Ba\'da Subuh', jam: '05:00 - 05:45' },
-        { nama: 'Menggobraki Berangkat Sekolah', jam: '06:30 - 07:00' },
-        { nama: 'Piket Kamar & Persiapan Maghrib', jam: '16:30 - 17:30' },
-        { nama: 'Pendampingan Dalail (Malam Kamis)', jam: '18:00 - 19:30' },
-        { nama: 'Pendampingan Tawasulan (Malam Jumat)', jam: '21:00 - 23:30' },
-        { nama: 'Pendampingan Jam Muthola\'ah', jam: '19:30 - 20:30' },
-        { nama: 'Menertibkan Jam Tidur', jam: '21:30 - 22:00' }
+    // Jadwal Kegiatan
+    const JADWAL = [
+        "Membangunkan Santri (03:30-04:15)",
+        "Pengajian Ba'da Subuh (05:00-05:45)",
+        "Menggobraki Berangkat Sekolah (06:30-07:00)",
+        "Piket Kamar & Persiapan Maghrib (16:30-17:30)",
+        "Pendampingan Dalail (18:00-19:30) - Kamis Malam",
+        "Pendampingan Tawasulan (21:00-23:30) - Jumat Malam",
+        "Pendampingan Jam Muthola'ah (19:30-20:30)",
+        "Menertibkan Jam Tidur (21:30-22:00)"
     ];
     
-    // VARIABEL GLOBAL
-    let currentRole = null;
-    let currentUser = null;
-    let currentAsrama = null;
+    // Variabel Global
+    let currentRole = "";
+    let currentUser = "";
+    let currentAsrama = "";
     let allData = [];
     
-    // ==================== FUNGSI UTILITY ====================
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('toastMessage');
-        toast.textContent = message;
-        toast.style.backgroundColor = isError ? '#d32f2f' : '#2e7d32';
-        toast.style.display = 'block';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 2500);
-    }
-    
-    function showError(message) {
-        const errorBox = document.getElementById('loginError');
-        errorBox.textContent = message;
-        errorBox.style.display = 'block';
-        setTimeout(() => {
-            errorBox.style.display = 'none';
-        }, 3000);
-    }
-    
-    // ==================== FUNGSI TAB LOGIN ====================
-    function showTab(tab) {
-        const tabs = document.querySelectorAll('.tab-btn');
+    // ==================== FUNGSI LOGIN ====================
+    function pilihTab(tab) {
+        const tabs = document.querySelectorAll('.tab');
         tabs.forEach(t => t.classList.remove('active'));
         if (tab === 'admin') {
             tabs[1].classList.add('active');
-            document.getElementById('formMusyrif').style.display = 'none';
-            document.getElementById('formAdmin').style.display = 'block';
+            document.getElementById('formMusyrif').classList.add('hidden');
+            document.getElementById('formAdmin').classList.remove('hidden');
         } else {
             tabs[0].classList.add('active');
-            document.getElementById('formMusyrif').style.display = 'block';
-            document.getElementById('formAdmin').style.display = 'none';
+            document.getElementById('formMusyrif').classList.remove('hidden');
+            document.getElementById('formAdmin').classList.add('hidden');
         }
+        document.getElementById('loginError').style.display = 'none';
     }
     
-    // UPDATE DROPDOWN MUSYRIF
-    document.getElementById('selectAsrama').addEventListener('change', function() {
-        const asramaKey = this.value;
-        const selectMusyrif = document.getElementById('selectMusyrif');
-        
-        if (asramaKey && DATA_MUSYRIF[asramaKey]) {
-            selectMusyrif.disabled = false;
-            selectMusyrif.innerHTML = '<option value="">-- Pilih Musyrif --</option>';
-            const daftar = DATA_MUSYRIF[asramaKey].daftar;
-            for (let nama in daftar) {
-                selectMusyrif.innerHTML += `<option value="${nama}">${nama}</option>`;
+    // Update dropdown nama berdasarkan asrama
+    document.getElementById('loginAsrama').addEventListener('change', function() {
+        const asrama = this.value;
+        const selectNama = document.getElementById('loginNama');
+        if (asrama && MUSYRIF_LIST[asrama]) {
+            selectNama.disabled = false;
+            selectNama.innerHTML = '<option value="">-- Pilih Musyrif --</option>';
+            for (let nama in MUSYRIF_LIST[asrama].anggota) {
+                selectNama.innerHTML += `<option value="${nama}">${nama}</option>`;
             }
         } else {
-            selectMusyrif.disabled = true;
-            selectMusyrif.innerHTML = '<option value="">-- Pilih Asrama dulu --</option>';
+            selectNama.disabled = true;
+            selectNama.innerHTML = '<option value="">-- Pilih Asrama dulu --</option>';
         }
     });
     
-    // LOGIN MUSYRIF
+    // Proses Login Musyrif
     document.getElementById('formMusyrif').addEventListener('submit', function(e) {
         e.preventDefault();
-        const asramaKey = document.getElementById('selectAsrama').value;
-        const nama = document.getElementById('selectMusyrif').value;
-        const password = document.getElementById('inputPassword').value;
+        const asrama = document.getElementById('loginAsrama').value;
+        const nama = document.getElementById('loginNama').value;
+        const pass = document.getElementById('loginPass').value;
         
-        if (!asramaKey || !nama) {
-            showError('Pilih asrama dan nama musyrif!');
+        if (!asrama || !nama) {
+            tampilError('Pilih asrama dan nama musyrif!');
             return;
         }
         
-        const musyrif = DATA_MUSYRIF[asramaKey].daftar[nama];
-        if (musyrif && musyrif.password === password) {
-            currentRole = 'musyrif';
+        const anggota = MUSYRIF_LIST[asrama].anggota[nama];
+        if (anggota && anggota.pass === pass) {
+            currentRole = "musyrif";
             currentUser = nama;
-            currentAsrama = asramaKey;
-            initializeApp();
+            currentAsrama = asrama;
+            masukApp();
         } else {
-            showError('Password salah!');
+            tampilError('Password salah!');
         }
     });
     
-    // LOGIN ADMIN
+    // Proses Login Admin
     document.getElementById('formAdmin').addEventListener('submit', function(e) {
         e.preventDefault();
-        const pin = document.getElementById('inputPin').value;
-        if (pin === ADMIN_PIN) {
-            currentRole = 'admin';
-            currentUser = 'Admin';
-            initializeApp();
+        const pin = document.getElementById('loginPin').value;
+        if (pin === PIN_ADMIN) {
+            currentRole = "admin";
+            currentUser = "Admin";
+            masukApp();
         } else {
-            showError('PIN Admin salah!');
+            tampilError('PIN Admin salah!');
         }
     });
     
-    function lupaPassword() {
-        const nama = document.getElementById('selectMusyrif').value;
-        if (!nama) {
-            showError('Pilih nama musyrif terlebih dahulu!');
-            return;
-        }
-        const pesan = `Halo Admin, saya ${nama} lupa password absensi. Mohon bantuan reset password. Terima kasih.`;
-        window.open(`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(pesan)}`, '_blank');
+    function tampilError(pesan) {
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.textContent = pesan;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 3000);
     }
     
-    // ==================== INISIALISASI APP ====================
-    function initializeApp() {
+    function tampilPesan(pesan, isError = false) {
+        alert(pesan);
+    }
+    
+    function lupaPassword() {
+        const nama = document.getElementById('loginNama').value;
+        if (!nama) {
+            tampilError('Pilih nama musyrif dulu!');
+            return;
+        }
+        window.open(`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(`Halo Admin, saya ${nama} lupa password. Tolong bantu reset.`)}`);
+    }
+    
+    // ==================== FUNGSI UTAMA ====================
+    function masukApp() {
         // Load data dari localStorage
-        const saved = localStorage.getItem(STORAGE_KEY);
+        const saved = localStorage.getItem(STORAGE);
         if (saved) {
             try {
                 allData = JSON.parse(saved);
@@ -678,262 +507,244 @@
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         
-        if (currentRole === 'admin') {
-            document.getElementById('appTitle').innerHTML = '🛡️ Dashboard Admin';
+        if (currentRole === "admin") {
+            document.getElementById('appTitle').innerHTML = '🛡️ DASHBOARD ADMIN';
             document.getElementById('userInfo').innerHTML = 'Administrator | Akses Penuh';
             document.getElementById('adminPanel').style.display = 'block';
             document.getElementById('musyrifPanel').style.display = 'none';
-            renderAdminData();
+            renderAdmin();
         } else {
-            const kamar = DATA_MUSYRIF[currentAsrama].daftar[currentUser].kamar;
-            const asramaNama = DATA_MUSYRIF[currentAsrama].namaAsrama;
-            document.getElementById('appTitle').innerHTML = '📋 Absensi Musyrif';
-            document.getElementById('userInfo').innerHTML = `${currentUser} | ${kamar} | ${asramaNama}`;
+            const asramaObj = MUSYRIF_LIST[currentAsrama];
+            const anggota = asramaObj.anggota[currentUser];
+            document.getElementById('appTitle').innerHTML = '📋 ABSENSI MUSYRIF';
+            document.getElementById('userInfo').innerHTML = `${currentUser} | ${anggota.kamar} | ${asramaObj.nama}`;
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('musyrifPanel').style.display = 'block';
-            renderMusyrifData();
+            renderMusyrif();
             renderJadwal();
-            renderKegiatanSelect();
+            renderOptionsKegiatan();
         }
     }
     
-    function logout() {
+    function keluar() {
         location.reload();
     }
     
-    function refreshData() {
-        renderAdminData();
-        showToast('Data berhasil direfresh!');
-    }
-    
-    // ==================== FUNGSI MENYIMPAN DATA ====================
     function simpanData() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
+        localStorage.setItem(STORAGE, JSON.stringify(allData));
+        console.log("Data tersimpan, total:", allData.length);
     }
     
     // ==================== RENDER ADMIN ====================
-    function renderAdminData() {
-        // Hitung statistik
+    function renderAdmin() {
         const today = new Date().toDateString();
         const weekAgo = new Date(Date.now() - 7 * 86400000);
         const monthAgo = new Date(Date.now() - 30 * 86400000);
         
-        let todayCount = 0, weekCount = 0, monthCount = 0;
+        let hitungHari = 0, hitungMinggu = 0, hitungBulan = 0;
         for (let i = 0; i < allData.length; i++) {
-            const d = new Date(allData[i].timestamp);
-            if (d.toDateString() === today) todayCount++;
-            if (d >= weekAgo) weekCount++;
-            if (d >= monthAgo) monthCount++;
+            const tgl = new Date(allData[i].timestamp);
+            if (tgl.toDateString() === today) hitungHari++;
+            if (tgl >= weekAgo) hitungMinggu++;
+            if (tgl >= monthAgo) hitungBulan++;
         }
         
-        document.getElementById('statHari').innerHTML = todayCount;
-        document.getElementById('statMinggu').innerHTML = weekCount;
-        document.getElementById('statBulan').innerHTML = monthCount;
+        document.getElementById('statHari').innerHTML = hitungHari;
+        document.getElementById('statMinggu').innerHTML = hitungMinggu;
+        document.getElementById('statBulan').innerHTML = hitungBulan;
         
-        // Render performa musyrif
-        let performaHtml = '';
-        for (let asramaKey in DATA_MUSYRIF) {
-            const asrama = DATA_MUSYRIF[asramaKey];
-            for (let nama in asrama.daftar) {
+        // Performa Musyrif
+        let htmlPerforma = "";
+        for (let a in MUSYRIF_LIST) {
+            for (let n in MUSYRIF_LIST[a].anggota) {
                 let count = 0;
                 for (let i = 0; i < allData.length; i++) {
-                    if (allData[i].nama === nama && new Date(allData[i].timestamp) >= weekAgo) {
+                    if (allData[i].nama === n && new Date(allData[i].timestamp) >= weekAgo) {
                         count++;
                     }
                 }
-                const persen = Math.min(100, Math.round(count / 7 * 100));
-                let badgeClass = 'badge-danger';
-                let status = 'Kurang';
-                if (persen >= 70) { badgeClass = 'badge-success'; status = 'Sangat Aktif'; }
-                else if (persen >= 50) { badgeClass = 'badge-warning'; status = 'Aktif'; }
-                
-                performaHtml += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <div>
-                            <strong>${nama}</strong><br>
-                            <small style="color:#666;">${asrama.namaAsrama} | ${asrama.daftar[nama].kamar}</small>
-                        </div>
-                        <span class="badge ${badgeClass}">${status} (${persen}%)</span>
+                let persen = Math.min(100, Math.round(count / 7 * 100));
+                let warna = persen >= 70 ? "#4caf50" : (persen >= 50 ? "#ff9800" : "#f44336");
+                htmlPerforma += `
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+                        <div><strong>${n}</strong><br><small style="color:#666;">${MUSYRIF_LIST[a].nama}</small></div>
+                        <span style="background:${warna}; color:white; padding:2px 10px; border-radius:20px; font-size:12px;">${persen}%</span>
                     </div>
                 `;
             }
         }
-        document.getElementById('performaList').innerHTML = performaHtml || '<p class="text-center">Belum ada data</p>';
+        document.getElementById('performaList').innerHTML = htmlPerforma || "<p>Tidak ada data</p>";
         
-        // Render tabel data absensi
+        // Tabel semua data
         if (allData.length === 0) {
-            document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="6" class="text-center">Belum ada data absensi</td></tr>';
+            document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada data</td></tr>';
             return;
         }
         
-        let tableHtml = '';
+        let htmlTabel = "";
         const sorted = [...allData].reverse();
         for (let i = 0; i < sorted.length; i++) {
             const d = sorted[i];
-            const fotoHtml = d.foto ? `<img src="${d.foto}" class="photo-thumb" onclick="lihatFoto('${d.foto}')">` : '-';
-            const waktu = new Date(d.timestamp).toLocaleString('id-ID');
-            tableHtml += `
+            const fotoHtml = d.foto ? `<img src="${d.foto}" class="foto-thumb" onclick="lihatFoto('${d.foto}')">` : "-";
+            htmlTabel += `
                 <tr>
-                    <td>${waktu}</td>
+                    <td>${new Date(d.timestamp).toLocaleString()}</td>
                     <td>${d.nama}</td>
-                    <td>${d.asrama}</td>
                     <td>${d.kegiatan}</td>
                     <td>${fotoHtml}</td>
-                    <td><button class="btn-danger" style="padding: 5px 10px; border-radius: 20px;" onclick="hapusData('${d.timestamp}')">Hapus</button></td>
+                    <td><button class="btn-danger" style="padding:4px 10px; border-radius:20px;" onclick="hapusData('${d.timestamp}')">Hapus</button></td>
                 </tr>
             `;
         }
-        document.getElementById('adminTableBody').innerHTML = tableHtml;
+        document.getElementById('adminTableBody').innerHTML = htmlTabel;
     }
     
     function hapusData(timestamp) {
-        if (confirm('Yakin ingin menghapus data ini?')) {
+        if (confirm('Yakin hapus data ini?')) {
             allData = allData.filter(d => d.timestamp !== timestamp);
             simpanData();
-            renderAdminData();
-            showToast('Data berhasil dihapus!');
+            renderAdmin();
+            tampilPesan('Data dihapus!');
         }
     }
     
-    function kirimPengingatWA() {
+    function refreshData() {
+        renderAdmin();
+        tampilPesan('Data direfresh!');
+    }
+    
+    function kirimWA() {
         const today = new Date().toDateString();
-        const belumAbsen = [];
-        
-        for (let asramaKey in DATA_MUSYRIF) {
-            for (let nama in DATA_MUSYRIF[asramaKey].daftar) {
+        const belum = [];
+        for (let a in MUSYRIF_LIST) {
+            for (let n in MUSYRIF_LIST[a].anggota) {
                 let sudah = false;
                 for (let i = 0; i < allData.length; i++) {
-                    if (allData[i].nama === nama && new Date(allData[i].timestamp).toDateString() === today) {
+                    if (allData[i].nama === n && new Date(allData[i].timestamp).toDateString() === today) {
                         sudah = true;
                         break;
                     }
                 }
-                if (!sudah) belumAbsen.push(nama);
+                if (!sudah) belum.push(n);
             }
         }
         
-        if (belumAbsen.length === 0) {
-            showToast('✅ Semua musyrif sudah absen hari ini!');
+        if (belum.length === 0) {
+            tampilPesan('✅ Semua sudah absen hari ini!');
         } else {
-            const pesan = `*PENGINGAT ABSENSI HARI INI*\n\nBerikut musyrif yang belum absen:\n${belumAbsen.join('\n')}\n\nSegera lakukan absensi!`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`, '_blank');
+            const pesan = `*PENGINGAT ABSENSI*\n\nBelum absen hari ini:\n${belum.join('\n')}\n\nSegera lakukan absensi!`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(pesan)}`);
         }
     }
     
     // ==================== RENDER MUSYRIF ====================
-    function renderMusyrifData() {
+    function renderMusyrif() {
         const myData = allData.filter(d => d.nama === currentUser);
         const today = new Date().toDateString();
         const weekAgo = new Date(Date.now() - 7 * 86400000);
         const monthAgo = new Date(Date.now() - 30 * 86400000);
         
-        const hasToday = myData.some(d => new Date(d.timestamp).toDateString() === today);
-        const weeklyCount = myData.filter(d => new Date(d.timestamp) >= weekAgo).length;
-        const monthlyCount = myData.filter(d => new Date(d.timestamp) >= monthAgo).length;
+        const hadirHari = myData.some(d => new Date(d.timestamp).toDateString() === today) ? 1 : 0;
+        const mingguCount = myData.filter(d => new Date(d.timestamp) >= weekAgo).length;
+        const bulanCount = myData.filter(d => new Date(d.timestamp) >= monthAgo).length;
         
-        const dailyPercent = hasToday ? 100 : 0;
-        const weeklyPercent = Math.min(100, Math.round(weeklyCount / 7 * 100));
-        const monthlyPercent = Math.min(100, Math.round(monthlyCount / 30 * 100));
+        const persenHari = hadirHari * 100;
+        const persenMinggu = Math.min(100, Math.round(mingguCount / 7 * 100));
+        const persenBulan = Math.min(100, Math.round(bulanCount / 30 * 100));
         
-        document.getElementById('myHarian').innerHTML = dailyPercent + '%';
-        document.getElementById('myMingguan').innerHTML = weeklyPercent + '%';
-        document.getElementById('myBulanan').innerHTML = monthlyPercent + '%';
+        document.getElementById('myHarian').innerHTML = persenHari + "%";
+        document.getElementById('myMingguan').innerHTML = persenMinggu + "%";
+        document.getElementById('myBulanan').innerHTML = persenBulan + "%";
         
         // Riwayat
         if (myData.length === 0) {
-            document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3" class="text-center">Belum ada riwayat absensi</td></tr>';
+            document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3" style="text-align:center;">Belum ada riwayat</td></tr>';
             return;
         }
         
-        let riwayatHtml = '';
+        let htmlRiwayat = "";
         const reversed = [...myData].reverse();
         for (let i = 0; i < reversed.length; i++) {
             const d = reversed[i];
-            const fotoHtml = d.foto ? `<img src="${d.foto}" class="photo-thumb" onclick="lihatFoto('${d.foto}')">` : '-';
-            riwayatHtml += `
+            const fotoHtml = d.foto ? `<img src="${d.foto}" class="foto-thumb" onclick="lihatFoto('${d.foto}')">` : "-";
+            htmlRiwayat += `
                 <tr>
-                    <td>${new Date(d.timestamp).toLocaleString('id-ID')}</td>
+                    <td>${new Date(d.timestamp).toLocaleString()}</td>
                     <td>${d.kegiatan}</td>
                     <td>${fotoHtml}</td>
                 </tr>
             `;
         }
-        document.getElementById('riwayatBody').innerHTML = riwayatHtml;
+        document.getElementById('riwayatBody').innerHTML = htmlRiwayat;
     }
     
     function renderJadwal() {
-        let html = '';
-        for (let i = 0; i < JADWAL_KEGIATAN.length; i++) {
-            const j = JADWAL_KEGIATAN[i];
-            html += `
-                <div class="schedule-item">
-                    <div class="time">⏰ ${j.jam}</div>
-                    <div class="name">${j.nama}</div>
-                </div>
-            `;
+        let html = "";
+        for (let i = 0; i < JADWAL.length; i++) {
+            html += `<div class="jadwal-item">⏰ ${JADWAL[i]}</div>`;
         }
-        document.getElementById('jadwalContainer').innerHTML = html;
+        document.getElementById('jadwalList').innerHTML = html;
     }
     
-    function renderKegiatanSelect() {
-        const select = document.getElementById('kegiatanSelect');
+    function renderOptionsKegiatan() {
+        const select = document.getElementById('inputKegiatan');
         select.innerHTML = '<option value="">-- Pilih Kegiatan --</option>';
-        for (let i = 0; i < JADWAL_KEGIATAN.length; i++) {
-            select.innerHTML += `<option value="${JADWAL_KEGIATAN[i].nama}">${JADWAL_KEGIATAN[i].nama} (${JADWAL_KEGIATAN[i].jam})</option>`;
+        for (let i = 0; i < JADWAL.length; i++) {
+            select.innerHTML += `<option value="${JADWAL[i]}">${JADWAL[i]}</option>`;
         }
     }
     
-    // SUBMIT ABSENSI
+    // ==================== SUBMIT ABSENSI ====================
     document.getElementById('absensiForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const kegiatan = document.getElementById('kegiatanSelect').value;
-        const fotoFile = document.getElementById('fotoInput').files[0];
-        const catatan = document.getElementById('catatanInput').value;
+        const kegiatan = document.getElementById('inputKegiatan').value;
+        const fotoFile = document.getElementById('inputFoto').files[0];
+        const catatan = document.getElementById('inputCatatan').value;
         
         if (!kegiatan) {
-            showToast('Pilih kegiatan terlebih dahulu!', true);
+            tampilPesan('Pilih kegiatan!', true);
             return;
         }
         if (!fotoFile) {
-            showToast('Ambil foto terlebih dahulu!', true);
+            tampilPesan('Ambil foto dulu!', true);
             return;
         }
         
-        const btn = document.getElementById('submitAbsen');
+        const btn = document.getElementById('btnKirim');
         btn.disabled = true;
-        btn.innerHTML = '⏳ Mengirim...';
+        btn.innerHTML = '⏳ MENGIRIM...';
         
         try {
-            const fotoBase64 = await bacaFileSebagaiBase64(fotoFile);
-            const newData = {
+            const fotoBase64 = await bacaFoto(fotoFile);
+            const asramaObj = MUSYRIF_LIST[currentAsrama];
+            
+            const dataBaru = {
                 timestamp: new Date().toISOString(),
                 nama: currentUser,
-                asrama: DATA_MUSYRIF[currentAsrama].namaAsrama,
-                kamar: DATA_MUSYRIF[currentAsrama].daftar[currentUser].kamar,
+                asrama: asramaObj.nama,
+                kamar: asramaObj.anggota[currentUser].kamar,
                 kegiatan: kegiatan,
                 foto: fotoBase64,
                 catatan: catatan
             };
             
-            allData.push(newData);
+            allData.push(dataBaru);
             simpanData();
             
-            showToast('✅ Absensi berhasil dikirim!');
+            tampilPesan('✅ Absensi berhasil dikirim!');
             document.getElementById('absensiForm').reset();
-            renderMusyrifData();
-            renderJadwal();
-            renderKegiatanSelect();
+            renderMusyrif();
             
         } catch(err) {
-            showToast('❌ Gagal mengirim: ' + err.message, true);
+            tampilPesan('❌ Gagal: ' + err.message, true);
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '✅ Kirim Absensi';
+            btn.innerHTML = '✅ KIRIM ABSENSI';
         }
     });
     
-    function bacaFileSebagaiBase64(file) {
+    function bacaFoto(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
@@ -949,11 +760,11 @@
         modal.classList.add('active');
     }
     
-    function closeModal() {
+    function tutupModal() {
         document.getElementById('modalFoto').classList.remove('active');
     }
     
-    console.log('✅ Aplikasi siap digunakan!');
+    console.log("✅ Aplikasi siap - Data akan tersimpan di localStorage");
 </script>
 </body>
 </html>
