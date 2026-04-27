@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi Musyrif - Laporan PDF</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -215,13 +215,8 @@
 
     <div class="modal" id="p-modal" onclick="this.classList.remove('active')"><img id="p-img"></div>
 
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-
-        // Your web app's Firebase configuration
+    <script>
+        // Konfigurasi Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAJTPkEkjSuBX6c13Hpvx7NWkSNugzmFNU",
             authDomain: "absensi-musyrif-bm.firebaseapp.com",
@@ -231,13 +226,8 @@
             messagingSenderId: "968312390099",
             appId: "1:968312390099:web:d6ffcef5d50a0b4b63af26"
         };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        console.log("Firebase berhasil diinisialisasi", app);
-    </script>
-
-    <script>
+        
+        // Data utama
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxw54GCCIzsYVmlMw7Fz6XOvZZ0lpuhaA_hkhfKzu5DIb6rKozM-hMnKH4o5ZkP645Z/exec";
         const ADMIN_PIN = "1234";
         const WA_ADMIN = "6285893588373";
@@ -264,9 +254,15 @@
         
         function switchTab(t) {
             document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-            document.querySelector(`.tab-btn:nth-child(${t==='admin'?2:1})`).classList.add('active');
-            document.getElementById('musyrif-form').style.display = t==='admin'?'none':'block';
-            document.getElementById('admin-form').style.display = t==='admin'?'block':'none';
+            if(t === 'admin') {
+                document.querySelector('.tab-btn:last-child').classList.add('active');
+                document.getElementById('musyrif-form').style.display = 'none';
+                document.getElementById('admin-form').style.display = 'block';
+            } else {
+                document.querySelector('.tab-btn:first-child').classList.add('active');
+                document.getElementById('musyrif-form').style.display = 'block';
+                document.getElementById('admin-form').style.display = 'none';
+            }
             document.getElementById('login-error').style.display='none';
         }
 
@@ -291,7 +287,7 @@
             window.open(`https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(`Halo Admin, saya ${n} lupa password absensi.`)}`);
         }
 
-        document.getElementById('musyrif-form').onsubmit = e => {
+        document.getElementById('musyrif-form').onsubmit = function(e) {
             e.preventDefault();
             const asrama = document.getElementById('m-asrama').value;
             const n = document.getElementById('m-name').value;
@@ -301,66 +297,112 @@
             } else { showError('Nama atau password salah!'); }
         };
 
-        document.getElementById('admin-form').onsubmit = e => {
+        document.getElementById('admin-form').onsubmit = function(e) {
             e.preventDefault();
             if(document.getElementById('a-pin').value === ADMIN_PIN) login('Admin', 'Full Access', 'admin', null);
             else showError('PIN Admin salah!');
         };
 
         function login(name, room, r, asrama) {
-            role = r; user = {name, room}; currentAsrama = asrama;
+            role = r; 
+            user = {name: name, room: room}; 
+            currentAsrama = asrama;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            document.getElementById('app-title').textContent = r==='admin' ? '🛡️ Dashboard Admin' : '📋 Absensi Musyrif';
+            document.getElementById('app-title').textContent = r === 'admin' ? '🛡️ Dashboard Admin' : '📋 Absensi Musyrif';
             document.getElementById('user-label').textContent = `${name} | ${room} ${asrama ? '| '+MUSYRIF_BY_ASMARA[asrama].name : ''}`;
-            if(r==='admin') {
+            if(r === 'admin') {
                 document.getElementById('admin-panel').style.display = 'block';
                 document.getElementById('musyrif-view').style.display = 'none';
             } else {
                 document.getElementById('admin-panel').style.display = 'none';
                 document.getElementById('musyrif-view').style.display = 'block';
             }
-            loadData(); renderSched(); updJobs();
+            loadData(); 
+            renderSched(); 
+            updJobs();
         }
-        function showError(m) { const e=document.getElementById('login-error'); e.textContent=m; e.style.display='block'; setTimeout(()=>e.style.display='none',3000); }
+        
+        function showError(m) { 
+            const e = document.getElementById('login-error'); 
+            e.textContent = m; 
+            e.style.display = 'block'; 
+            setTimeout(function() { e.style.display = 'none'; }, 3000); 
+        }
 
         function renderSched() {
-            const now = new Date(), nm = now.getHours()*60+now.getMinutes(), day = now.getDay();
-            document.getElementById('sched-grid').innerHTML = JOBS.filter(j => j.days.includes(day)).map(j => {
+            const now = new Date();
+            const nm = now.getHours() * 60 + now.getMinutes();
+            const day = now.getDay();
+            const schedGrid = document.getElementById('sched-grid');
+            if(!schedGrid) return;
+            
+            const filteredJobs = JOBS.filter(function(j) { return j.days.includes(day); });
+            let html = '';
+            for(let i = 0; i < filteredJobs.length; i++) {
+                const j = filteredJobs[i];
                 const s = j.tf ? j.tf : j.t;
-                const [sh,sm]=s.split(':').map(Number), [eh,em]=j.e.split(':').map(Number);
-                const st=sh*60+sm, et=eh*60+em;
-                const cls = nm>=st && nm<=et ? 'active' : nm>et ? 'done' : '';
-                const txt = cls==='active' ? '🟢 Berjalan' : cls==='done' ? '✅ Selesai' : '⏳ Belum';
-                return `<div class="schedule-item ${cls}"><div class="time">${s} - ${j.e}</div><div style="margin:4px 0;font-weight:500;">${j.n}</div><div style="font-size:0.8rem;color:var(--text-light);">${txt}</div></div>`;
-            }).join('');
+                const [sh, sm] = s.split(':').map(Number);
+                const [eh, em] = j.e.split(':').map(Number);
+                const st = sh * 60 + sm;
+                const et = eh * 60 + em;
+                let cls = '';
+                let txt = '';
+                if(nm >= st && nm <= et) {
+                    cls = 'active';
+                    txt = '🟢 Berjalan';
+                } else if(nm > et) {
+                    cls = 'done';
+                    txt = '✅ Selesai';
+                } else {
+                    cls = '';
+                    txt = '⏳ Belum';
+                }
+                html += '<div class="schedule-item ' + cls + '"><div class="time">' + s + ' - ' + j.e + '</div><div style="margin:4px 0;font-weight:500;">' + j.n + '</div><div style="font-size:0.8rem;color:var(--text-light);">' + txt + '</div></div>';
+            }
+            schedGrid.innerHTML = html;
         }
         
         function updJobs() {
-            const now = new Date(), nm = now.getHours()*60+now.getMinutes(), day = now.getDay();
-            const sel = document.getElementById('act-select'), msg = document.getElementById('act-msg');
+            const now = new Date();
+            const day = now.getDay();
+            const sel = document.getElementById('act-select');
+            const msg = document.getElementById('act-msg');
+            if(!sel) return;
+            
             sel.innerHTML = '<option value="">-- Pilih Kegiatan --</option>';
             
-            JOBS.filter(j => j.days.includes(day)).forEach(j => {
+            const filteredJobs = JOBS.filter(function(j) { return j.days.includes(day); });
+            for(let i = 0; i < filteredJobs.length; i++) {
+                const j = filteredJobs[i];
                 const s = j.tf ? j.tf : j.t;
-                const o = document.createElement('option');
-                o.value = j.n;
-                o.textContent = `${j.n} (${s}-${j.e})`;
-                o.selected = true;
-                sel.appendChild(o);
-            });
+                const option = document.createElement('option');
+                option.value = j.n;
+                option.textContent = j.n + ' (' + s + '-' + j.e + ')';
+                if(i === 0) option.selected = true;
+                sel.appendChild(option);
+            }
             
-            msg.textContent = '✅ Pilih kegiatan yang tersedia';
-            msg.style.color = 'var(--success)';
+            if(msg) {
+                msg.textContent = '✅ Pilih kegiatan yang tersedia';
+                msg.style.color = 'var(--success)';
+            }
         }
 
         function getStats(nm) {
-            const my = data.filter(d=>d['Nama Musyrif']===nm);
-            const td = new Date().toDateString(), wk = Date.now()-7*864e5, mo = Date.now()-30*864e5;
-            const d = my.some(x=>new Date(x.Timestamp).toDateString()===td)?1:0;
-            const w = my.filter(x=>new Date(x.Timestamp)>=wk).length;
-            const m = my.filter(x=>new Date(x.Timestamp)>=mo).length;
-            return { d:Math.min(100,d*100), w:Math.min(100,Math.round(w/7*100)), m:Math.min(100,Math.round(m/30*100)), raw: { daily: d, weekly: w, monthly: m } };
+            const my = data.filter(function(d) { return d && d['Nama Musyrif'] === nm; });
+            const td = new Date().toDateString();
+            const wk = Date.now() - 7 * 86400000;
+            const mo = Date.now() - 30 * 86400000;
+            const d = my.some(function(x) { return x && new Date(x.Timestamp).toDateString() === td; }) ? 1 : 0;
+            const w = my.filter(function(x) { return x && new Date(x.Timestamp) >= wk; }).length;
+            const m = my.filter(function(x) { return x && new Date(x.Timestamp) >= mo; }).length;
+            return { 
+                d: Math.min(100, d * 100), 
+                w: Math.min(100, Math.round(w / 7 * 100)), 
+                m: Math.min(100, Math.round(m / 30 * 100)), 
+                raw: { daily: d, weekly: w, monthly: m } 
+            };
         }
 
         function getAssessment(percentage) {
@@ -371,11 +413,17 @@
         }
 
         function renderChart() {
-            const ctx = document.getElementById('attendanceChart').getContext('2d');
-            const my = data.filter(d=>d['Nama Musyrif']===user.name);
-            const days = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
-            const chartData = [0,0,0,0,0,0,0];
-            my.forEach(d => { const date = new Date(d.Timestamp); chartData[date.getDay()]++; });
+            const ctx = document.getElementById('attendanceChart');
+            if(!ctx) return;
+            
+            const my = data.filter(function(d) { return d && d['Nama Musyrif'] === user.name; });
+            const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            const chartData = [0, 0, 0, 0, 0, 0, 0];
+            for(let i = 0; i < my.length; i++) {
+                const d = my[i];
+                const date = new Date(d.Timestamp);
+                chartData[date.getDay()]++;
+            }
             if(myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'bar',
@@ -384,4 +432,461 @@
                     datasets: [{
                         label: 'Jumlah Absensi',
                         data: chartData,
-                        backgroundColor: ['rgba(46,125,50,0.8)','rgba(76,175,80,0.8)','rgba(139,195,74,0.8)','rgba(205,220,57,0.8)','rg
+                        backgroundColor: ['rgba(46,125,50,0.8)', 'rgba(76,175,80,0.8)', 'rgba(139,195,74,0.8)', 'rgba(205,220,57,0.8)', 'rgba(255,193,7,0.8)', 'rgba(255,152,0,0.8)', 'rgba(244,67,54,0.8)'],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
+        function showStats() {
+            const s = getStats(user.name);
+            document.getElementById('stats-panel').style.display = 'block';
+            document.getElementById('ms-d').textContent = s.d + '%';
+            document.getElementById('ms-w').textContent = s.w + '%';
+            document.getElementById('ms-m').textContent = s.m + '%';
+            document.getElementById('mb-d').style.width = s.d + '%';
+            document.getElementById('mb-w').style.width = s.w + '%';
+            document.getElementById('mb-m').style.width = s.m + '%';
+            renderChart();
+        }
+
+        function updAdminStats() {
+            const td = new Date().toDateString();
+            const wk = Date.now() - 7 * 86400000;
+            const mo = Date.now() - 30 * 86400000;
+            document.getElementById('s-today').textContent = data.filter(function(x) { return x && new Date(x.Timestamp).toDateString() === td; }).length;
+            document.getElementById('s-week').textContent = data.filter(function(x) { return x && new Date(x.Timestamp) >= wk; }).length;
+            document.getElementById('s-month').textContent = data.filter(function(x) { return x && new Date(x.Timestamp) >= mo; }).length;
+            
+            const activeSet = new Set();
+            for(let i = 0; i < data.length; i++) {
+                const x = data[i];
+                if(x && new Date(x.Timestamp) >= wk) {
+                    activeSet.add(x['Nama Musyrif']);
+                }
+            }
+            document.getElementById('s-active').textContent = activeSet.size + '/12';
+            
+            const pc = document.getElementById('perf-container');
+            if(!pc) return;
+            pc.innerHTML = '';
+            
+            for(let asramaKey in MUSYRIF_BY_ASMARA) {
+                const asrama = MUSYRIF_BY_ASMARA[asramaKey];
+                for(let name in asrama.musyrif) {
+                    const s = getStats(name);
+                    const w = s.w;
+                    const assessment = getAssessment(w);
+                    pc.innerHTML += '<div class="perf-item ' + assessment.class + '"><div><strong>' + name + '</strong><br><small>' + asrama.name + ' - ' + asrama.musyrif[name].rooms.join(', ') + '</small></div><span class="badge ' + assessment.class + '">' + assessment.status + ' (' + w + '%)</span></div>';
+                }
+            }
+            
+            const ctx2 = document.getElementById('adminChart');
+            if(!ctx2) return;
+            const names = [];
+            const perfData = [];
+            const colors = [];
+            for(let asramaKey in MUSYRIF_BY_ASMARA) {
+                for(let name in MUSYRIF_BY_ASMARA[asramaKey].musyrif) {
+                    names.push(name);
+                    const w = getStats(name).w;
+                    perfData.push(w);
+                    colors.push(getAssessment(w).color);
+                }
+            }
+            if(adminChart) adminChart.destroy();
+            adminChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [{
+                        label: 'Kehadiran Minggu Ini (%)',
+                        data: perfData,
+                        backgroundColor: colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+        
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-tbody');
+            if(!tbody) return;
+            if(data.length === 0) { 
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Belum ada data absensi</td></tr>'; 
+                return; 
+            }
+            let html = '';
+            for(let i = data.length - 1; i >= 0; i--) {
+                const d = data[i];
+                const asramaName = d.Asrma || (d.asrama || '-');
+                const photoHtml = d.Foto ? '<img src="' + d.Foto + '" class="photo-thumb" onclick="viewImg(\'' + d.Foto.replace(/'/g, "\\'") + '\')">' : '-';
+                html += '<tr>' +
+                    '<td>' + new Date(d.Timestamp).toLocaleString() + '</td>' +
+                    '<td>' + (d['Nama Musyrif'] || '-') + '</td>' +
+                    '<td>' + asramaName + '</td>' +
+                    '<td>' + (d.Kamar || '-') + '</td>' +
+                    '<td>' + (d.Kegiatan || '-') + '</td>' +
+                    '<td>' + photoHtml + '</td>' +
+                    '<td><button class="btn" style="padding:4px 8px;font-size:0.7rem;background:#d32f2f;color:white;border:none;border-radius:4px;" onclick="delRow(\'' + d.Timestamp + '\',\'' + d['Nama Musyrif'] + '\')">Hapus</button></td>' +
+                '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+        
+        function renderMyTable() {
+            const tbody = document.getElementById('my-tbody');
+            if(!tbody) return;
+            const my = [];
+            for(let i = 0; i < data.length; i++) {
+                const d = data[i];
+                if(d && d['Nama Musyrif'] === user.name) my.push(d);
+            }
+            my.reverse();
+            if(my.length === 0) { 
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr>'; 
+                return; 
+            }
+            let html = '';
+            for(let i = 0; i < my.length; i++) {
+                const d = my[i];
+                const photoHtml = d.Foto ? '<img src="' + d.Foto + '" class="photo-thumb" onclick="viewImg(\'' + d.Foto.replace(/'/g, "\\'") + '\')">' : '-';
+                html += '<tr><td>' + new Date(d.Timestamp).toLocaleString() + '</td><td>' + d.Kegiatan + '</td><td>' + photoHtml + '</td></tr>';
+            }
+            tbody.innerHTML = html;
+        }
+        
+        function viewImg(src) { 
+            document.getElementById('p-img').src = src; 
+            document.getElementById('p-modal').classList.add('active'); 
+        }
+
+        async function loadData() {
+            const btnRefresh = document.getElementById('btn-refresh');
+            if(btnRefresh) {
+                btnRefresh.disabled = true;
+                btnRefresh.textContent = '⏳ Loading...';
+            }
+            
+            try {
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                if (storedData) {
+                    data = JSON.parse(storedData);
+                    if (role === 'admin') { 
+                        updAdminStats(); 
+                        renderAdminTable(); 
+                    } else { 
+                        renderMyTable(); 
+                        showStats(); 
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading from localStorage:', e);
+            }
+            
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_URL);
+                if (res.ok) {
+                    const googleData = await res.json();
+                    if(googleData && Array.isArray(googleData)) {
+                        data = googleData;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    }
+                    
+                    if (role === 'admin') { 
+                        updAdminStats(); 
+                        renderAdminTable(); 
+                    } else { 
+                        renderMyTable(); 
+                        showStats(); 
+                    }
+                }
+            } catch (e) {
+                console.log('Using localStorage data');
+            } finally {
+                if(btnRefresh) {
+                    btnRefresh.disabled = false;
+                    btnRefresh.textContent = '🔄 Refresh Data';
+                }
+            }
+        }
+
+        document.getElementById('absen-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const act = document.getElementById('act-select').value;
+            const photo = document.getElementById('photo-in').files[0];
+            if (!act) { alert('⚠️ Pilih kegiatan terlebih dahulu!'); return; }
+            if (!photo) { alert('⚠️ Upload foto kegiatan!'); return; }
+            
+            const btn = document.getElementById('sub-btn'); 
+            btn.disabled = true; 
+            btn.textContent = '⏳ Mengirim...';
+            
+            try {
+                const b64 = await new Promise(function(resolve, reject) {
+                    const rd = new FileReader();
+                    rd.onload = function() { resolve(rd.result); };
+                    rd.onerror = reject;
+                    rd.readAsDataURL(photo);
+                });
+                
+                const newData = {
+                    Timestamp: new Date().toISOString(),
+                    'Nama Musyrif': user.name,
+                    Asrma: currentAsrama ? MUSYRIF_BY_ASMARA[currentAsrama].name : '',
+                    asrama: currentAsrama ? MUSYRIF_BY_ASMARA[currentAsrama].name : '',
+                    Kamar: user.room,
+                    Kegiatan: act,
+                    Foto: b64,
+                    Catatan: document.getElementById('notes').value
+                };
+                
+                data.push(newData);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(newData),
+                        mode: 'no-cors'
+                    });
+                } catch (e) {
+                    console.log('Saved to localStorage only');
+                }
+                
+                alert('✅ Absensi berhasil dikirim!');
+                document.getElementById('absen-form').reset();
+                loadData();
+                if(role === 'musyrif') showStats();
+            } catch(err) {
+                console.error('Error:', err);
+                alert('❌ Gagal mengirim: ' + err.message);
+            } finally {
+                btn.disabled = false; 
+                btn.textContent = '✅ Kirim Absensi';
+            }
+        };
+
+        async function delRow(ts, nm) {
+            if(!confirm('Hapus data ' + nm + '?')) return;
+            
+            try {
+                data = data.filter(function(d) { return d.Timestamp !== ts; });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({action: 'delete', timestamp: ts, musyrif: nm}),
+                        mode: 'no-cors'
+                    });
+                } catch (e) {
+                    console.log('Deleted from localStorage only');
+                }
+                
+                alert('✅ Data berhasil dihapus');
+                loadData();
+            } catch (err) {
+                alert('❌ Gagal menghapus: ' + err.message);
+            }
+        }
+        
+        function generatePDF() {
+            if(!data.length) {
+                alert('⚠️ Tidak ada data untuk laporan!');
+                return;
+            }
+            document.getElementById('report-section').style.display = 'block';
+            document.getElementById('r-date').textContent = new Date().toLocaleString('id-ID');
+            let html = '';
+            let totalAbsen = 0;
+            const wk = new Date(Date.now() - 7*86400000);
+            
+            for(let asramaKey in MUSYRIF_BY_ASMARA) {
+                const asrama = MUSYRIF_BY_ASMARA[asramaKey];
+                const asramaData = [];
+                for(let i = 0; i < data.length; i++) {
+                    const d = data[i];
+                    const dAsrama = d.Asrma || d.asrama || '';
+                    if(dAsrama === asrama.name && new Date(d.Timestamp) >= wk) {
+                        asramaData.push(d);
+                    }
+                }
+                totalAbsen += asramaData.length;
+                
+                html += '<div class="asrama-section">' +
+                    '<h3>' + asrama.name + '</h3>' +
+                    '<table class="assessment-table">' +
+                        '<thead>' +
+                            '<tr>' +
+                                '<th>No</th>' +
+                                '<th>Nama Musyrif</th>' +
+                                '<th>Kamar</th>' +
+                                '<th>Jumlah Absen</th>' +
+                                '<th>Persentase</th>' +
+                                '<th>Status</th>' +
+                                '<th>Penilaian</th>' +
+                            '</tr>' +
+                        '</thead>' +
+                        '<tbody>';
+                
+                let mIdx = 0;
+                for(let name in asrama.musyrif) {
+                    mIdx++;
+                    const musyrifData = [];
+                    for(let i = 0; i < asramaData.length; i++) {
+                        if(asramaData[i]['Nama Musyrif'] === name) musyrifData.push(asramaData[i]);
+                    }
+                    const count = musyrifData.length;
+                    const percentage = Math.min(100, Math.round((count/7)*100));
+                    const assessment = getAssessment(percentage);
+                    
+                    html += '<tr>' +
+                        '<td>' + mIdx + '</td>' +
+                        '<td><strong>' + name + '</strong></td>' +
+                        '<td>' + asrama.musyrif[name].rooms.join(', ') + '</td>' +
+                        '<td>' + count + ' kali</td>' +
+                        '<td>' + percentage + '%</td>' +
+                        '<td><span style="background:' + assessment.color + ';color:white;padding:3px 8px;border-radius:12px;font-size:0.85rem;">' + assessment.status + '</span></td>' +
+                        '<td><strong>Grade ' + assessment.grade + '</strong></td>' +
+                    '</tr>';
+                }
+                
+                html += '</tbody></table></div>';
+            }
+            
+            document.getElementById('r-absen').textContent = totalAbsen;
+            document.getElementById('asrama-reports').innerHTML = html;
+            
+            setTimeout(function() {
+                const element = document.getElementById('report-section');
+                html2canvas(element, { scale: 2, useCORS: true }).then(function(canvas) {
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
+                    pdf.save('Laporan_Kinerja_Per_Asrama_' + new Date().toISOString().slice(0,10) + '.pdf');
+                    document.getElementById('report-section').style.display = 'none';
+                    alert('✅ Laporan PDF berhasil diunduh!');
+                }).catch(function(err) { 
+                    alert('❌ Gagal generate PDF: ' + err.message); 
+                    document.getElementById('report-section').style.display = 'none'; 
+                });
+            }, 1000);
+        }
+        
+        function generateIndividualPDF() {
+            const musyrifName = prompt('Masukkan nama musyrif:');
+            if (!musyrifName) return;
+            
+            const musyrifData = [];
+            for(let i = 0; i < data.length; i++) {
+                if(data[i]['Nama Musyrif'] === musyrifName.trim()) musyrifData.push(data[i]);
+            }
+            if (!musyrifData.length) {
+                alert('❌ Data tidak ditemukan!');
+                return;
+            }
+            
+            document.getElementById('individual-report-section').style.display = 'block';
+            document.getElementById('ind-name').textContent = musyrifName;
+            document.getElementById('ind-date').textContent = new Date().toLocaleString('id-ID');
+            
+            let foundAsrama = '';
+            let foundRooms = '';
+            for(let key in MUSYRIF_BY_ASMARA) {
+                if(MUSYRIF_BY_ASMARA[key].musyrif[musyrifName.trim()]) {
+                    foundAsrama = MUSYRIF_BY_ASMARA[key].name;
+                    foundRooms = MUSYRIF_BY_ASMARA[key].musyrif[musyrifName.trim()].rooms.join(', ');
+                }
+            }
+            
+            document.getElementById('ind-asrama').textContent = foundAsrama || '-';
+            document.getElementById('ind-kamar').textContent = foundRooms || '-';
+            
+            const stats = getStats(musyrifName.trim());
+            const assessment = getAssessment(stats.w);
+            
+            let html = '<h3>📊 Ringkasan Kehadiran</h3>' +
+                '<table class="assessment-table">' +
+                    '<tr><th>Periode</th><th>Jumlah</th><th>Persentase</th></tr>' +
+                    '<tr><td>Harian</td><td>' + stats.raw.daily + ' kali</td><td>' + stats.d + '%</td></tr>' +
+                    '<tr><td>Mingguan</td><td>' + stats.raw.weekly + ' kali</td><td>' + stats.w + '%</td></tr>' +
+                    '<tr><td>Bulanan</td><td>' + stats.raw.monthly + ' kali</td><td>' + stats.m + '%</td></tr>' +
+                '</table>' +
+                '<h3>📜 Riwayat Absensi</h3>' +
+                '<table class="assessment-table">' +
+                    '<thead><tr><th>No</th><th>Tanggal</th><th>Kegiatan</th></tr></thead>' +
+                    '<tbody>';
+            
+            for(let i = musyrifData.length - 1; i >= 0; i--) {
+                const d = musyrifData[i];
+                const date = new Date(d.Timestamp);
+                html += '<tr><td>' + (musyrifData.length - i) + '</td><td>' + date.toLocaleDateString('id-ID') + '</td><td>' + d.Kegiatan + '</td></tr>';
+            }
+            html += '</tbody></table>';
+            
+            document.getElementById('individual-content').innerHTML = html;
+            
+            setTimeout(function() {
+                const element = document.getElementById('individual-report-section');
+                html2canvas(element, { scale: 2, useCORS: true }).then(function(canvas) {
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
+                    pdf.save('Laporan_Individu_' + musyrifName.trim().replace(/\s+/g, '_') + '_' + new Date().toISOString().slice(0,10) + '.pdf');
+                    document.getElementById('individual-report-section').style.display = 'none';
+                    alert('✅ Laporan PDF berhasil diunduh!');
+                }).catch(function(err) { 
+                    alert('❌ Gagal: ' + err.message); 
+                    document.getElementById('individual-report-section').style.display = 'none'; 
+                });
+            }, 1000);
+        }
+        
+        function waReminder() {
+            const td = new Date().toDateString();
+            const miss = [];
+            for(let key in MUSYRIF_BY_ASMARA) {
+                for(let n in MUSYRIF_BY_ASMARA[key].musyrif) {
+                    let found = false;
+                    for(let i = 0; i < data.length; i++) {
+                        const d = data[i];
+                        if(d['Nama Musyrif'] === n && new Date(d.Timestamp).toDateString() === td) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found) miss.push(n);
+                }
+            }
+            if(!miss.length) return alert('✅ Semua sudah absen!');
+            window.open('https://wa.me/?text=' + encodeURIComponent('*REMINDER ABSENSI*\nYth. ' + miss.join(', ') + ',\nAnda belum absen hari ini.'));
+        }
+
+        setInterval(function() {
+            if(role) {
+                renderSched();
+                updJobs();
+            }
+        }, 60000);
+        
+        console.log('Aplikasi siap digunakan');
+        console.log('Firebase Config:', firebaseConfig);
+    </script>
+</body>
+</html>
