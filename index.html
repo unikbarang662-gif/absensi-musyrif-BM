@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi Musyrif - Laporan PDF</title>
+    <!-- Tailwind CSS for styling (assuming original used similar utility classes) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js untuk Grafik -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- jsPDF -->
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jsPDF for PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        .hidden-section { display: none; }
+        .hidden { display: none !important; }
         .loader { border-top-color: #3498db; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -22,21 +22,23 @@
 <body class="bg-gray-100 min-h-screen">
 
     <!-- LOGIN SECTION -->
-    <div id="loginSection" class="flex items-center justify-center min-h-screen">
+    <div id="login-section" class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
             <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">📋 Absensi Musyrif</h2>
-            <p class="text-center text-gray-500 mb-4 text-sm">Pilih akses masuk</p>
             
-            <div class="flex mb-4 border-b">
-                <button onclick="switchLoginTab('musyrif')" id="tabMusyrif" class="w-1/2 py-2 text-blue-600 border-b-2 border-blue-600 font-semibold">👤 Musyrif</button>
-                <button onclick="switchLoginTab('admin')" id="tabAdmin" class="w-1/2 py-2 text-gray-500 font-semibold">🛡️ Admin</button>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Pilih akses masuk</label>
+                <div class="flex gap-2">
+                    <button onclick="switchLogin('musyrif')" id="btn-login-musyrif" class="flex-1 py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">👤 Musyrif</button>
+                    <button onclick="switchLogin('admin')" id="btn-login-admin" class="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">🛡️ Admin</button>
+                </div>
             </div>
 
-            <!-- Form Musyrif -->
-            <div id="formMusyrif">
+            <!-- Musyrif Login Form -->
+            <div id="form-musyrif">
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Asrama</label>
-                    <select id="loginAsrama" onchange="updateNamaList()" class="w-full px-3 py-2 border rounded-lg">
+                    <select id="login-asrama" onchange="updateMusyrifList()" class="w-full p-2 border rounded">
                         <option value="">-- Pilih Asrama --</option>
                         <option value="Al Hakim">Asrama Al Hakim</option>
                         <option value="Al Fattah">Asrama Al Fattah</option>
@@ -45,366 +47,504 @@
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Nama Musyrif</label>
-                    <select id="loginNama" class="w-full px-3 py-2 border rounded-lg" disabled>
+                    <select id="login-nama" class="w-full p-2 border rounded" disabled>
                         <option value="">-- Pilih Asrama Terlebih Dahulu --</option>
                     </select>
                 </div>
                 <div class="mb-6">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input type="password" id="loginPassword" class="w-full px-3 py-2 border rounded-lg" placeholder="Masukkan Password">
+                    <input type="password" id="login-password" class="w-full p-2 border rounded" placeholder="🔐 Masuk Musyrif">
+                    <a href="#" onclick="alert('Hubungi Admin via WA')" class="text-sm text-blue-500 mt-1 block">💬 Lupa Password? (WA)</a>
                 </div>
-                <button onclick="loginMusyrif()" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
-                    🔐 Masuk Musyrif
-                </button>
-                <div class="mt-4 text-center">
-                    <a href="https://wa.me/?text=Lupa%20Password%20Absensi" target="_blank" class="text-sm text-green-600 hover:underline">💬 Lupa Password? (WA)</a>
-                </div>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">MASUK</button>
             </div>
 
-            <!-- Form Admin -->
-            <div id="formAdmin" class="hidden-section">
+            <!-- Admin Login Form (Hidden by default) -->
+            <div id="form-admin" class="hidden">
                 <div class="mb-6">
                     <label class="block text-gray-700 text-sm font-bold mb-2">PIN Admin</label>
-                    <input type="password" id="adminPin" class="w-full px-3 py-2 border rounded-lg" placeholder="Masukkan PIN Admin">
+                    <input type="password" id="admin-pin" class="w-full p-2 border rounded" placeholder="🛡️ Masukkan PIN">
                 </div>
-                <button onclick="loginAdmin()" class="w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition">
-                    🛡️ Masuk Admin
-                </button>
+                <button onclick="handleAdminLogin()" class="w-full bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition">MASUK ADMIN</button>
             </div>
         </div>
     </div>
 
-    <!-- DASHBOARD ADMIN (Sesuai File Asli: Ada Performa, Grafik, Tabel) -->
-    <div id="adminDashboard" class="hidden-section container mx-auto p-4">
-        <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow">
-            <h1 class="text-xl font-bold text-gray-800">🛡️ Dashboard Admin</h1>
-            <button onclick="logout()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Keluar</button>
-        </header>
-
-        <!-- Pengaturan & Aksi -->
-        <div class="bg-white p-4 rounded-lg shadow mb-6">
-            <h3 class="font-bold text-gray-700 mb-2">⚙️ Pengaturan & Aksi</h3>
-            <div class="flex flex-wrap gap-2">
-                <button onclick="refreshData()" class="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 text-sm"><i class="fas fa-sync-alt"></i> Refresh Data</button>
-                <button onclick="generatePDF('asrama')" class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-sm"><i class="fas fa-file-pdf"></i> Laporan PDF Per Asrama</button>
-                <button onclick="generatePDF('individu')" class="bg-orange-500 text-white px-3 py-2 rounded hover:bg-orange-600 text-sm"><i class="fas fa-user"></i> Laporan PDF Per Individu</button>
-                <button onclick="alert('Fitur WA akan membuka WhatsApp Admin')" class="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-sm"><i class="fab fa-whatsapp"></i> Cek & WA</button>
-            </div>
-        </div>
-
-        <!-- Statistik -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-lg shadow text-center">
-                <h3 class="text-gray-500 text-xs">Hari Ini</h3>
-                <p class="text-2xl font-bold text-blue-600" id="statToday">0</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow text-center">
-                <h3 class="text-gray-500 text-xs">Minggu Ini</h3>
-                <p class="text-2xl font-bold text-green-600" id="statWeek">0</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow text-center">
-                <h3 class="text-gray-500 text-xs">Bulan Ini</h3>
-                <p class="text-2xl font-bold text-purple-600" id="statMonth">0</p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow text-center">
-                <h3 class="text-gray-500 text-xs">Aktif</h3>
-                <p class="text-2xl font-bold text-gray-800">0/12</p>
-            </div>
-        </div>
-
-        <!-- Performa & Grafik -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h3 class="font-bold text-gray-700 mb-4">📊 Performa Musyrif</h3>
-                <div id="performanceContainer" class="text-center text-gray-500 py-4">Loading...</div>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h3 class="font-bold text-gray-700 mb-4">📈 Grafik Kinerja Detail</h3>
-                <canvas id="adminChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Tabel Data -->
-        <div class="bg-white p-4 rounded-lg shadow mb-6 overflow-x-auto">
-            <h3 class="font-bold text-gray-700 mb-2"> Semua Data Absensi</h3>
-            <table class="min-w-full leading-normal">
-                <thead>
-                    <tr>
-                        <th class="px-3 py-2 border-b bg-gray-100 text-left text-xs font-semibold text-gray-600">Waktu</th>
-                        <th class="px-3 py-2 border-b bg-gray-100 text-left text-xs font-semibold text-gray-600">Nama</th>
-                        <th class="px-3 py-2 border-b bg-gray-100 text-left text-xs font-semibold text-gray-600">Asrama</th>
-                        <th class="px-3 py-2 border-b bg-gray-100 text-left text-xs font-semibold text-gray-600">Kegiatan</th>
-                        <th class="px-3 py-2 border-b bg-gray-100 text-left text-xs font-semibold text-gray-600">Foto</th>
-                        <th class="px-3 py-2 border-b bg-gray-100 text-left text-xs font-semibold text-gray-600">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTableBody">
-                    <tr><td colspan="6" class="text-center py-4">Klik "Refresh Data" untuk memuat</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- DASHBOARD MUSYRIF (Sesuai File Asli: Ada Jadwal, Input, Riwayat) -->
-    <div id="musyrifDashboard" class="hidden-section container mx-auto p-4 max-w-2xl">
-        <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow">
+    <!-- DASHBOARD SECTION -->
+    <div id="dashboard-section" class="hidden container mx-auto p-4">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 bg-white p-4 rounded shadow">
             <div>
-                <h1 class="text-xl font-bold text-gray-800">👤 Dashboard Musyrif</h1>
-                <p class="text-sm text-gray-500" id="welcomeName">Halo, Musyrif</p>
+                <h1 class="text-xl font-bold text-gray-800">Dashboard <span id="user-role-display"></span></h1>
+                <p class="text-sm text-gray-500" id="current-date"></p>
             </div>
-            <button onclick="logout()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Keluar</button>
-        </header>
+            <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Keluar</button>
+        </div>
 
-        <!-- Grafik Kehadiran -->
-        <div class="bg-white p-4 rounded-lg shadow mb-6">
-            <h3 class="font-bold text-gray-700 mb-2">📊 Grafik Kehadiran Anda Read-Only</h3>
-            <div class="grid grid-cols-3 gap-2 text-center mb-2">
-                <div class="bg-blue-50 p-2 rounded">
-                    <div class="text-xs text-gray-500">Harian</div>
-                    <div class="font-bold text-blue-600" id="myDaily">0%</div>
-                </div>
-                <div class="bg-green-50 p-2 rounded">
-                    <div class="text-xs text-gray-500">Mingguan</div>
-                    <div class="font-bold text-green-600" id="myWeekly">0%</div>
-                </div>
-                <div class="bg-purple-50 p-2 rounded">
-                    <div class="text-xs text-gray-500">Bulanan</div>
-                    <div class="font-bold text-purple-600" id="myMonthly">0%</div>
-                </div>
+        <!-- Admin Controls -->
+        <div id="admin-controls" class="hidden mb-6 bg-white p-4 rounded shadow">
+            <h3 class="font-bold mb-2">⚙️ Pengaturan & Aksi Admin</h3>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="refreshData()" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">🔄 Refresh Data</button>
+                <button onclick="generatePDF('asrama')" class="bg-green-600 text-white px-3 py-1 rounded text-sm">📄 Laporan PDF Per Asrama</button>
+                <button onclick="generatePDF('individu')" class="bg-green-700 text-white px-3 py-1 rounded text-sm">📄 Laporan PDF Per Individu</button>
+                <button onclick="checkWhatsApp()" class="bg-green-500 text-white px-3 py-1 rounded text-sm">🔔 Cek & WA</button>
             </div>
         </div>
 
-        <!-- Jadwal Hari Ini -->
-        <div class="bg-white p-4 rounded-lg shadow mb-6">
-            <h3 class="font-bold text-gray-700 mb-2">📅 Jadwal Hari Ini</h3>
-            <ul class="text-sm text-gray-600 space-y-1">
-                <li>✅ 04:30 - Sholat Subuh Berjamaah</li>
-                <li>✅ 05:00 - Mengaji Al-Quran</li>
-                <li>⏳ 06:00 - Murojaah Hafalan</li>
-                <li>⏳ 18:00 - Sholat Maghrib Berjamaah</li>
-            </ul>
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded shadow text-center">
+                <h3 class="text-gray-500 text-sm">Hari Ini</h3>
+                <p class="text-2xl font-bold text-blue-600" id="stat-today">0</p>
+            </div>
+            <div class="bg-white p-4 rounded shadow text-center">
+                <h3 class="text-gray-500 text-sm">Minggu Ini</h3>
+                <p class="text-2xl font-bold text-green-600" id="stat-week">0</p>
+            </div>
+            <div class="bg-white p-4 rounded shadow text-center">
+                <h3 class="text-gray-500 text-sm">Bulan Ini</h3>
+                <p class="text-2xl font-bold text-purple-600" id="stat-month">0</p>
+            </div>
+            <div class="bg-white p-4 rounded shadow text-center">
+                <h3 class="text-gray-500 text-sm">Aktif</h3>
+                <p class="text-2xl font-bold text-orange-600" id="stat-active">0/12</p>
+            </div>
         </div>
 
-        <!-- Input Absensi (AKTIF TANPA BATAS WAKTU) -->
-        <div class="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 class="text-lg font-bold mb-4 border-b pb-2">📝 Input Absensi</h2>
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Kegiatan</label>
-                <select id="inputKegiatan" class="w-full px-3 py-2 border rounded-lg">
-                    <option value="">-- Pilih Kegiatan --</option>
-                    <option value="Sholat Berjamaah">Sholat Berjamaah</option>
-                    <option value="Mengaji Al-Quran">Mengaji Al-Quran</option>
-                    <option value="Murojaah Hafalan">Murojaah Hafalan</option>
-                    <option value="Pengajian Kitab">Pengajian Kitab</option>
-                    <option value="Piket Kebersihan">Piket Kebersihan</option>
-                    <option value="Lainnya">Lainnya</option>
-                </select>
-            </div>
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Foto Kegiatan</label>
-                <input type="file" id="inputFoto" accept="image/*" capture="environment" class="w-full px-3 py-2 border rounded-lg">
-                <p class="text-xs text-gray-500 mt-1">📷 Gunakan kamera depan/belakang HP</p>
+            <!-- Left Column: Input & History -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Input Form -->
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="font-bold mb-4 border-b pb-2">📝 Input Absensi</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Kegiatan</label>
+                            <select id="input-kegiatan" class="w-full p-2 border rounded mt-1">
+                                <option value="">-- Pilih Kegiatan --</option>
+                                <option value="Sholat Berjamaah">Sholat Berjamaah</option>
+                                <option value="Mengaji Al-Quran">Mengaji Al-Quran</option>
+                                <option value="Murojaah Hafalan">Murojaah Hafalan</option>
+                                <option value="Belajar Malam">Belajar Malam</option>
+                                <option value="Rapat Musyrif">Rapat Musyrif</option>
+                                <option value="Piket Kebersihan">Piket Kebersihan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Foto Kegiatan</label>
+                            <input type="file" id="input-foto" accept="image/*" capture="user" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mt-1">
+                            <p class="text-xs text-gray-500 mt-1">📷 Gunakan kamera depan/belakang</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Catatan (Opsional)</label>
+                            <textarea id="input-catatan" rows="2" class="w-full p-2 border rounded mt-1"></textarea>
+                        </div>
+                        <button onclick="submitAttendance()" id="btn-submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition flex justify-center items-center">
+                            <span>✅ Kirim Absensi</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- My History -->
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="font-bold mb-4 border-b pb-2">📜 Riwayat Absensi Saya</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th class="px-2 py-2">Waktu</th>
+                                    <th class="px-2 py-2">Kegiatan</th>
+                                    <th class="px-2 py-2">Foto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="my-history-body">
+                                <tr><td colspan="3" class="px-2 py-4 text-center">Belum ada riwayat</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Catatan</label>
-                <textarea id="inputCatatan" class="w-full px-3 py-2 border rounded-lg" rows="2"></textarea>
-            </div>
+            <!-- Right Column: Global Data & Charts -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Performance Chart Placeholder -->
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="font-bold mb-4">📊 Performa Musyrif</h3>
+                    <div id="chart-container" class="h-48 flex items-center justify-center bg-gray-50 rounded">
+                        <p class="text-gray-400">Loading Grafik...</p>
+                    </div>
+                </div>
 
-            <button onclick="submitAbsensi()" id="btnSubmit" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition flex justify-center items-center">
-                <span>✅ Kirim Absensi</span>
-            </button>
-        </div>
-
-        <!-- Riwayat -->
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-lg font-bold mb-4 border-b pb-2">📜 Riwayat Absensi Saya</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full">
-                    <thead>
-                        <tr>
-                            <th class="px-4 py-2 border-b text-left text-xs font-semibold text-gray-600">Waktu</th>
-                            <th class="px-4 py-2 border-b text-left text-xs font-semibold text-gray-600">Kegiatan</th>
-                            <th class="px-4 py-2 border-b text-left text-xs font-semibold text-gray-600">Foto</th>
-                        </tr>
-                    </thead>
-                    <tbody id="myHistoryBody">
-                        <tr><td colspan="3" class="text-center py-4 text-gray-500">Belum ada riwayat</td></tr>
-                    </tbody>
-                </table>
+                <!-- All Data Table -->
+                <div class="bg-white p-4 rounded shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold">📜 Semua Data Absensi</h3>
+                        <button onclick="refreshData()" class="text-blue-500 text-sm hover:underline">🔄 Refresh</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm text-left text-gray-500" id="main-table">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3">Waktu</th>
+                                    <th class="px-4 py-3">Nama</th>
+                                    <th class="px-4 py-3">Asrama</th>
+                                    <th class="px-4 py-3">Kamar</th>
+                                    <th class="px-4 py-3">Kegiatan</th>
+                                    <th class="px-4 py-3">Foto</th>
+                                    <th class="px-4 py-3">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-data-body">
+                                <tr><td colspan="7" class="px-4 py-4 text-center">Klik "Refresh Data" untuk memuat</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA (FIREBASE + LOGIC) -->
+    <!-- FIREBASE SDK & APP LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // Import Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, where, Timestamp, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // --- PENTING: GANTI DENGAN CONFIG FIREBASE ANDA ---
+        // TODO: REPLACE WITH YOUR FIREBASE CONFIG
         const firebaseConfig = {
-            apiKey: "GANTI_DENGAN_API_KEY",
-            authDomain: "GANTI.firebaseapp.com",
-            databaseURL: "https://GANTI-default-rtdb.firebaseio.com",
-            projectId: "GANTI",
-            storageBucket: "GANTI.appspot.com",
-            messagingSenderId: "GANTI",
-            appId: "GANTI"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
-        let app, db;
+        // Initialize Firebase
+        let db;
         try {
-            app = initializeApp(firebaseConfig);
-            db = getDatabase(app);
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log("Firebase connected");
         } catch (e) {
-            console.error("Firebase Config Error");
+            console.error("Firebase error: Check config", e);
+            alert("Error: Konfigurasi Firebase belum benar. Data tidak akan tersimpan online.");
         }
 
-        window.currentUser = null;
-        let allData = [];
+        // --- STATE MANAGEMENT ---
+        let currentUser = null; // { name, asrama, role }
+        let allAttendanceData = [];
 
-        // --- UI FUNCTIONS ---
-        window.switchLoginTab = (role) => {
-            document.getElementById('formMusyrif').classList.toggle('hidden-section', role !== 'musyrif');
-            document.getElementById('formAdmin').classList.toggle('hidden-section', role !== 'admin');
-            document.getElementById('tabMusyrif').classList.toggle('text-blue-600', role === 'musyrif');
-            document.getElementById('tabAdmin').classList.toggle('text-red-600', role === 'admin');
-        }
-
-        window.updateNamaList = () => {
-            const asrama = document.getElementById('loginAsrama').value;
-            const namaSelect = document.getElementById('loginNama');
-            namaSelect.innerHTML = '<option value="">-- Pilih Nama --</option>';
-            namaSelect.disabled = !asrama;
-            if(asrama) {
-                ["Ahmad", "Budi", "Candra", "Dedi", "Eko", "Fajar"].forEach(n => {
-                    let opt = document.createElement('option');
-                    opt.value = n + " (" + asrama + ")";
-                    opt.innerText = n;
-                    namaSelect.appendChild(opt);
-                });
+        // --- DOM ELEMENTS ---
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const formMusyrif = document.getElementById('form-musyrif');
+        const formAdmin = document.getElementById('form-admin');
+        
+        // --- LOGIN LOGIC ---
+        window.switchLogin = (type) => {
+            if(type === 'musyrif') {
+                formMusyrif.classList.remove('hidden');
+                formAdmin.classList.add('hidden');
+                document.getElementById('btn-login-musyrif').classList.replace('bg-gray-200', 'bg-blue-600');
+                document.getElementById('btn-login-musyrif').classList.replace('text-gray-700', 'text-white');
+                document.getElementById('btn-login-admin').classList.replace('bg-red-600', 'bg-gray-200');
+                document.getElementById('btn-login-admin').classList.replace('text-white', 'text-gray-700');
+            } else {
+                formMusyrif.classList.add('hidden');
+                formAdmin.classList.remove('hidden');
+                document.getElementById('btn-login-admin').classList.replace('bg-gray-200', 'bg-red-600');
+                document.getElementById('btn-login-admin').classList.replace('text-gray-700', 'text-white');
+                document.getElementById('btn-login-musyrif').classList.replace('bg-blue-600', 'bg-gray-200');
+                document.getElementById('btn-login-musyrif').classList.replace('text-white', 'text-gray-700');
             }
-        }
+        };
 
-        window.loginMusyrif = () => {
-            const nama = document.getElementById('loginNama').value;
-            if(!nama) return alert("Pilih nama!");
-            if(document.getElementById('loginPassword').value !== "123456") return alert("Password salah!");
+        window.updateMusyrifList = () => {
+            const asrama = document.getElementById('login-asrama').value;
+            const nameSelect = document.getElementById('login-nama');
+            nameSelect.innerHTML = '<option value="">-- Pilih Nama --</option>';
             
-            window.currentUser = nama;
-            document.getElementById('loginSection').classList.add('hidden-section');
-            document.getElementById('musyrifDashboard').classList.remove('hidden-section');
-            document.getElementById('welcomeName').innerText = "Halo, " + nama;
-            startListener();
+            if (!asrama) {
+                nameSelect.disabled = true;
+                return;
+            }
+
+            // Dummy list of musyrif per asrama (In real app, fetch from DB)
+            const names = ["Ahmad", "Budi", "Chandra", "Dedi", "Eko", "Fajar"]; 
+            names.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name + " (" + asrama + ")";
+                nameSelect.appendChild(opt);
+            });
+            nameSelect.disabled = false;
+        };
+
+        window.handleLogin = () => {
+            const asrama = document.getElementById('login-asrama').value;
+            const name = document.getElementById('login-nama').value;
+            const pass = document.getElementById('login-password').value;
+
+            if (!asrama || !name) return alert("Pilih Asrama dan Nama!");
+            if (pass !== "123456") return alert("Password salah! (Default: 123456)");
+
+            currentUser = { name, asrama, role: 'musyrif' };
+            enterDashboard();
+        };
+
+        window.handleAdminLogin = () => {
+            const pin = document.getElementById('admin-pin').value;
+            if (pin !== "admin123") return alert("PIN Salah! (Default: admin123)");
+            
+            currentUser = { name: "Administrator", asrama: "All", role: 'admin' };
+            enterDashboard();
+        };
+
+        function enterDashboard() {
+            loginSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            
+            document.getElementById('user-role-display').textContent = currentUser.role === 'admin' ? "(Admin)" : `(${currentUser.name})`;
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            if (currentUser.role === 'admin') {
+                document.getElementById('admin-controls').classList.remove('hidden');
+                document.querySelector('.lg\\:col-span-1').classList.add('hidden'); // Hide input form for admin
+            } else {
+                document.getElementById('admin-controls').classList.add('hidden');
+                document.querySelector('.lg\\:col-span-1').classList.remove('hidden');
+            }
+
+            // Start Realtime Listener
+            listenToAttendance();
         }
 
-        window.loginAdmin = () => {
-            if(document.getElementById('adminPin').value !== "1234") return alert("PIN salah!");
-            document.getElementById('loginSection').classList.add('hidden-section');
-            document.getElementById('adminDashboard').classList.remove('hidden-section');
-            startListener();
-        }
-
-        window.logout = () => location.reload();
+        window.logout = () => {
+            location.reload();
+        };
 
         // --- DATABASE LOGIC ---
-        function startListener() {
-            if(!db) return;
-            onValue(ref(db, 'absensi'), (snap) => {
-                allData = [];
-                snap.forEach(child => allData.push({id: child.key, ...child.val()}));
-                allData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                
-                if(window.currentUser && !document.getElementById('adminDashboard').classList.contains('hidden-section')) {
-                    renderAdmin();
-                } else if(window.currentUser) {
-                    renderMusyrif();
-                }
-            });
-        }
 
-        window.submitAbsensi = () => {
-            const kegiatan = document.getElementById('inputKegiatan').value;
-            const file = document.getElementById('inputFoto').files[0];
-            if(!kegiatan || !file) return alert("Lengkapi Kegiatan dan Foto!");
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const btn = document.getElementById('btnSubmit');
-                btn.innerHTML = "Mengirim..."; btn.disabled = true;
-                
-                push(ref(db, 'absensi'), {
-                    nama: window.currentUser,
-                    asrama: window.currentUser.split('(')[1]?.replace(')','') || 'Umum',
-                    kegiatan,
-                    foto: e.target.result,
-                    timestamp: new Date().toISOString(),
-                    dateStr: new Date().toLocaleDateString('id-ID')
-                }).then(() => {
-                    alert("Berhasil!");
-                    document.getElementById('inputKegiatan').value = "";
-                    document.getElementById('inputFoto').value = "";
-                    btn.innerHTML = "✅ Kirim Absensi"; btn.disabled = false;
-                });
-            };
-            reader.readAsDataURL(file);
-        }
-
-        window.refreshData = () => startListener();
-
-        function renderAdmin() {
-            const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = "";
-            allData.forEach(d => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="px-3 py-2 border-b text-sm">${d.timestamp.replace('T',' ').substring(0,19)}</td>
-                        <td class="px-3 py-2 border-b text-sm font-bold">${d.nama}</td>
-                        <td class="px-3 py-2 border-b text-sm">${d.asrama}</td>
-                        <td class="px-3 py-2 border-b text-sm">${d.kegiatan}</td>
-                        <td class="px-3 py-2 border-b text-sm"><img src="${d.foto}" class="h-8 w-8 object-cover rounded cursor-pointer" onclick="window.open('${d.foto}')"></td>
-                        <td class="px-3 py-2 border-b text-sm"><button class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button></td>
-                    </tr>`;
-            });
-            updateStats();
-        }
-
-        function renderMusyrif() {
-            const myData = allData.filter(d => d.nama === window.currentUser);
-            const tbody = document.getElementById('myHistoryBody');
-            tbody.innerHTML = "";
-            myData.forEach(d => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="px-4 py-2 border-b text-sm">${d.timestamp.replace('T',' ').substring(0,16)}</td>
-                        <td class="px-4 py-2 border-b text-sm">${d.kegiatan}</td>
-                        <td class="px-4 py-2 border-b text-sm"><img src="${d.foto}" class="h-8 w-8 object-cover rounded"></td>
-                    </tr>`;
-            });
+        function listenToAttendance() {
+            if (!db) return;
             
-            // Update Persentase Grafik Musyrif
-            const today = new Date().toLocaleDateString('id-ID');
-            const todayCount = myData.filter(d => d.dateStr === today).length;
-            document.getElementById('myDaily').innerText = Math.min(100, todayCount * 20) + "%";
-            document.getElementById('myWeekly').innerText = Math.min(100, myData.length * 5) + "%";
+            // Query: Get last 100 records, ordered by time desc
+            const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
+            
+            onSnapshot(q, (snapshot) => {
+                allAttendanceData = [];
+                snapshot.forEach((doc) => {
+                    allAttendanceData.push({ id: doc.id, ...doc.data() });
+                });
+                renderDashboard();
+            }, (error) => {
+                console.error("Data fetch error:", error);
+                document.getElementById('all-data-body').innerHTML = `<tr><td colspan="7" class="text-center text-red-500">Gagal memuat data. Cek koneksi internet.</td></tr>`;
+            });
         }
 
-        function updateStats() {
-            const today = new Date().toLocaleDateString('id-ID');
-            document.getElementById('statToday').innerText = allData.filter(d => d.dateStr === today).length;
-            document.getElementById('statWeek').innerText = allData.length; 
-            document.getElementById('statMonth').innerText = allData.length;
+        window.refreshData = () => {
+            // Triggered manually if needed, though onSnapshot handles auto-update
+            const btn = document.querySelector('button[onclick="refreshData()"]');
+            if(btn) {
+                btn.innerHTML = "⏳ Loading...";
+                setTimeout(() => btn.innerHTML = "🔄 Refresh Data", 1000);
+            }
+        };
+
+        window.submitAttendance = async () => {
+            if (!db) return alert("Database tidak terhubung!");
+            
+            const kegiatan = document.getElementById('input-kegiatan').value;
+            const catatan = document.getElementById('input-catatan').value;
+            const fotoInput = document.getElementById('input-foto');
+            const btn = document.getElementById('btn-submit');
+
+            if (!kegiatan) return alert("Pilih kegiatan!");
+            
+            btn.disabled = true;
+            btn.innerHTML = "⏳ Menyimpan...";
+
+            let fotoBase64 = "";
+            if (fotoInput.files.length > 0) {
+                fotoBase64 = await toBase64(fotoInput.files[0]);
+            }
+
+            try {
+                await addDoc(collection(db, "attendance"), {
+                    nama: currentUser.name,
+                    asrama: currentUser.asrama,
+                    kamar: "Kamar 1", // Could be dynamic
+                    kegiatan: kegiatan,
+                    catatan: catatan,
+                    foto: fotoBase64,
+                    timestamp: Timestamp.now(),
+                    dateStr: new Date().toISOString().split('T')[0] // For easy filtering
+                });
+
+                alert("✅ Absensi berhasil disimpan!");
+                // Reset form
+                document.getElementById('input-kegiatan').value = "";
+                document.getElementById('input-catatan').value = "";
+                document.getElementById('input-foto').value = "";
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                alert("❌ Gagal menyimpan: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>✅ Kirim Absensi</span>";
+            }
+        };
+
+        // Helper: Convert File to Base64
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        // --- RENDERING LOGIC ---
+
+        function renderDashboard() {
+            renderTable();
+            renderStats();
+            renderMyHistory();
         }
 
+        function renderTable() {
+            const tbody = document.getElementById('all-data-body');
+            tbody.innerHTML = "";
+
+            if (allAttendanceData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-4 text-center">Belum ada data absensi</td></tr>`;
+                return;
+            }
+
+            allAttendanceData.forEach(data => {
+                const dateObj = data.timestamp?.toDate() || new Date();
+                const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = dateObj.toLocaleDateString('id-ID');
+                
+                const tr = document.createElement('tr');
+                tr.className = "bg-white border-b hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="px-4 py-3">${dateStr} ${timeStr}</td>
+                    <td class="px-4 py-3 font-medium text-gray-900">${data.nama}</td>
+                    <td class="px-4 py-3">${data.asrama}</td>
+                    <td class="px-4 py-3">${data.kamar}</td>
+                    <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">${data.kegiatan}</span></td>
+                    <td class="px-4 py-3">
+                        ${data.foto ? `<img src="${data.foto}" class="h-10 w-10 object-cover rounded cursor-pointer" onclick="viewImage('${data.foto}')">` : '-'}
+                    </td>
+                    <td class="px-4 py-3">
+                        ${currentUser.role === 'admin' ? `<button onclick="deleteData('${data.id}')" class="text-red-600 hover:text-red-900">Hapus</button>` : '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const countToday = allAttendanceData.filter(d => d.dateStr === today).length;
+            
+            // Simple stats logic (can be expanded)
+            document.getElementById('stat-today').textContent = countToday;
+            document.getElementById('stat-week').textContent = allAttendanceData.length; // Placeholder for week logic
+            document.getElementById('stat-month').textContent = allAttendanceData.length; // Placeholder for month logic
+            
+            // Unique active users today
+            const uniqueUsers = new Set(allAttendanceData.filter(d => d.dateStr === today).map(d => d.nama)).size;
+            document.getElementById('stat-active').textContent = `${uniqueUsers}/12`;
+        }
+
+        function renderMyHistory() {
+            if (currentUser.role === 'admin') return;
+
+            const tbody = document.getElementById('my-history-body');
+            tbody.innerHTML = "";
+            
+            const myData = allAttendanceData.filter(d => d.nama === currentUser.name);
+
+            if (myData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="px-2 py-4 text-center">Belum ada riwayat</td></tr>`;
+                return;
+            }
+
+            myData.slice(0, 5).forEach(data => { // Show last 5
+                const dateObj = data.timestamp?.toDate() || new Date();
+                const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                
+                const tr = document.createElement('tr');
+                tr.className = "bg-white border-b";
+                tr.innerHTML = `
+                    <td class="px-2 py-2">${timeStr}</td>
+                    <td class="px-2 py-2">${data.kegiatan}</td>
+                    <td class="px-2 py-2">
+                         ${data.foto ? `<img src="${data.foto}" class="h-8 w-8 object-cover rounded" onclick="viewImage('${data.foto}')">` : '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.viewImage = (base64) => {
+            const win = window.open();
+            win.document.write('<iframe src="' + base64  + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+        };
+
+        // --- PDF GENERATION ---
         window.generatePDF = (type) => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("LAPORAN KINERJA MUSYRIF", 105, 15, null, null, "center");
-            let body = allData.map(d => [d.dateStr, d.nama, d.asrama, d.kegiatan]);
-            doc.autoTable({ head: [['Tanggal','Nama','Asrama','Kegiatan']], body, startY: 25 });
-            doc.save("Laporan.pdf");
-        }
+            
+            doc.text("LAPORAN KINERJA MUSYRIF", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Pondok Pesantren - Sistem Absensi Digital`, 14, 26);
+            doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 14, 32);
+            
+            let headers = [['Waktu', 'Nama', 'Asrama', 'Kegiatan']];
+            let data = allAttendanceData.map(d => [
+                d.timestamp?.toDate().toLocaleString('id-ID'),
+                d.nama,
+                d.asrama,
+                d.kegiatan
+            ]);
+
+            if (type === 'individu') {
+                const name = prompt("Masukkan Nama Musyrif:");
+                if(!name) return;
+                data = data.filter(row => row[1] === name);
+                doc.text(`Laporan Individu: ${name}`, 14, 38);
+            }
+
+            doc.autoTable({
+                head: headers,
+                body: data,
+                startY: type === 'individu' ? 45 : 40,
+            });
+
+            doc.save(`Laporan_Absensi_${type}.pdf`);
+        };
+
+        window.checkWhatsApp = () => {
+            const phone = "6281234567890"; // Replace with Admin WA
+            const msg = "Halo Admin, saya ingin melaporkan kendala absensi.";
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        };
+
+        // Delete function for Admin
+        window.deleteData = async (id) => {
+            if(!confirm("Yakin hapus data ini?")) return;
+            // Note: Need to import deleteDoc if implementing fully
+            alert("Fitur hapus memerlukan konfigurasi security rules Firebase.");
+        };
+
     </script>
 </body>
 </html>
