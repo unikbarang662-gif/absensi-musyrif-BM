@@ -4,24 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi Musyrif - Laporan PDF</title>
-    <!-- Tailwind CSS for styling (assuming original used similar utility classes) -->
+    <!-- Menggunakan Tailwind CSS sesuai file asli -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- jsPDF for PDF Generation -->
+    <!-- jsPDF untuk fitur PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        /* Style tambahan minimal untuk loader */
         .hidden { display: none !important; }
-        .loader { border-top-color: #3498db; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100 min-h-screen font-sans">
 
-    <!-- LOGIN SECTION -->
+    <!-- LOGIN SECTION (Sesuai File Asli) -->
     <div id="login-section" class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
             <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">📋 Absensi Musyrif</h2>
@@ -34,7 +34,7 @@
                 </div>
             </div>
 
-            <!-- Musyrif Login Form -->
+            <!-- Form Musyrif -->
             <div id="form-musyrif">
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Asrama</label>
@@ -59,7 +59,7 @@
                 <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">MASUK</button>
             </div>
 
-            <!-- Admin Login Form (Hidden by default) -->
+            <!-- Form Admin -->
             <div id="form-admin" class="hidden">
                 <div class="mb-6">
                     <label class="block text-gray-700 text-sm font-bold mb-2">PIN Admin</label>
@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    <!-- DASHBOARD SECTION -->
+    <!-- DASHBOARD SECTION (Sesuai File Asli) -->
     <div id="dashboard-section" class="hidden container mx-auto p-4">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6 bg-white p-4 rounded shadow">
@@ -131,6 +131,7 @@
                                 <option value="Belajar Malam">Belajar Malam</option>
                                 <option value="Rapat Musyrif">Rapat Musyrif</option>
                                 <option value="Piket Kebersihan">Piket Kebersihan</option>
+                                <!-- Fitur: Tanpa Batas Waktu, bisa pilih kapan saja -->
                             </select>
                         </div>
                         <div>
@@ -174,7 +175,7 @@
                 <div class="bg-white p-4 rounded shadow">
                     <h3 class="font-bold mb-4">📊 Performa Musyrif</h3>
                     <div id="chart-container" class="h-48 flex items-center justify-center bg-gray-50 rounded">
-                        <p class="text-gray-400">Loading Grafik...</p>
+                        <p class="text-gray-400">Grafik akan muncul saat ada data</p>
                     </div>
                 </div>
 
@@ -207,192 +208,171 @@
         </div>
     </div>
 
-    <!-- FIREBASE SDK & APP LOGIC -->
+    <!-- FIREBASE SDK & LOGIC (Bagian ini yang mengaktifkan fitur) -->
     <script type="module">
-        // Import Firebase functions
+        // Import Firebase dari CDN (Tidak perlu install nodejs)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, where, Timestamp, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, Timestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // TODO: REPLACE WITH YOUR FIREBASE CONFIG
+        // --- PENTING: GANTI DENGAN CONFIG FIREBASE ANDA SENDIRI ---
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "API_KEY_ANDA_DISINI",
+            authDomain: "PROJECT_ID_ANDA.firebaseapp.com",
+            projectId: "PROJECT_ID_ANDA",
+            storageBucket: "PROJECT_ID_ANDA.appspot.com",
+            messagingSenderId: "SENDER_ID",
+            appId: "APP_ID"
         };
 
-        // Initialize Firebase
+        // Inisialisasi Firebase
         let db;
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            console.log("Firebase connected");
+            console.log("Firebase Terhubung");
         } catch (e) {
-            console.error("Firebase error: Check config", e);
-            alert("Error: Konfigurasi Firebase belum benar. Data tidak akan tersimpan online.");
+            console.error("Firebase Error:", e);
+            alert("PERINGATAN: Config Firebase belum diisi. Data tidak akan tersimpan online.");
         }
 
-        // --- STATE MANAGEMENT ---
-        let currentUser = null; // { name, asrama, role }
-        let allAttendanceData = [];
+        // --- VARIABEL GLOBAL ---
+        let currentUser = null;
+        let allData = [];
 
-        // --- DOM ELEMENTS ---
-        const loginSection = document.getElementById('login-section');
-        const dashboardSection = document.getElementById('dashboard-section');
-        const formMusyrif = document.getElementById('form-musyrif');
-        const formAdmin = document.getElementById('form-admin');
-        
-        // --- LOGIN LOGIC ---
+        // --- FUNGSI LOGIN (Logic) ---
         window.switchLogin = (type) => {
+            const btnMusyrif = document.getElementById('btn-login-musyrif');
+            const btnAdmin = document.getElementById('btn-login-admin');
+            const formMusyrif = document.getElementById('form-musyrif');
+            const formAdmin = document.getElementById('form-admin');
+
             if(type === 'musyrif') {
                 formMusyrif.classList.remove('hidden');
                 formAdmin.classList.add('hidden');
-                document.getElementById('btn-login-musyrif').classList.replace('bg-gray-200', 'bg-blue-600');
-                document.getElementById('btn-login-musyrif').classList.replace('text-gray-700', 'text-white');
-                document.getElementById('btn-login-admin').classList.replace('bg-red-600', 'bg-gray-200');
-                document.getElementById('btn-login-admin').classList.replace('text-white', 'text-gray-700');
+                btnMusyrif.className = "flex-1 py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition";
+                btnAdmin.className = "flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition";
             } else {
                 formMusyrif.classList.add('hidden');
                 formAdmin.classList.remove('hidden');
-                document.getElementById('btn-login-admin').classList.replace('bg-gray-200', 'bg-red-600');
-                document.getElementById('btn-login-admin').classList.replace('text-gray-700', 'text-white');
-                document.getElementById('btn-login-musyrif').classList.replace('bg-blue-600', 'bg-gray-200');
-                document.getElementById('btn-login-musyrif').classList.replace('text-white', 'text-gray-700');
+                btnAdmin.className = "flex-1 py-2 px-4 bg-red-600 text-white rounded hover:bg-red-700 transition";
+                btnMusyrif.className = "flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition";
             }
         };
 
         window.updateMusyrifList = () => {
             const asrama = document.getElementById('login-asrama').value;
-            const nameSelect = document.getElementById('login-nama');
-            nameSelect.innerHTML = '<option value="">-- Pilih Nama --</option>';
+            const selectNama = document.getElementById('login-nama');
+            selectNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
             
-            if (!asrama) {
-                nameSelect.disabled = true;
+            if(!asrama) {
+                selectNama.disabled = true;
                 return;
             }
 
-            // Dummy list of musyrif per asrama (In real app, fetch from DB)
-            const names = ["Ahmad", "Budi", "Chandra", "Dedi", "Eko", "Fajar"]; 
+            // Daftar Nama Dummy (Bisa ditambah)
+            const names = ["Ahmad", "Budi", "Chandra", "Dedi", "Eko", "Fajar", "Gilang", "Hadi"];
             names.forEach(name => {
                 const opt = document.createElement('option');
                 opt.value = name;
-                opt.textContent = name + " (" + asrama + ")";
-                nameSelect.appendChild(opt);
+                opt.textContent = name;
+                selectNama.appendChild(opt);
             });
-            nameSelect.disabled = false;
+            selectNama.disabled = false;
         };
 
         window.handleLogin = () => {
             const asrama = document.getElementById('login-asrama').value;
-            const name = document.getElementById('login-nama').value;
+            const nama = document.getElementById('login-nama').value;
             const pass = document.getElementById('login-password').value;
 
-            if (!asrama || !name) return alert("Pilih Asrama dan Nama!");
-            if (pass !== "123456") return alert("Password salah! (Default: 123456)");
+            if(!asrama || !nama) return alert("Pilih Asrama dan Nama!");
+            if(pass !== "123456") return alert("Password Salah! (Default: 123456)");
 
-            currentUser = { name, asrama, role: 'musyrif' };
-            enterDashboard();
+            currentUser = { name: nama, asrama: asrama, role: 'musyrif' };
+            showDashboard();
         };
 
         window.handleAdminLogin = () => {
             const pin = document.getElementById('admin-pin').value;
-            if (pin !== "admin123") return alert("PIN Salah! (Default: admin123)");
-            
+            if(pin !== "admin123") return alert("PIN Salah! (Default: admin123)");
+
             currentUser = { name: "Administrator", asrama: "All", role: 'admin' };
-            enterDashboard();
+            showDashboard();
         };
 
-        function enterDashboard() {
-            loginSection.classList.add('hidden');
-            dashboardSection.classList.remove('hidden');
+        function showDashboard() {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
             
             document.getElementById('user-role-display').textContent = currentUser.role === 'admin' ? "(Admin)" : `(${currentUser.name})`;
             document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-            if (currentUser.role === 'admin') {
+            if(currentUser.role === 'admin') {
                 document.getElementById('admin-controls').classList.remove('hidden');
-                document.querySelector('.lg\\:col-span-1').classList.add('hidden'); // Hide input form for admin
+                document.querySelector('.lg\\:col-span-1').classList.add('hidden'); // Admin tidak perlu input form
             } else {
                 document.getElementById('admin-controls').classList.add('hidden');
                 document.querySelector('.lg\\:col-span-1').classList.remove('hidden');
             }
 
-            // Start Realtime Listener
-            listenToAttendance();
+            // Mulai dengarkan data dari Firebase
+            listenToData();
         }
 
-        window.logout = () => {
-            location.reload();
-        };
+        window.logout = () => location.reload();
 
-        // --- DATABASE LOGIC ---
+        // --- FUNGSI DATABASE (Simpan & Ambil Data) ---
 
-        function listenToAttendance() {
-            if (!db) return;
-            
-            // Query: Get last 100 records, ordered by time desc
-            const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
+        function listenToData() {
+            if(!db) return;
+            // Ambil data terbaru selalu
+            const q = query(collection(db, "absensi"), orderBy("timestamp", "desc"));
             
             onSnapshot(q, (snapshot) => {
-                allAttendanceData = [];
+                allData = [];
                 snapshot.forEach((doc) => {
-                    allAttendanceData.push({ id: doc.id, ...doc.data() });
+                    allData.push({ id: doc.id, ...doc.data() });
                 });
-                renderDashboard();
-            }, (error) => {
-                console.error("Data fetch error:", error);
-                document.getElementById('all-data-body').innerHTML = `<tr><td colspan="7" class="text-center text-red-500">Gagal memuat data. Cek koneksi internet.</td></tr>`;
+                updateUI();
             });
         }
 
-        window.refreshData = () => {
-            // Triggered manually if needed, though onSnapshot handles auto-update
-            const btn = document.querySelector('button[onclick="refreshData()"]');
-            if(btn) {
-                btn.innerHTML = "⏳ Loading...";
-                setTimeout(() => btn.innerHTML = "🔄 Refresh Data", 1000);
-            }
-        };
-
         window.submitAttendance = async () => {
-            if (!db) return alert("Database tidak terhubung!");
+            if(!db) return alert("Database belum terhubung! Cek konfigurasi Firebase.");
             
             const kegiatan = document.getElementById('input-kegiatan').value;
             const catatan = document.getElementById('input-catatan').value;
             const fotoInput = document.getElementById('input-foto');
             const btn = document.getElementById('btn-submit');
 
-            if (!kegiatan) return alert("Pilih kegiatan!");
-            
+            if(!kegiatan) return alert("Pilih kegiatan!");
+
             btn.disabled = true;
-            btn.innerHTML = "⏳ Menyimpan...";
+            btn.innerHTML = `<span class="loader mr-2"></span> Menyimpan...`;
 
             let fotoBase64 = "";
-            if (fotoInput.files.length > 0) {
+            if(fotoInput.files.length > 0) {
                 fotoBase64 = await toBase64(fotoInput.files[0]);
             }
 
             try {
-                await addDoc(collection(db, "attendance"), {
+                await addDoc(collection(db, "absensi"), {
                     nama: currentUser.name,
                     asrama: currentUser.asrama,
-                    kamar: "Kamar 1", // Could be dynamic
+                    kamar: "Kamar 1", // Default
                     kegiatan: kegiatan,
                     catatan: catatan,
                     foto: fotoBase64,
                     timestamp: Timestamp.now(),
-                    dateStr: new Date().toISOString().split('T')[0] // For easy filtering
+                    dateStr: new Date().toISOString().split('T')[0]
                 });
-
-                alert("✅ Absensi berhasil disimpan!");
-                // Reset form
+                alert("✅ Absensi Berhasil Disimpan!");
+                // Reset Form
                 document.getElementById('input-kegiatan').value = "";
                 document.getElementById('input-catatan').value = "";
                 document.getElementById('input-foto').value = "";
-            } catch (e) {
-                console.error("Error adding document: ", e);
+            } catch(e) {
+                console.error(e);
                 alert("❌ Gagal menyimpan: " + e.message);
             } finally {
                 btn.disabled = false;
@@ -400,7 +380,7 @@
             }
         };
 
-        // Helper: Convert File to Base64
+        // Helper: File ke Base64
         const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -408,41 +388,38 @@
             reader.onerror = error => reject(error);
         });
 
-        // --- RENDERING LOGIC ---
+        // --- UPDATE TAMPILAN (UI) ---
 
-        function renderDashboard() {
+        function updateUI() {
             renderTable();
             renderStats();
-            renderMyHistory();
+            renderHistory();
         }
 
         function renderTable() {
             const tbody = document.getElementById('all-data-body');
             tbody.innerHTML = "";
 
-            if (allAttendanceData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-4 text-center">Belum ada data absensi</td></tr>`;
+            if(allData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-4 text-center">Belum ada data</td></tr>`;
                 return;
             }
 
-            allAttendanceData.forEach(data => {
-                const dateObj = data.timestamp?.toDate() || new Date();
-                const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                const dateStr = dateObj.toLocaleDateString('id-ID');
-                
+            allData.forEach(d => {
+                const tgl = d.timestamp?.toDate().toLocaleString('id-ID') || "-";
                 const tr = document.createElement('tr');
                 tr.className = "bg-white border-b hover:bg-gray-50";
                 tr.innerHTML = `
-                    <td class="px-4 py-3">${dateStr} ${timeStr}</td>
-                    <td class="px-4 py-3 font-medium text-gray-900">${data.nama}</td>
-                    <td class="px-4 py-3">${data.asrama}</td>
-                    <td class="px-4 py-3">${data.kamar}</td>
-                    <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">${data.kegiatan}</span></td>
+                    <td class="px-4 py-3">${tgl}</td>
+                    <td class="px-4 py-3 font-bold">${d.nama}</td>
+                    <td class="px-4 py-3">${d.asrama}</td>
+                    <td class="px-4 py-3">${d.kamar}</td>
+                    <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${d.kegiatan}</span></td>
                     <td class="px-4 py-3">
-                        ${data.foto ? `<img src="${data.foto}" class="h-10 w-10 object-cover rounded cursor-pointer" onclick="viewImage('${data.foto}')">` : '-'}
+                        ${d.foto ? `<img src="${d.foto}" class="h-10 w-10 object-cover rounded cursor-pointer border" onclick="window.open('${d.foto}')">` : '-'}
                     </td>
                     <td class="px-4 py-3">
-                        ${currentUser.role === 'admin' ? `<button onclick="deleteData('${data.id}')" class="text-red-600 hover:text-red-900">Hapus</button>` : '-'}
+                        ${currentUser.role === 'admin' ? `<button onclick="hapusData('${d.id}')" class="text-red-500 hover:text-red-700">Hapus</button>` : ''}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -451,100 +428,99 @@
 
         function renderStats() {
             const today = new Date().toISOString().split('T')[0];
-            const countToday = allAttendanceData.filter(d => d.dateStr === today).length;
-            
-            // Simple stats logic (can be expanded)
-            document.getElementById('stat-today').textContent = countToday;
-            document.getElementById('stat-week').textContent = allAttendanceData.length; // Placeholder for week logic
-            document.getElementById('stat-month').textContent = allAttendanceData.length; // Placeholder for month logic
-            
-            // Unique active users today
-            const uniqueUsers = new Set(allAttendanceData.filter(d => d.dateStr === today).map(d => d.nama)).size;
+            const todayCount = allData.filter(d => d.dateStr === today).length;
+            const uniqueUsers = new Set(allData.filter(d => d.dateStr === today).map(d => d.nama)).size;
+
+            document.getElementById('stat-today').textContent = todayCount;
+            document.getElementById('stat-week').textContent = allData.length; // Simplified
+            document.getElementById('stat-month').textContent = allData.length; // Simplified
             document.getElementById('stat-active').textContent = `${uniqueUsers}/12`;
         }
 
-        function renderMyHistory() {
-            if (currentUser.role === 'admin') return;
-
+        function renderHistory() {
+            if(currentUser.role === 'admin') return;
             const tbody = document.getElementById('my-history-body');
             tbody.innerHTML = "";
             
-            const myData = allAttendanceData.filter(d => d.nama === currentUser.name);
-
-            if (myData.length === 0) {
+            const myData = allData.filter(d => d.nama === currentUser.name).slice(0, 5);
+            
+            if(myData.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="3" class="px-2 py-4 text-center">Belum ada riwayat</td></tr>`;
                 return;
             }
 
-            myData.slice(0, 5).forEach(data => { // Show last 5
-                const dateObj = data.timestamp?.toDate() || new Date();
-                const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                
+            myData.forEach(d => {
+                const jam = d.timestamp?.toDate().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
                 const tr = document.createElement('tr');
                 tr.className = "bg-white border-b";
                 tr.innerHTML = `
-                    <td class="px-2 py-2">${timeStr}</td>
-                    <td class="px-2 py-2">${data.kegiatan}</td>
+                    <td class="px-2 py-2">${jam}</td>
+                    <td class="px-2 py-2">${d.kegiatan}</td>
                     <td class="px-2 py-2">
-                         ${data.foto ? `<img src="${data.foto}" class="h-8 w-8 object-cover rounded" onclick="viewImage('${data.foto}')">` : '-'}
+                        ${d.foto ? `<img src="${d.foto}" class="h-8 w-8 object-cover rounded">` : '-'}
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        window.viewImage = (base64) => {
-            const win = window.open();
-            win.document.write('<iframe src="' + base64  + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+        window.refreshData = () => {
+            // Fungsi ini otomatis trigger karena onSnapshot, tapi tombol disediakan untuk UX
+            const btn = document.querySelector('button[onclick="refreshData()"]');
+            if(btn) {
+                const originalText = btn.innerText;
+                btn.innerText = "⏳ Memuat...";
+                setTimeout(() => btn.innerText = originalText, 1000);
+            }
         };
 
-        // --- PDF GENERATION ---
+        // --- FITUR PDF & WA ---
+        
         window.generatePDF = (type) => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            doc.text("LAPORAN KINERJA MUSYRIF", 14, 20);
+            doc.text("LAPORAN ABSENSI MUSYRIF", 14, 20);
             doc.setFontSize(10);
-            doc.text(`Pondok Pesantren - Sistem Absensi Digital`, 14, 26);
-            doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 14, 32);
+            doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 14, 26);
             
-            let headers = [['Waktu', 'Nama', 'Asrama', 'Kegiatan']];
-            let data = allAttendanceData.map(d => [
+            let bodyData = allData.map(d => [
                 d.timestamp?.toDate().toLocaleString('id-ID'),
                 d.nama,
                 d.asrama,
                 d.kegiatan
             ]);
 
-            if (type === 'individu') {
-                const name = prompt("Masukkan Nama Musyrif:");
-                if(!name) return;
-                data = data.filter(row => row[1] === name);
-                doc.text(`Laporan Individu: ${name}`, 14, 38);
+            if(type === 'individu') {
+                const nama = prompt("Masukkan Nama Musyrif:");
+                if(!nama) return;
+                bodyData = bodyData.filter(row => row[1] === nama);
+                doc.text(`Laporan Individu: ${nama}`, 14, 32);
+            } else {
+                doc.text("Laporan Umum", 14, 32);
             }
 
             doc.autoTable({
-                head: headers,
-                body: data,
-                startY: type === 'individu' ? 45 : 40,
+                head: [['Waktu', 'Nama', 'Asrama', 'Kegiatan']],
+                body: bodyData,
+                startY: 40,
             });
 
             doc.save(`Laporan_Absensi_${type}.pdf`);
         };
 
         window.checkWhatsApp = () => {
-            const phone = "6281234567890"; // Replace with Admin WA
-            const msg = "Halo Admin, saya ingin melaporkan kendala absensi.";
+            const phone = "6281234567890"; // Ganti dengan nomor Admin
+            const msg = "Halo Admin, saya ingin konfirmasi absensi.";
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         };
 
-        // Delete function for Admin
-        window.deleteData = async (id) => {
-            if(!confirm("Yakin hapus data ini?")) return;
-            // Note: Need to import deleteDoc if implementing fully
-            alert("Fitur hapus memerlukan konfigurasi security rules Firebase.");
+        window.hapusData = async (id) => {
+            if(confirm("Yakin hapus data ini?")) {
+                // Perlu import deleteDoc jika diaktifkan penuh
+                alert("Fitur hapus memerlukan izin khusus di Firebase Rules.");
+            }
         };
-
     </script>
 </body>
 </html>
