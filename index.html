@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi Musyrif - Laporan PDF</title>
-    <!-- Menambahkan sedikit CSS dasar agar tampilan rapi (Opsional, sesuaikan dengan CSS asli Anda jika ada) -->
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        .container { max-width: 800px; margin: auto; }
+        /* CSS Dasar agar tampilan rapi */
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        button { cursor: pointer; padding: 8px 12px; margin: 5px 0; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
-        .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
-        .btn { padding: 10px 15px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
-        .hidden { display: none; }
+        input, select, textarea { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -21,12 +22,11 @@
 <div class="container">
     <h2>Absensi Musyrif - Laporan PDF</h2>
 
-    <!-- Bagian Login / Akses Masuk -->
+    <!-- BAGIAN LOGIN -->
     <div id="login-section" class="card">
         <h3>📋 Absensi Musyrif</h3>
         <p>Pilih akses masuk</p>
         
-        <!-- Pilihan Role -->
         <button onclick="showMusyrifLogin()">👤 Musyrif</button>
         <button onclick="showAdminLogin()">🛡️ Admin</button>
 
@@ -39,16 +39,16 @@
                 <option value="Al Fattah">Asrama Al Fattah</option>
                 <option value="Al Karim">Asrama Al Karim</option>
             </select>
-            <br><br>
+            
             <label>Nama Musyrif:</label>
             <select id="nama-musyrif">
                 <option value="">-- Pilih Asrama Terlebih Dahulu --</option>
             </select>
-            <br><br>
+            
             <label>Password:</label>
             <input type="password" id="password-musyrif" placeholder="🔐">
-            <br><br>
-            <button class="btn" onclick="loginMusyrif()">Masuk Musyrif</button>
+            
+            <button onclick="loginMusyrif()">Masuk Musyrif</button>
             <a href="#">💬 Lupa Password? (WA)</a>
         </div>
 
@@ -56,12 +56,11 @@
         <div id="form-admin" class="hidden" style="margin-top: 15px;">
             <label>PIN Admin:</label>
             <input type="password" id="pin-admin" placeholder="🛡️">
-            <br><br>
-            <button class="btn" onclick="loginAdmin()">Masuk Admin</button>
+            <button onclick="loginAdmin()">Masuk Admin</button>
         </div>
     </div>
 
-    <!-- Dashboard (Awalnya disembunyikan) -->
+    <!-- DASHBOARD (Awalnya Sembunyi) -->
     <div id="dashboard-section" class="hidden">
         <div class="card">
             <h3>Dashboard</h3>
@@ -84,38 +83,7 @@
             <p>Aktif: <span id="stat-aktif">0/12</span></p>
         </div>
 
-        <!-- Grafik & Performa -->
-        <div class="card">
-            <h4>📊 Performa Musyrif</h4>
-            <div id="performa-container">Loading...</div>
-            <h4>📈 Grafik Kinerja Detail</h4>
-            <canvas id="chartKinerja"></canvas> <!-- Placeholder untuk Chart.js jika digunakan nanti -->
-        </div>
-
-        <!-- Tabel Data Absensi -->
-        <div class="card">
-            <h4>📜 Semua Data Absensi</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Waktu</th>
-                        <th>Nama</th>
-                        <th>Asrama</th>
-                        <th>Kamar</th>
-                        <th>Kegiatan</th>
-                        <th>Foto</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tabel-absensi-body">
-                    <tr>
-                        <td colspan="7">Klik "Refresh Data" untuk memuat</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Input Absensi (Khusus Musyrif) -->
+        <!-- Input Absensi -->
         <div id="input-absensi-section" class="card hidden">
             <h4>📝 Input Absensi</h4>
             <label>Kegiatan:</label>
@@ -125,42 +93,41 @@
                 <option value="Murottal">Murottal</option>
                 <option value="Rapat">Rapat</option>
             </select>
-            <br><br>
+            
             <label>Foto Kegiatan:</label>
             <input type="file" accept="image/*" capture="user"> 📷 Gunakan kamera depan
-            <br><br>
+            
             <label>Catatan:</label>
             <textarea id="input-catatan"></textarea>
-            <br><br>
-            <button class="btn" onclick="kirimAbsensi()">✅ Kirim Absensi</button>
+            
+            <button onclick="kirimAbsensi()">✅ Kirim Absensi</button>
         </div>
 
-        <!-- Riwayat Saya -->
+        <!-- Tabel Data -->
         <div class="card">
-            <h4>📜 Riwayat Absensi Saya</h4>
+            <h4>📜 Semua Data Absensi</h4>
             <table>
                 <thead>
                     <tr>
-                        <th>Waktu</th>
-                        <th>Kegiatan</th>
-                        <th>Foto</th>
+                        <th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kamar</th><th>Kegiatan</th><th>Foto</th><th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="tabel-riwayat-body">
-                    <tr>
-                        <td colspan="3">Belum ada riwayat</td>
-                    </tr>
+                <tbody id="tabel-absensi-body">
+                    <tr><td colspan="7">Klik "Refresh Data" untuk memuat</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- SCRIPT FIREBASE DAN LOGIKA APLIKASI -->
+<!-- ====================================================== -->
+<!-- LETAKKAN KODE FIREBASE DI SINI (SEBELUM </body>) -->
+<!-- ====================================================== -->
 <script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
   // Your web app's Firebase configuration
   const firebaseConfig = {
@@ -175,113 +142,9 @@
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  // --- Fungsi Global agar bisa diakses oleh HTML onclick ---
-  window.showMusyrifLogin = function() {
-      document.getElementById('form-musyrif').classList.remove('hidden');
-      document.getElementById('form-admin').classList.add('hidden');
-  };
-
-  window.showAdminLogin = function() {
-      document.getElementById('form-admin').classList.remove('hidden');
-      document.getElementById('form-musyrif').classList.add('hidden');
-  };
-
-  window.loadNamaMusyrif = function() {
-      // Logika dummy untuk contoh, bisa dikembangkan untuk ambil dari Firebase
-      const asrama = document.getElementById('pilih-asrama').value;
-      const selectNama = document.getElementById('nama-musyrif');
-      selectNama.innerHTML = '<option value="">-- Pilih Nama --</option>';
-      
-      if(asrama === 'Al Hakim') {
-          selectNama.innerHTML += '<option value="Ustadz A">Ustadz A</option>';
-      } else if (asrama === 'Al Fattah') {
-          selectNama.innerHTML += '<option value="Ustadz B">Ustadz B</option>';
-      } else if (asrama === 'Al Karim') {
-          selectNama.innerHTML += '<option value="Ustadz C">Ustadz C</option>';
-      }
-  };
-
-  window.loginMusyrif = function() {
-      const nama = document.getElementById('nama-musyrif').value;
-      if(nama) {
-          alert("Login Berhasil sebagai: " + nama);
-          document.getElementById('login-section').classList.add('hidden');
-          document.getElementById('dashboard-section').classList.remove('hidden');
-          document.getElementById('input-absensi-section').classList.remove('hidden'); // Tampilkan input untuk musyrif
-      } else {
-          alert("Pilih nama terlebih dahulu");
-      }
-  };
-
-  window.loginAdmin = function() {
-      const pin = document.getElementById('pin-admin').value;
-      if(pin) {
-          alert("Login Admin Berhasil");
-          document.getElementById('login-section').classList.add('hidden');
-          document.getElementById('dashboard-section').classList.remove('hidden');
-          document.getElementById('input-absensi-section').classList.add('hidden'); // Admin tidak input absen
-      } else {
-          alert("Masukkan PIN");
-      }
-  };
-
-  window.logout = function() {
-      location.reload();
-  };
-
-  window.refreshData = function() {
-      alert("Mengambil data dari Firebase...");
-      // Contoh membaca data dari Firebase
-      const starCountRef = ref(db, 'absensi/');
-      onValue(starCountRef, (snapshot) => {
-          const data = snapshot.val();
-          console.log(data);
-          // Update UI tabel disini
-          document.getElementById('tabel-absensi-body').innerHTML = "<tr><td colspan='7'>Data berhasil dimuat (cek console)</td></tr>";
-      });
-  };
-
-  window.kirimAbsensi = function() {
-      const kegiatan = document.getElementById('input-kegiatan').value;
-      const nama = document.getElementById('nama-musyrif').value; // Ambil dari session/login nanti
-      
-      if(!kegiatan) {
-          alert("Pilih kegiatan!");
-          return;
-      }
-
-      // Simpan ke Firebase
-      const newPostKey = push(ref(db, 'absensi')).key;
-      const updates = {};
-      updates['/absensi/' + newPostKey] = {
-          waktu: new Date().toISOString(),
-          nama: nama || "Test User",
-          kegiatan: kegiatan,
-          asrama: document.getElementById('pilih-asrama').value
-      };
-
-      set(ref(db, 'absensi/' + newPostKey), {
-          waktu: new Date().toLocaleString(),
-          nama: nama || "Test User",
-          kegiatan: kegiatan,
-          asrama: document.getElementById('pilih-asrama').value
-      }).then(() => {
-          alert("Absensi berhasil dikirim!");
-      }).catch((error) => {
-          alert("Gagal mengirim: " + error.message);
-      });
-  };
-
-  window.generatePDF = function(type) {
-      alert("Fitur Generate PDF " + type + " akan segera hadir.");
-  };
   
-  window.checkWA = function() {
-      alert("Mengecek notifikasi WhatsApp...");
-  };
-
+  console.log("Firebase berhasil diinisialisasi!");
+  // Di sini Anda bisa menambahkan logika untuk menghubungkan tombol-tombol di atas dengan Database
 </script>
 
 </body>
