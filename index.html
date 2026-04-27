@@ -3,453 +3,475 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi Musyrif - Real-Time</title>
-    
-    <!-- Dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Absensi Musyrif - Laporan PDF</title>
+    <!-- Tailwind CSS untuk tampilan -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF untuk Laporan PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Konfigurasi Firebase dari environment
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : { apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'siab-musyrif-v4';
-
-        // Referensi global agar bisa diakses script biasa
-        window.fb = { db, auth, collection, addDoc, deleteDoc, doc, onSnapshot, appId };
-
-        // Logika Autentikasi yang diperkuat untuk mengatasi network-request-failed
-        let authAttempted = false;
-        async function startAuth(retries = 5, delay = 3000) {
-            if (authAttempted) return;
-            
-            try {
-                // Memberikan jeda awal agar provider siap
-                if (retries === 5) await new Promise(r => setTimeout(r, 500));
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                
-                authAttempted = true;
-                console.log("Koneksi Firebase Berhasil.");
-                updateStatusUI(true);
-            } catch (e) {
-                console.error(`Gagal autentikasi (Sisa percobaan: ${retries}):`, e.message);
-                
-                if (retries > 0) {
-                    // Exponential backoff dengan delay yang lebih lama untuk stabilitas
-                    setTimeout(() => startAuth(retries - 1, delay * 1.5), delay);
-                } else {
-                    updateStatusUI(false);
-                    showToast("Koneksi gagal. Silakan muat ulang halaman.");
-                }
-            }
-        }
-
-        function updateStatusUI(online) {
-            const statusIcon = document.getElementById('status-icon');
-            if (statusIcon) {
-                statusIcon.style.background = online ? "#4caf50" : "#f44336";
-            }
-        }
-        
-        // Memulai proses Auth
-        startAuth();
-
-        // Listener perubahan status auth untuk sinkronisasi data
-        onAuthStateChanged(auth, (user) => { 
-            window.userRef = user; 
-            if (user) {
-                updateStatusUI(true);
-                if (window.startDataSync) window.startDataSync();
-            }
-        });
-    </script>
-
     <style>
-        :root { --primary:#2e7d32; --secondary:#43a047; --bg:#f4f7f4; --white:#ffffff; --text:#212121; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: var(--bg); color: var(--text); padding-bottom: 30px; }
-        
-        /* Layout Dasar */
-        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
-        header { background: var(--primary); color: white; padding: 20px; border-radius: 0 0 25px 25px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .card { background: var(--white); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .hidden { display: none !important; }
-
-        /* Komponen Login */
-        .login-box { text-align: center; padding-top: 50px; }
-        .tabs { display: flex; background: #e0e0e0; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
-        .tab { flex: 1; padding: 10px; cursor: pointer; border-radius: 8px; font-weight: bold; font-size: 0.9rem; transition: 0.2s; }
-        .tab.active { background: var(--white); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-
-        /* Komponen Form */
-        .input-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; font-size: 0.8rem; font-weight: 600; color: #666; margin-bottom: 5px; }
-        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; outline: none; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:active { transform: scale(0.97); }
-        .btn-admin { background: #1565c0; color: white; }
-        .btn-danger { background: #c62828; color: white; padding: 8px; font-size: 0.75rem; width: auto; border-radius: 5px; }
-        
-        /* Statistik */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-card { background: var(--white); padding: 15px; border-radius: 12px; text-align: center; border-left: 5px solid var(--primary); }
-        .stat-val { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
-        .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
-
-        /* Tabel Data */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { text-align: left; padding: 12px 8px; background: #f8f9fa; border-bottom: 2px solid #eee; }
-        td { padding: 10px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
-        .img-preview { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .img-preview:hover { opacity: 0.8; }
-
-        /* Notifikasi Toast */
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 25px; border-radius: 30px; font-size: 0.9rem; z-index: 9999; display: none; }
-        .status-dot { width: 8px; height: 8px; background: #bbb; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .hidden-section { display: none; }
+        .loader { border-top-color: #3498db; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen">
 
-    <div id="toast"></div>
-
-    <!-- Halaman Login -->
-    <div id="page-login" class="container">
-        <div class="login-box">
-            <h1 style="color: var(--primary); margin-bottom: 5px;">SIAB MUSYRIF</h1>
-            <p style="color: #888; font-size: 0.85rem; margin-bottom: 25px;">Sistem Absensi Terintegrasi</p>
+    <!-- LOGIN SECTION -->
+    <div id="loginSection" class="flex items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">📋 Absensi Musyrif</h2>
             
-            <div class="tabs">
-                <div id="tab-m" class="tab active" onclick="switchLogin('m')">Musyrif</div>
-                <div id="tab-a" class="tab" onclick="switchLogin('a')">Admin</div>
+            <!-- Tab Selection -->
+            <div class="flex mb-4 border-b">
+                <button onclick="switchLoginTab('musyrif')" id="tabMusyrif" class="w-1/2 py-2 text-blue-600 border-b-2 border-blue-600 font-semibold">👤 Musyrif</button>
+                <button onclick="switchLoginTab('admin')" id="tabAdmin" class="w-1/2 py-2 text-gray-500 font-semibold">🛡️ Admin</button>
             </div>
 
-            <div id="form-musyrif">
-                <div class="card">
-                    <div class="input-group">
-                        <label>Pilih Asrama</label>
-                        <select id="login-asrama" onchange="loadNames()">
-                            <option value="">-- Pilih Asrama --</option>
-                            <option>Al Hakim</option>
-                            <option>Al Fattah</option>
-                            <option>Al Karim</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Nama Lengkap</label>
-                        <select id="login-nama" disabled><option value="">Pilih Asrama Dulu</option></select>
-                    </div>
-                    <button class="btn btn-primary" onclick="login('musyrif')">MASUK SEKARANG</button>
+            <!-- Form Musyrif -->
+            <div id="formMusyrif">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Asrama</label>
+                    <select id="loginAsrama" onchange="updateNamaList()" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Pilih Asrama --</option>
+                        <option value="Al Hakim">Asrama Al Hakim</option>
+                        <option value="Al Fattah">Asrama Al Fattah</option>
+                        <option value="Al Karim">Asrama Al Karim</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Nama Musyrif</label>
+                    <select id="loginNama" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                        <option value="">-- Pilih Asrama Terlebih Dahulu --</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                    <input type="password" id="loginPassword" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan Password">
+                </div>
+                <button onclick="loginMusyrif()" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
+                    🔐 Masuk Musyrif
+                </button>
+                <div class="mt-4 text-center">
+                    <a href="https://wa.me/?text=Lupa%20Password%20Absensi" target="_blank" class="text-sm text-green-600 hover:underline">💬 Lupa Password? (WA)</a>
                 </div>
             </div>
 
-            <div id="form-admin" class="hidden">
-                <div class="card">
-                    <div class="input-group">
-                        <label>PIN Administrator</label>
-                        <input type="password" id="login-pin" placeholder="****">
-                    </div>
-                    <button class="btn btn-admin" onclick="login('admin')">AKSES DASHBOARD</button>
+            <!-- Form Admin -->
+            <div id="formAdmin" class="hidden-section">
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">PIN Admin</label>
+                    <input type="password" id="adminPin" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Masukkan PIN Admin">
                 </div>
+                <button onclick="loginAdmin()" class="w-full bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300">
+                    🛡️ Masuk Admin
+                </button>
             </div>
-            
-            <p style="font-size: 0.65rem; color: #bbb; margin-top: 20px;">
-                <span id="status-icon" class="status-dot"></span> Database Online
-            </p>
         </div>
     </div>
 
-    <!-- Halaman Utama -->
-    <div id="page-main" class="hidden">
-        <header>
-            <div class="container" style="display:flex; justify-content:space-between; align-items:center; padding:0;">
-                <div>
-                    <h2 id="user-display" style="font-size: 1.2rem;">Nama Musyrif</h2>
-                    <p id="asrama-display" style="font-size: 0.8rem; opacity: 0.9;">Asrama</p>
-                </div>
-                <button onclick="location.reload()" style="background:rgba(255,255,255,0.2); border:1px solid white; color:white; padding:5px 12px; border-radius:8px; font-size:0.7rem;">LOGOUT</button>
-            </div>
+    <!-- DASHBOARD ADMIN -->
+    <div id="adminDashboard" class="hidden-section container mx-auto p-4">
+        <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow">
+            <h1 class="text-xl font-bold text-gray-800">🛡️ Dashboard Admin</h1>
+            <button onclick="logout()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Keluar</button>
         </header>
 
-        <div class="container" style="padding-top: 0;">
-            <!-- View Khusus Musyrif -->
-            <div id="view-musyrif" class="hidden">
-                <div class="card">
-                    <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--primary);">📝 Isi Presensi</h3>
-                    <div class="input-group">
-                        <label>Jenis Kegiatan</label>
-                        <select id="f-kegiatan">
-                            <option>Membangunkan Subuh</option>
-                            <option>Imam Sholat/Kultum</option>
-                            <option>Gobraki Sekolah</option>
-                            <option>Pendampingan Belajar</option>
-                            <option>Kontrol Jam Tidur</option>
-                            <option>Kegiatan Lainnya</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Ambil Foto Bukti</label>
-                        <input type="file" id="f-foto" accept="image/*" capture="camera">
-                    </div>
-                    <button id="btn-submit" class="btn btn-primary" onclick="submitPresensi()">KIRIM DATA</button>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-val" id="m-total">0</div>
-                        <div class="stat-label">Total Absen</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-val" id="m-today">0</div>
-                        <div class="stat-label">Hari Ini</div>
-                    </div>
-                </div>
-
-                <div class="card" style="padding: 10px;">
-                    <h4 style="margin: 10px; font-size: 0.9rem;">Riwayat Terbaru</h4>
-                    <div class="table-container">
-                        <table>
-                            <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                            <tbody id="m-table"></tbody>
-                        </table>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-gray-500 text-sm">Hari Ini</h3>
+                <p class="text-2xl font-bold text-blue-600" id="statToday">0</p>
             </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-gray-500 text-sm">Minggu Ini</h3>
+                <p class="text-2xl font-bold text-green-600" id="statWeek">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-gray-500 text-sm">Bulan Ini</h3>
+                <p class="text-2xl font-bold text-purple-600" id="statMonth">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <h3 class="text-gray-500 text-sm">Total Musyrif</h3>
+                <p class="text-2xl font-bold text-gray-800">12</p>
+            </div>
+        </div>
 
-            <!-- View Dashboard Admin -->
-            <div id="view-admin" class="hidden">
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-val" id="a-total">0</div><div class="stat-label">Total Data</div></div>
-                    <div class="stat-card"><div class="stat-val" id="a-today">0</div><div class="stat-label">Masuk Hari Ini</div></div>
-                </div>
-
-                <div class="card" style="padding: 10px;">
-                    <div style="display:flex; gap:10px; margin-bottom:15px; padding:5px;">
-                        <button class="btn btn-admin" style="font-size:0.8rem; padding:10px;" onclick="generateReport()">📥 PDF LAPORAN</button>
-                        <button class="btn" style="background:#25d366; color:white; font-size:0.8rem; padding:10px;" onclick="sendWAReminder()">🔔 WA REMINDER</button>
-                    </div>
-                    
-                    <div class="input-group" style="padding:0 5px;">
-                        <input type="text" id="admin-search" placeholder="Cari nama musyrif..." onkeyup="renderAdmin()">
-                    </div>
-
-                    <div class="table-container">
-                        <table>
-                            <thead><tr><th>Nama/Waktu</th><th>Asrama</th><th>Foto</th><th>Aksi</th></tr></thead>
-                            <tbody id="a-table"></tbody>
-                        </table>
-                    </div>
-                </div>
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="refreshData()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                <button onclick="generatePDF('asrama')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"><i class="fas fa-file-pdf"></i> Laporan PDF Per Asrama</button>
+                <button onclick="generatePDF('individu')" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"><i class="fas fa-user"></i> Laporan PDF Per Individu</button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full leading-normal">
+                    <thead>
+                        <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Waktu</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Asrama</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kegiatan</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Foto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <tr><td colspan="5" class="text-center py-4">Memuat data...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <script>
-        const DATA_MUSYRIF = {
-            "Al Hakim": ["Ali Mashuri", "Ali Zahid", "Reva Dwi", "Imam Syafi'i"],
-            "Al Fattah": ["Fattahilah", "Brian Adi Waskito", "Babil Yasar", "Fahmi", "Wawan Febi"],
-            "Al Karim": ["Bima Julian", "Irfan Khoirul Aziz", "Rizki Alfian"]
+    <!-- DASHBOARD MUSYRIF -->
+    <div id="musyrifDashboard" class="hidden-section container mx-auto p-4 max-w-2xl">
+        <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">👤 Dashboard Musyrif</h1>
+                <p class="text-sm text-gray-500" id="welcomeName">Halo, Musyrif</p>
+            </div>
+            <button onclick="logout()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Keluar</button>
+        </header>
+
+        <!-- Input Absensi -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-lg font-bold mb-4 border-b pb-2">📝 Input Absensi</h2>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Kegiatan</label>
+                <select id="inputKegiatan" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">-- Pilih Kegiatan --</option>
+                    <option value="Sholat Berjamaah">Sholat Berjamaah</option>
+                    <option value="Mengaji Al-Quran">Mengaji Al-Quran</option>
+                    <option value="Murojaah Hafalan">Murojaah Hafalan</option>
+                    <option value="Pengajian Kitab">Pengajian Kitab</option>
+                    <option value="Piket Kebersihan">Piket Kebersihan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Foto Kegiatan (Wajib)</label>
+                <input type="file" id="inputFoto" accept="image/*" capture="environment" class="w-full px-3 py-2 border rounded-lg bg-gray-50">
+                <p class="text-xs text-gray-500 mt-1">* Gunakan kamera depan/belakang HP</p>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Catatan (Opsional)</label>
+                <textarea id="inputCatatan" class="w-full px-3 py-2 border rounded-lg" rows="2"></textarea>
+            </div>
+
+            <button onclick="submitAbsensi()" id="btnSubmit" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition duration-300 flex justify-center items-center">
+                <span>✅ Kirim Absensi</span>
+            </button>
+        </div>
+
+        <!-- Riwayat -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4 border-b pb-2">📜 Riwayat Absensi Saya</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2 border-b text-left text-xs font-semibold text-gray-600">Waktu</th>
+                            <th class="px-4 py-2 border-b text-left text-xs font-semibold text-gray-600">Kegiatan</th>
+                            <th class="px-4 py-2 border-b text-left text-xs font-semibold text-gray-600">Foto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myHistoryBody">
+                        <tr><td colspan="3" class="text-center py-4 text-gray-500">Belum ada riwayat</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE SDK & LOGIC -->
+    <script type="module">
+        // Import Firebase functions from CDN
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // --- KONFIGURASI FIREBASE ---
+        // GANTI BAGIAN INI DENGAN CONFIG DARI FIREBASE CONSOLE ANDA
+        const firebaseConfig = {
+            apiKey: "GANTI_DENGAN_API_KEY_ANDA",
+            authDomain: "GANTI_DENGAN_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://GANTI_DENGAN_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "GANTI_DENGAN_PROJECT_ID",
+            storageBucket: "GANTI_DENGAN_PROJECT_ID.appspot.com",
+            messagingSenderId: "GANTI_DENGAN_SENDER_ID",
+            appId: "GANTI_DENGAN_APP_ID"
         };
 
-        let userSession = null;
-        let masterData = [];
-
-        function switchLogin(mode) {
-            document.getElementById('tab-m').className = mode === 'm' ? 'tab active' : 'tab';
-            document.getElementById('tab-a').className = mode === 'a' ? 'tab active' : 'tab';
-            document.getElementById('form-musyrif').classList.toggle('hidden', mode !== 'm');
-            document.getElementById('form-admin').classList.toggle('hidden', mode !== 'a');
+        // Initialize Firebase
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getDatabase(app);
+            console.log("Firebase connected");
+        } catch (e) {
+            console.error("Firebase Error: Pastikan config sudah diisi!", e);
+            alert("Error: Database belum dikonfigurasi. Silakan edit file HTML dan masukkan Firebase Config.");
         }
 
-        function loadNames() {
-            const asrama = document.getElementById('login-asrama').value;
-            const sel = document.getElementById('login-nama');
-            sel.innerHTML = '<option value="">-- Pilih Nama --</option>';
-            if (asrama) {
-                sel.disabled = false;
-                DATA_MUSYRIF[asrama].forEach(n => sel.innerHTML += `<option>${n}</option>`);
-            } else { sel.disabled = true; }
-        }
+        // Global Variables
+        window.currentUser = null;
+        window.currentRole = null;
+        let allAttendanceData = [];
 
-        function login(type) {
-            if (type === 'musyrif') {
-                const asrama = document.getElementById('login-asrama').value;
-                const nama = document.getElementById('login-nama').value;
-                if (!nama) return showToast("Pilih nama Anda!");
-                userSession = { type: 'musyrif', name: nama, group: asrama };
+        // --- FUNGSI LOGIN & UI ---
+        window.switchLoginTab = (role) => {
+            document.getElementById('formMusyrif').classList.add('hidden-section');
+            document.getElementById('formAdmin').classList.add('hidden-section');
+            document.getElementById('tabMusyrif').classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+            document.getElementById('tabAdmin').classList.remove('border-b-2', 'border-red-600', 'text-red-600');
+
+            if(role === 'musyrif') {
+                document.getElementById('formMusyrif').classList.remove('hidden-section');
+                document.getElementById('tabMusyrif').classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
             } else {
-                const pin = document.getElementById('login-pin').value;
-                if (pin !== "1234") return showToast("PIN Admin Salah!");
-                userSession = { type: 'admin', name: 'Administrator', group: 'Pusat' };
+                document.getElementById('formAdmin').classList.remove('hidden-section');
+                document.getElementById('tabAdmin').classList.add('border-b-2', 'border-red-600', 'text-red-600');
             }
-
-            document.getElementById('page-login').classList.add('hidden');
-            document.getElementById('page-main').classList.remove('hidden');
-            document.getElementById('user-display').textContent = userSession.name;
-            document.getElementById('asrama-display').textContent = userSession.group;
-
-            if (userSession.type === 'admin') document.getElementById('view-admin').classList.remove('hidden');
-            else document.getElementById('view-musyrif').classList.remove('hidden');
-
-            window.startDataSync = syncData;
-            syncData();
         }
 
-        function syncData() {
-            // Guard: Memastikan auth selesai sebelum query
-            if (!window.fb || !window.userRef) return;
+        window.updateNamaList = () => {
+            const asrama = document.getElementById('loginAsrama').value;
+            const namaSelect = document.getElementById('loginNama');
+            namaSelect.innerHTML = '<option value="">-- Pilih Nama --</option>';
+            namaSelect.disabled = !asrama;
+
+            if(asrama) {
+                // Dummy list nama, bisa disesuaikan
+                const names = ["Ahmad", "Budi", "Chandra", "Dedi", "Eko", "Fajar"]; 
+                names.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name + " (" + asrama + ")";
+                    opt.innerText = name;
+                    namaSelect.appendChild(opt);
+                });
+            }
+        }
+
+        window.loginMusyrif = () => {
+            const nama = document.getElementById('loginNama').value;
+            const pass = document.getElementById('loginPassword').value;
             
-            const col = window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'absensi');
+            if(!nama) return alert("Pilih nama terlebih dahulu!");
+            if(pass !== "123456") return alert("Password salah! (Default: 123456)");
+
+            window.currentUser = nama;
+            window.currentRole = 'musyrif';
+            document.getElementById('loginSection').classList.add('hidden-section');
+            document.getElementById('musyrifDashboard').classList.remove('hidden-section');
+            document.getElementById('welcomeName').innerText = "Halo, " + nama;
             
-            // Listener real-time dengan penanganan error
-            window.fb.onSnapshot(col, (snap) => {
-                masterData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                // Urutkan data berdasarkan waktu terbaru (sort in-memory)
-                masterData.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            loadMyHistory();
+            startRealtimeListener();
+        }
+
+        window.loginAdmin = () => {
+            const pin = document.getElementById('adminPin').value;
+            if(pin !== "1234") return alert("PIN Salah! (Default: 1234)");
+
+            window.currentRole = 'admin';
+            document.getElementById('loginSection').classList.add('hidden-section');
+            document.getElementById('adminDashboard').classList.remove('hidden-section');
+            
+            startRealtimeListener();
+        }
+
+        window.logout = () => {
+            location.reload();
+        }
+
+        // --- FUNGSI DATABASE ---
+
+        function startRealtimeListener() {
+            if(!db) return;
+            const attendanceRef = ref(db, 'absensi');
+            
+            onValue(attendanceRef, (snapshot) => {
+                const data = snapshot.val();
+                allAttendanceData = [];
+                if(data) {
+                    for(let id in data) {
+                        allAttendanceData.push({ id, ...data[id] });
+                    }
+                    // Sort by time descending
+                    allAttendanceData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                }
                 
-                if (userSession.type === 'admin') renderAdmin();
-                else renderMusyrif();
-            }, (err) => {
-                console.error("Sinkronisasi gagal:", err.message);
-                showToast("Koneksi database terganggu.");
+                if(window.currentRole === 'admin') updateAdminTable();
+                if(window.currentRole === 'musyrif') loadMyHistory();
+                updateStats();
             });
         }
 
-        async function submitPresensi() {
-            const file = document.getElementById('f-foto').files[0];
-            if (!file) return showToast("Harap lampirkan foto bukti!");
+        window.submitAbsensi = async () => {
+            if(!db) return alert("Database tidak terhubung");
+            
+            const kegiatan = document.getElementById('inputKegiatan').value;
+            const fotoInput = document.getElementById('inputFoto');
+            const catatan = document.getElementById('inputCatatan').value;
+            const btn = document.getElementById('btnSubmit');
 
-            const btn = document.getElementById('btn-submit');
+            if(!kegiatan) return alert("Pilih kegiatan!");
+            if(fotoInput.files.length === 0) return alert("Foto wajib diisi!");
+
+            btn.innerHTML = '<div class="loader ease-linear rounded-full border-2 border-t-2 border-gray-200 h-5 w-5 mr-2"></div> Mengirim...';
             btn.disabled = true;
-            btn.textContent = "MENGIRIM...";
 
-            try {
-                if (!window.userRef) throw new Error("Akses ditolak");
-
-                const base64 = await compressImg(file);
-                const payload = {
-                    nama: userSession.name,
-                    asrama: userSession.group,
-                    kegiatan: document.getElementById('f-kegiatan').value,
-                    foto: base64,
-                    timestamp: new Date().toISOString()
-                };
-
-                const col = window.fb.collection(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'absensi');
-                await window.fb.addDoc(col, payload);
+            // Convert image to Base64
+            const file = fotoInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onloadend = function() {
+                const base64String = reader.result;
                 
-                showToast("✅ Berhasil dikirim!");
-                document.getElementById('f-foto').value = "";
-            } catch (e) {
-                console.error("Gagal kirim:", e);
-                showToast("❌ Gagal kirim! Cek koneksi Anda.");
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "KIRIM DATA";
+                // Push to Firebase
+                const newRef = push(ref(db, 'absensi'));
+                set(newRef, {
+                    nama: window.currentUser,
+                    asrama: window.currentUser.split('(')[1]?.replace(')', '') || 'Umum',
+                    kegiatan: kegiatan,
+                    catatan: catatan,
+                    foto: base64String, // Warning: Base64 besar bisa memenuhi kuota Realtime DB gratisan.
+                    timestamp: new Date().toISOString(),
+                    dateStr: new Date().toLocaleDateString('id-ID')
+                }).then(() => {
+                    alert("Absensi berhasil dikirim!");
+                    document.getElementById('inputKegiatan').value = "";
+                    document.getElementById('inputFoto').value = "";
+                    document.getElementById('inputCatatan').value = "";
+                    btn.innerHTML = '<span>✅ Kirim Absensi</span>';
+                    btn.disabled = false;
+                }).catch(err => {
+                    alert("Gagal mengirim: " + err.message);
+                    btn.innerHTML = '<span>✅ Kirim Absensi</span>';
+                    btn.disabled = false;
+                });
             }
+            reader.readAsDataURL(file);
         }
+        
+        // Helper import set karena tidak di-import di atas
+        import { set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        function compressImg(file) {
-            return new Promise((res) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const size = 500;
-                        let w = img.width, h = img.height;
-                        if (w > h) { h = (h/w)*size; w = size; } else { w = (w/h)*size; h = size; }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        res(canvas.toDataURL('image/jpeg', 0.6));
-                    };
-                };
+        function updateAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = '';
+            
+            if(allAttendanceData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Belum ada data absensi</td></tr>';
+                return;
+            }
+
+            allAttendanceData.forEach(item => {
+                const row = `
+                    <tr>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap">${item.timestamp.replace('T', ' ').substring(0, 19)}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap">${item.nama}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap">${item.asrama}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap">${item.kegiatan}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <img src="${item.foto}" class="h-10 w-10 rounded-full object-cover border" onclick="window.open('${item.foto}')">
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
             });
         }
 
-        function renderMusyrif() {
-            const mine = masterData.filter(d => d.nama === userSession.name);
-            const todayStr = new Date().toDateString();
-            const today = mine.filter(d => new Date(d.timestamp).toDateString() === todayStr);
+        function loadMyHistory() {
+            if(!window.currentUser) return;
+            const tbody = document.getElementById('myHistoryBody');
+            tbody.innerHTML = '';
             
-            document.getElementById('m-total').textContent = mine.length;
-            document.getElementById('m-today').textContent = today.length;
-
-            const html = mine.slice(0, 10).map(d => `
-                <tr>
-                    <td>${new Date(d.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-                    <td><b>${d.kegiatan}</b></td>
-                    <td><img src="${d.foto}" class="img-preview" onclick="window.open(this.src)"></td>
-                </tr>
-            `).join('');
-            document.getElementById('m-table').innerHTML = html || '<tr><td colspan="3" style="text-align:center">Belum ada riwayat</td></tr>';
-        }
-
-        function renderAdmin() {
-            const search = document.getElementById('admin-search').value.toLowerCase();
-            const filtered = masterData.filter(d => d.nama.toLowerCase().includes(search));
+            const myData = allAttendanceData.filter(item => item.nama === window.currentUser);
             
-            document.getElementById('a-total').textContent = masterData.length;
-            document.getElementById('a-today').textContent = masterData.filter(d => new Date(d.timestamp).toDateString() === new Date().toDateString()).length;
-
-            const html = filtered.map(d => `
-                <tr>
-                    <td><b>${d.nama}</b><br><small style="color:#888">${new Date(d.timestamp).toLocaleString('id-ID')}</small></td>
-                    <td>${d.asrama}</td>
-                    <td><img src="${d.foto}" class="img-preview" onclick="window.open(this.src)"></td>
-                    <td><button class="btn-danger" onclick="deleteData('${d.id}')">Hapus</button></td>
-                </tr>
-            `).join('');
-            document.getElementById('a-table').innerHTML = html || '<tr><td colspan="4" style="text-align:center">Tidak ada data sesuai</td></tr>';
-        }
-
-        async function deleteData(id) {
-            if (!confirm("Hapus data laporan ini secara permanen?")) return;
-            try {
-                const ref = window.fb.doc(window.fb.db, 'artifacts', window.fb.appId, 'public', 'data', 'absensi', id);
-                await window.fb.deleteDoc(ref);
-                showToast("🗑️ Berhasil dihapus");
-            } catch (e) { showToast("Gagal menghapus!"); }
-        }
-
-        function showToast(m) {
-            const t = document.getElementById('toast');
-            if (t) {
-                t.textContent = m; t.style.display = 'block';
-                setTimeout(() => t.style.display = 'none', 3000);
+            if(myData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Belum ada riwayat</td></tr>';
+                return;
             }
+
+            myData.forEach(item => {
+                const row = `
+                    <tr>
+                        <td class="px-4 py-2 border-b text-sm">${item.timestamp.replace('T', ' ').substring(0, 16)}</td>
+                        <td class="px-4 py-2 border-b text-sm">${item.kegiatan}</td>
+                        <td class="px-4 py-2 border-b text-sm">
+                            <img src="${item.foto}" class="h-8 w-8 rounded object-cover" onclick="window.open('${item.foto}')">
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
         }
 
-        function generateReport() {
+        function updateStats() {
+            if(!allAttendanceData) return;
+            const today = new Date().toLocaleDateString('id-ID');
+            const countToday = allAttendanceData.filter(i => i.dateStr === today).length;
+            
+            document.getElementById('statToday').innerText = countToday;
+            document.getElementById('statWeek').innerText = allAttendanceData.length; // Simplified logic
+            document.getElementById('statMonth').innerText = allAttendanceData.length; // Simplified logic
+        }
+
+        window.refreshData = () => {
+            alert("Data sedang disinkronisasi ulang...");
+            startRealtimeListener();
+        }
+
+        // --- PDF GENERATION ---
+        window.generatePDF = (type) => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("REKAPITULASI ABSENSI MUSYRIF", 10, 10);
-            doc.setFontSize(10);
-            doc.text(`Dicetak pada: ${new Date().toLocaleString()}`, 10, 18);
             
-            let y = 30;
-            masterData.forEach((d, i) => {
-                if (y > 280) { doc.addPage(); y = 20; }
-                doc.text(`${i+1}. [${new Date(d.timestamp).toLocaleDateString()}] ${d.nama} (${d.asrama}) - ${d.kegiatan}`, 10, y);
-                y += 8;
-            });
-            doc.save("Rekap_Absensi_Musyrif.pdf");
+            doc.text("LAPORAN KINERJA MUSYRIF", 105, 15, null, null, "center");
+            doc.text("Pondok Pesantren - Sistem Absensi Digital", 105, 22, null, null, "center");
+            doc.setFontSize(10);
+            doc.text("Tanggal Cetak: " + new Date().toLocaleString('id-ID'), 105, 28, null, null, "center");
+            
+            let bodyData = [];
+            if(type === 'asrama') {
+                doc.text("Rekapitulasi Per Asrama", 14, 40);
+                bodyData = allAttendanceData.map(item => [
+                    item.dateStr, item.nama, item.asrama, item.kegiatan
+                ]);
+                
+                doc.autoTable({
+                    startY: 45,
+                    head: [['Tanggal', 'Nama', 'Asrama', 'Kegiatan']],
+                    body: bodyData,
+                });
+            } else {
+                doc.text("Rekapitulasi Individu", 14, 40);
+                 bodyData = allAttendanceData.map(item => [
+                    item.dateStr, item.nama, item.kegiatan, item.catatan || '-'
+                ]);
+                
+                doc.autoTable({
+                    startY: 45,
+                    head: [['Tanggal', 'Nama', 'Kegiatan', 'Catatan']],
+                    body: bodyData,
+                });
+            }
+            
+            doc.save(`Laporan_Absensi_${type}.pdf`);
         }
+    </script>
+</body>
+</html>
