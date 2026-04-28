@@ -1,95 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi - SIMPLE</title>
+    <title>Absensi Musyrif - Online</title>
     <style>
-        body { font-family: Arial; padding: 20px; background: #f0f0f0; max-width: 500px; margin: 0 auto; }
-        .box { background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; }
-        button { width: 100%; padding: 12px; background: green; color: white; border: none; border-radius: 8px; font-size: 16px; margin-top: 10px; cursor: pointer; }
-        input, select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-        .hapus { background: red; padding: 4px 8px; border-radius: 5px; color: white; cursor: pointer; }
-        img { width: 35px; height: 35px; object-fit: cover; border-radius: 5px; }
-        .tab { display: inline-block; width: 49%; text-align: center; padding: 10px; background: #ccc; border-radius: 10px; cursor: pointer; margin-bottom: 15px; }
-        .active { background: green; color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #e8f5e9; padding: 15px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .btn-green { background: #2e7d32; color: white; }
+        .btn-red { background: #d32f2f; color: white; }
+        .btn-wa { background: #25D366; color: white; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #ddd; }
+        .foto { width: 35px; height: 35px; object-fit: cover; border-radius: 5px; cursor: pointer; }
+        .header { background: #2e7d32; color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
+        .logout { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 12px; border-radius: 20px; cursor: pointer; }
+        .tab { display: inline-block; width: 49%; text-align: center; padding: 10px; background: #ddd; border-radius: 30px; cursor: pointer; margin-bottom: 15px; }
+        .tab.active { background: #2e7d32; color: white; }
         .hidden { display: none; }
+        .error { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
+        .stats { display: flex; gap: 8px; margin-bottom: 15px; }
+        .stat { flex: 1; background: #2e7d32; color: white; padding: 8px; border-radius: 10px; text-align: center; }
+        .stat .angka { font-size: 20px; font-weight: bold; }
+        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 15px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div id="loginPage">
-    <div class="box">
-        <h3 style="text-align:center">📋 ABSENSI</h3>
-        <div id="errorMsg" style="color:red; display:none; margin-bottom:10px;"></div>
-        
+<div id="loading" class="loading"><div class="spinner"></div><div>Memuat data...</div></div>
+
+<div id="loginSection">
+    <div class="card">
+        <h3 style="text-align:center">📋 ABSENSI MUSYRIF</h3>
+        <div id="loginError" class="error"></div>
         <div>
-            <span class="tab active" onclick="pilihForm('musyrif')">MUSYRIF</span>
-            <span class="tab" onclick="pilihForm('admin')">ADMIN</span>
+            <span class="tab active" onclick="pilihTab('musyrif')">MUSYRIF</span>
+            <span class="tab" onclick="pilihTab('admin')">ADMIN</span>
         </div>
         
         <form id="formMusyrif">
-            <select id="asrama">
-                <option value="">-- Asrama --</option>
-                <option value="alhakim">Al Hakim</option>
-                <option value="alfattah">Al Fattah</option>
-                <option value="alkarim">Al Karim</option>
+            <select id="inputAsrama">
+                <option value="">-- Pilih Asrama --</option>
+                <option value="hakim">Asrama Al Hakim</option>
+                <option value="fattah">Asrama Al Fattah</option>
+                <option value="karim">Asrama Al Karim</option>
             </select>
-            <select id="namaMusyrif" disabled>
+            <select id="inputNama" disabled>
                 <option value="">-- Pilih Asrama dulu --</option>
             </select>
-            <input type="password" id="password" placeholder="Password">
-            <button type="submit">MASUK</button>
+            <input type="password" id="inputPassword" placeholder="Password">
+            <button type="submit" class="btn btn-green">🔐 MASUK</button>
         </form>
         
         <form id="formAdmin" class="hidden">
-            <input type="password" id="pinAdmin" placeholder="PIN Admin">
-            <button type="submit">MASUK ADMIN</button>
+            <input type="password" id="inputPin" placeholder="PIN Admin">
+            <button type="submit" class="btn btn-green">🛡️ MASUK ADMIN</button>
         </form>
     </div>
 </div>
 
-<div id="appPage" style="display:none">
-    <div class="box" style="background: green; color: white;">
-        <h3 id="titleApp">Dashboard</h3>
-        <p id="userInfo" style="font-size:12px"></p>
-        <button onclick="logout()" style="background: rgba(255,255,255,0.3); margin-top:5px;">KELUAR</button>
+<div id="appSection" style="display:none">
+    <div class="header">
+        <h4 id="titleApp">Dashboard</h4>
+        <p id="infoUser" style="font-size:12px; margin-top:5px;"></p>
+        <button class="logout" onclick="logout()">Keluar</button>
     </div>
     
     <div id="adminArea">
-        <div class="box">
-            <button onclick="refresh()">REFRESH DATA</button>
+        <div class="card">
+            <button class="btn btn-green" onclick="loadData()">🔄 REFRESH DATA</button>
+            <button class="btn btn-wa" onclick="kirimWA()">📱 KIRIM PENGINGAT WA</button>
         </div>
-        <div class="box">
-            <h4>STATISTIK</h4>
-            <p>Hari ini: <span id="statHari">0</span></p>
-            <p>Minggu ini: <span id="statMinggu">0</span></p>
-            <p>Bulan ini: <span id="statBulan">0</span></p>
+        <div class="stats">
+            <div class="stat"><div class="angka" id="statHari">0</div><div>HARI INI</div></div>
+            <div class="stat"><div class="angka" id="statMinggu">0</div><div>MINGGU</div></div>
+            <div class="stat"><div class="angka" id="statBulan">0</div><div>BULAN</div></div>
         </div>
-        <div class="box">
-            <h4>SEMUA DATA</h4>
+        <div class="card">
+            <h4>📜 SEMUA DATA</h4>
             <div style="overflow-x:auto">
                 <table id="tabelData">
-                    <thead><tr><th>Waktu</th><th>Nama</th><th>Kegiatan</th><th>Foto</th><th></th></tr></thead>
-                    <tbody id="tbodyData"><tr><td colspan="5">Loading...</td></tr></tbody>
+                    <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kegiatan</th><th>Foto</th><th></th></tr></thead>
+                    <tbody id="adminTableBody"><td><td colspan="6">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
     </div>
     
     <div id="userArea" class="hidden">
-        <div class="box">
-            <h4>STATUS SAYA</h4>
-            <p>Harian: <span id="userHarian">0%</span></p>
-            <p>Mingguan: <span id="userMingguan">0%</span></p>
-            <p>Bulanan: <span id="userBulanan">0%</span></p>
+        <div class="stats">
+            <div class="stat"><div class="angka" id="userHarian">0%</div><div>HARIAN</div></div>
+            <div class="stat"><div class="angka" id="userMingguan">0%</div><div>MINGGU</div></div>
+            <div class="stat"><div class="angka" id="userBulanan">0%</div><div>BULAN</div></div>
         </div>
-        
-        <div class="box">
-            <h4>FORM ABSENSI</h4>
-            <select id="kegiatan">
+        <div class="card">
+            <h4>📝 FORM ABSENSI</h4>
+            <select id="pilihKegiatan">
                 <option value="">-- Pilih --</option>
                 <option value="Membangunkan Santri">Membangunkan Santri</option>
                 <option value="Pengajian Subuh">Pengajian Subuh</option>
@@ -97,63 +109,82 @@
                 <option value="Piket Kamar">Piket Kamar</option>
                 <option value="Pendampingan Dalail">Pendampingan Dalail</option>
                 <option value="Pendampingan Tawasulan">Pendampingan Tawasulan</option>
+                <option value="Muthola'ah">Muthola'ah</option>
+                <option value="Tidur Malam">Tidur Malam</option>
             </select>
-            <input type="file" id="fotoAbsen" accept="image/*" capture="user">
-            <textarea id="catatan" rows="2" placeholder="Catatan"></textarea>
-            <button id="btnKirim" onclick="simpanAbsen()">KIRIM</button>
+            <input type="file" id="pilihFoto" accept="image/*" capture="user">
+            <textarea id="isiCatatan" rows="2" placeholder="Catatan..."></textarea>
+            <button class="btn btn-green" onclick="simpanAbsen()" id="btnSimpan">📤 KIRIM ABSENSI</button>
         </div>
-        
-        <div class="box">
-            <h4>RIWAYAT SAYA</h4>
+        <div class="card">
+            <h4>📜 RIWAYAT SAYA</h4>
             <div style="overflow-x:auto">
                 <table id="riwayatTable">
                     <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                    <tbody id="tbodyRiwayat"><tr><td colspan="3">Belum ada data</td></tr></tbody>
+                    <tbody id="riwayatBody"><td><td colspan="3">Belum ada data</td>}^</tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
 
-<div id="modalFoto" onclick="this.style.display='none'" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:1000; text-align:center; padding-top:20%">
-    <img id="imgModal" style="max-width:90%; max-height:80%">
+<div id="modalFoto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:3000; text-align:center; padding-top:20%;" onclick="this.style.display='none'">
+    <img id="modalImg" style="max-width:90%; max-height:80%; border-radius:10px;">
 </div>
 
 <script>
-// ==================== DATA ====================
-const KEY = "data_absenku";
+// 🔴🔴🔴 URL HASIL DEPLOY ANDA 🔴🔴🔴
+const API_URL = "https://script.google.com/macros/s/AKfycbw5CE9L4Ax7FYWLnW8j4G81us5af-yMbdICrpV4PlxUUgeuUD8GCUe2LoU-55isMH8j/exec";
+
 const PIN_ADMIN = "1234";
 
-const MUSYRIF = {
-    alhakim: { nama: "Al Hakim", pass: { "Ali Mashuri":"ali123", "Ali Zahid":"zahid123", "Reva Dwi":"reva123", "Imam Syafi'i":"imam123" }, kamar: "Khondak,Uhud" },
-    alfattah: { nama: "Al Fattah", pass: { "Fattahilah":"fattah123", "Brian":"brian123", "Babil":"babil123", "Fahmi":"fahmi123", "Wawan":"wawan123" }, kamar: "Quba,Mekkah" },
-    alkarim: { nama: "Al Karim", pass: { "Bima Julian":"bima123", "Irfan":"irfan123", "Rizki":"rizki123" }, kamar: "101,102" }
+const DATA_MUSYRIF = {
+    hakim: { nama: "Asrama Al Hakim", pass: { "Ali Mashuri":"ali123", "Ali Zahid":"zahid123", "Reva Dwi":"reva123", "Imam Syafi'i":"imam123" }, kamar: { "Ali Mashuri":"Khondak", "Ali Zahid":"Badar", "Reva Dwi":"Khoibar", "Imam Syafi'i":"Multazam" } },
+    fattah: { nama: "Asrama Al Fattah", pass: { "Fattahilah":"fattah123", "Brian Adi Waskito":"brian123", "Babil Yasar":"babil123", "Fahmi":"fahmi123", "Wawan Febi":"wawan123" }, kamar: { "Fattahilah":"Quba", "Brian Adi Waskito":"Bir Ali", "Babil Yasar":"Mina", "Fahmi":"Arofah", "Wawan Febi":"RBQ" } },
+    karim: { nama: "Asrama Al Karim", pass: { "Bima Julian":"bima123", "Irfan Khoirul Aziz":"irfan123", "Rizki Alfian":"rizki123" }, kamar: { "Bima Julian":"101", "Irfan Khoirul Aziz":"104", "Rizki Alfian":"203" } }
 };
 
-let role = "", userSaatIni = "", asramaSaatIni = "", allData = [];
+let role = "", userLogin = "", asramaLogin = "", semuaData = [];
 
-// LOAD DATA
-function load() {
-    let saved = localStorage.getItem(KEY);
-    if (saved) {
-        try { allData = JSON.parse(saved); } catch(e) { allData = []; }
-    } else { allData = []; }
-    console.log("Data:", allData.length);
+async function loadFromServer() {
+    document.getElementById('loading').style.display = 'flex';
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        if (data && !data.error) {
+            semuaData = data;
+            console.log("Data dari server:", semuaData.length);
+        } else {
+            semuaData = [];
+        }
+    } catch(e) {
+        console.error("Gagal:", e);
+        semuaData = [];
+    }
+    document.getElementById('loading').style.display = 'none';
 }
 
-function save() {
-    localStorage.setItem(KEY, JSON.stringify(allData));
-    console.log("Tersimpan:", allData.length);
+async function saveToServer(data) {
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return true;
+    } catch(e) {
+        return false;
+    }
 }
 
-// LOGIN
-document.getElementById('asrama').onchange = function() {
-    let a = this.value;
-    let selectNama = document.getElementById('namaMusyrif');
-    if (a && MUSYRIF[a]) {
+document.getElementById('inputAsrama').onchange = function() {
+    const as = this.value;
+    const selectNama = document.getElementById('inputNama');
+    if (as && DATA_MUSYRIF[as]) {
         selectNama.disabled = false;
         selectNama.innerHTML = '<option value="">-- Pilih --</option>';
-        for (let n in MUSYRIF[a].pass) {
+        for (let n in DATA_MUSYRIF[as].pass) {
             selectNama.innerHTML += `<option value="${n}">${n}</option>`;
         }
     } else {
@@ -162,10 +193,10 @@ document.getElementById('asrama').onchange = function() {
     }
 };
 
-function pilihForm(t) {
-    let tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => tab.classList.remove('active'));
-    if (t == 'admin') {
+function pilihTab(tab) {
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    if (tab === 'admin') {
         tabs[1].classList.add('active');
         document.getElementById('formMusyrif').classList.add('hidden');
         document.getElementById('formAdmin').classList.remove('hidden');
@@ -176,51 +207,53 @@ function pilihForm(t) {
     }
 }
 
-document.getElementById('formMusyrif').onsubmit = function(e) {
+document.getElementById('formMusyrif').onsubmit = async function(e) {
     e.preventDefault();
-    let a = document.getElementById('asrama').value;
-    let n = document.getElementById('namaMusyrif').value;
-    let p = document.getElementById('password').value;
+    const as = document.getElementById('inputAsrama').value;
+    const nm = document.getElementById('inputNama').value;
+    const ps = document.getElementById('inputPassword').value;
     
-    if (MUSYRIF[a] && MUSYRIF[a].pass[n] == p) {
-        role = "user";
-        userSaatIni = n;
-        asramaSaatIni = a;
-        start();
+    if (DATA_MUSYRIF[as] && DATA_MUSYRIF[as].pass[nm] === ps) {
+        role = "musyrif";
+        userLogin = nm;
+        asramaLogin = as;
+        await startApp();
     } else {
-        document.getElementById('errorMsg').innerHTML = "Password salah!";
-        document.getElementById('errorMsg').style.display = 'block';
-        setTimeout(() => document.getElementById('errorMsg').style.display = 'none', 2000);
+        const err = document.getElementById('loginError');
+        err.innerHTML = "❌ Password salah!";
+        err.style.display = 'block';
+        setTimeout(() => err.style.display = 'none', 3000);
     }
 };
 
-document.getElementById('formAdmin').onsubmit = function(e) {
+document.getElementById('formAdmin').onsubmit = async function(e) {
     e.preventDefault();
-    let pin = document.getElementById('pinAdmin').value;
-    if (pin == PIN_ADMIN) {
+    const pin = document.getElementById('inputPin').value;
+    if (pin === PIN_ADMIN) {
         role = "admin";
-        start();
+        await startApp();
     } else {
-        document.getElementById('errorMsg').innerHTML = "PIN salah!";
-        document.getElementById('errorMsg').style.display = 'block';
-        setTimeout(() => document.getElementById('errorMsg').style.display = 'none', 2000);
+        const err = document.getElementById('loginError');
+        err.innerHTML = "❌ PIN salah! PIN = 1234";
+        err.style.display = 'block';
+        setTimeout(() => err.style.display = 'none', 3000);
     }
 };
 
-function start() {
-    load();
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('appPage').style.display = 'block';
+async function startApp() {
+    await loadFromServer();
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('appSection').style.display = 'block';
     
-    if (role == "admin") {
-        document.getElementById('titleApp').innerHTML = "ADMIN";
-        document.getElementById('userInfo').innerHTML = "Administrator";
+    if (role === "admin") {
+        document.getElementById('titleApp').innerHTML = "🛡️ ADMIN DASHBOARD";
+        document.getElementById('infoUser').innerHTML = "Administrator | Data online";
         document.getElementById('adminArea').style.display = 'block';
         document.getElementById('userArea').classList.add('hidden');
         renderAdmin();
     } else {
-        document.getElementById('titleApp').innerHTML = "ABSENSI";
-        document.getElementById('userInfo').innerHTML = userSaatIni + " | " + MUSYRIF[asramaSaatIni].nama;
+        document.getElementById('titleApp').innerHTML = "📋 ABSENSI MUSYRIF";
+        document.getElementById('infoUser').innerHTML = `${userLogin} | ${DATA_MUSYRIF[asramaLogin].nama}`;
         document.getElementById('adminArea').style.display = 'none';
         document.getElementById('userArea').classList.remove('hidden');
         renderUser();
@@ -229,16 +262,15 @@ function start() {
 
 function logout() { location.reload(); }
 
-// ADMIN
 function renderAdmin() {
-    let today = new Date().toDateString();
-    let weekAgo = new Date(Date.now() - 7*86400000);
-    let monthAgo = new Date(Date.now() - 30*86400000);
+    const today = new Date().toDateString();
+    const weekAgo = new Date(Date.now() - 7*86400000);
+    const monthAgo = new Date(Date.now() - 30*86400000);
     let h=0, m=0, b=0;
     
-    for (let d of allData) {
-        let tgl = new Date(d.timestamp);
-        if (tgl.toDateString() == today) h++;
+    for (let d of semuaData) {
+        const tgl = new Date(d.Timestamp);
+        if (tgl.toDateString() === today) h++;
         if (tgl >= weekAgo) m++;
         if (tgl >= monthAgo) b++;
     }
@@ -246,113 +278,127 @@ function renderAdmin() {
     document.getElementById('statMinggu').innerHTML = m;
     document.getElementById('statBulan').innerHTML = b;
     
-    if (allData.length == 0) {
-        document.getElementById('tbodyData').innerHTML = '<tr><td colspan="5">Belum ada data</td></tr>';
+    if (semuaData.length === 0) {
+        document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="6">Belum ada数据</td></tr>';
         return;
     }
     
     let html = "";
-    let sorted = [...allData].reverse();
+    const sorted = [...semuaData].reverse();
     for (let d of sorted) {
         html += `<tr>
-            <td>${new Date(d.timestamp).toLocaleString()}</td>
-            <td>${d.nama}</td>
-            <td>${d.kegiatan}</td>
-            <td>${d.foto ? `<img src="${d.foto}" onclick="lihatFoto('${d.foto}')">` : '-'}</td>
-            <td><span class="hapus" onclick="hapusData('${d.timestamp}')">Hapus</span></td>
+            <td>${new Date(d.Timestamp).toLocaleString()}</td>
+            <td>${d.Nama}</td>
+            <td>${d.Asrama || '-'}</td>
+            <td>${d.Kegiatan}</td>
+            <td>${d.Foto ? `<img src="${d.Foto}" class="foto" onclick="lihatFoto('${d.Foto}')">` : '-'}</td>
+            <td><button onclick="hapusData('${d.Timestamp}')" style="background:#d32f2f; color:white; border:none; padding:4px 8px; border-radius:20px;">Hapus</button></td>
         </tr>`;
     }
-    document.getElementById('tbodyData').innerHTML = html;
+    document.getElementById('adminTableBody').innerHTML = html;
 }
 
-function hapusData(ts) {
-    if (confirm("Hapus?")) {
-        allData = allData.filter(d => d.timestamp != ts);
-        save();
+async function hapusData(timestamp) {
+    if (confirm("Hapus data ini?")) {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', timestamp: timestamp })
+        });
+        await loadFromServer();
         renderAdmin();
         alert("Data dihapus!");
     }
 }
 
-function refresh() {
-    load();
-    renderAdmin();
+async function loadData() {
+    await loadFromServer();
+    if (role === "admin") renderAdmin();
+    else renderUser();
     alert("Data direfresh!");
 }
 
-// USER
+function kirimWA() {
+    window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif");
+}
+
 function renderUser() {
-    let myData = allData.filter(d => d.nama == userSaatIni);
-    let today = new Date().toDateString();
-    let weekAgo = new Date(Date.now() - 7*86400000);
-    let monthAgo = new Date(Date.now() - 30*86400000);
+    const myData = semuaData.filter(d => d.Nama === userLogin);
+    const today = new Date().toDateString();
+    const weekAgo = new Date(Date.now() - 7*86400000);
+    const monthAgo = new Date(Date.now() - 30*86400000);
     
-    let h = myData.some(d => new Date(d.timestamp).toDateString() == today) ? 100 : 0;
-    let m = Math.min(100, Math.round(myData.filter(d => new Date(d.timestamp) >= weekAgo).length / 7 * 100));
-    let b = Math.min(100, Math.round(myData.filter(d => new Date(d.timestamp) >= monthAgo).length / 30 * 100));
+    const h = myData.some(d => new Date(d.Timestamp).toDateString() === today) ? 100 : 0;
+    const m = Math.min(100, Math.round(myData.filter(d => new Date(d.Timestamp) >= weekAgo).length / 7 * 100));
+    const b = Math.min(100, Math.round(myData.filter(d => new Date(d.Timestamp) >= monthAgo).length / 30 * 100));
     
     document.getElementById('userHarian').innerHTML = h + "%";
     document.getElementById('userMingguan').innerHTML = m + "%";
     document.getElementById('userBulanan').innerHTML = b + "%";
     
-    if (myData.length == 0) {
-        document.getElementById('tbodyRiwayat').innerHTML = '<tr><td colspan="3">Belum ada data</td></tr>';
+    if (myData.length === 0) {
+        document.getElementById('riwayatBody').innerHTML = '<td><td colspan="3">Belum ada data</td></tr>';
         return;
     }
     
     let html = "";
-    let sorted = [...myData].reverse();
+    const sorted = [...myData].reverse();
     for (let d of sorted) {
         html += `<tr>
-            <td>${new Date(d.timestamp).toLocaleString()}</td>
-            <td>${d.kegiatan}</td>
-            <td>${d.foto ? `<img src="${d.foto}" onclick="lihatFoto('${d.foto}')">` : '-'}</td>
+            <td>${new Date(d.Timestamp).toLocaleString()}</td>
+            <td>${d.Kegiatan}</td>
+            <td>${d.Foto ? `<img src="${d.Foto}" class="foto" onclick="lihatFoto('${d.Foto}')">` : '-'}</td>
         </tr>`;
     }
-    document.getElementById('tbodyRiwayat').innerHTML = html;
+    document.getElementById('riwayatBody').innerHTML = html;
 }
 
-// SIMPAN ABSEN
 async function simpanAbsen() {
-    let kegiatan = document.getElementById('kegiatan').value;
-    let fileFoto = document.getElementById('fotoAbsen').files[0];
-    let catatan = document.getElementById('catatan').value;
+    const kegiatan = document.getElementById('pilihKegiatan').value;
+    const fileFoto = document.getElementById('pilihFoto').files[0];
+    const catatan = document.getElementById('isiCatatan').value;
     
     if (!kegiatan) { alert("Pilih kegiatan!"); return; }
     if (!fileFoto) { alert("Ambil foto!"); return; }
     
-    let btn = document.getElementById('btnKirim');
+    const btn = document.getElementById('btnSimpan');
     btn.disabled = true;
-    btn.innerHTML = "MENYIMPAN...";
+    btn.innerHTML = "Menyimpan...";
+    document.getElementById('loading').style.display = 'flex';
     
     try {
-        let fotoBase64 = await bacaFile(fileFoto);
-        let dataBaru = {
+        const fotoBase64 = await bacaFile(fileFoto);
+        await saveToServer({
+            action: 'save',
             timestamp: new Date().toISOString(),
-            nama: userSaatIni,
-            asrama: MUSYRIF[asramaSaatIni].nama,
+            nama: userLogin,
+            asrama: DATA_MUSYRIF[asramaLogin].nama,
+            kamar: DATA_MUSYRIF[asramaLogin].kamar[userLogin],
             kegiatan: kegiatan,
             foto: fotoBase64,
             catatan: catatan
-        };
-        allData.push(dataBaru);
-        save();
-        alert("✅ BERHASIL DISIMPAN!");
-        document.getElementById('kegiatan').value = "";
-        document.getElementById('fotoAbsen').value = "";
-        document.getElementById('catatan').value = "";
+        });
+        
+        await loadFromServer();
+        alert("✅ ABSENSI BERHASIL DISIMPAN!");
+        document.getElementById('pilihKegiatan').value = "";
+        document.getElementById('pilihFoto').value = "";
+        document.getElementById('isiCatatan').value = "";
         renderUser();
+        
     } catch(err) {
         alert("❌ Gagal: " + err.message);
     } finally {
         btn.disabled = false;
-        btn.innerHTML = "KIRIM";
+        btn.innerHTML = "📤 KIRIM ABSENSI";
+        document.getElementById('loading').style.display = 'none';
     }
 }
 
 function bacaFile(file) {
     return new Promise((resolve, reject) => {
-        let reader = new FileReader();
+        const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
         reader.onerror = () => reject(reader.error);
         reader.readAsDataURL(file);
@@ -360,11 +406,11 @@ function bacaFile(file) {
 }
 
 function lihatFoto(src) {
-    document.getElementById('imgModal').src = src;
+    document.getElementById('modalImg').src = src;
     document.getElementById('modalFoto').style.display = 'block';
 }
 
-console.log("APLIKASI SIAP!");
+console.log("✅ Aplikasi siap!");
 </script>
 </body>
 </html>
