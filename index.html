@@ -2,34 +2,32 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi Musyrif - Lengkap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Absensi Musyrif - Sistem Online</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #e8f5e9; padding: 15px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #e8f5e9; padding: 15px; }
         .container { max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+        .btn:active { opacity: 0.8; }
         .btn-green { background: #2e7d32; color: white; }
         .btn-red { background: #d32f2f; color: white; }
         .btn-wa { background: #25D366; color: white; }
         .btn-pdf { background: #d32f2f; color: white; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #ddd; }
         .foto { width: 35px; height: 35px; object-fit: cover; border-radius: 5px; cursor: pointer; }
         .header { background: #2e7d32; color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
-        .logout { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 12px; border-radius: 20px; cursor: pointer; }
+        .logout { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
         .tab { display: inline-block; width: 49%; text-align: center; padding: 10px; background: #ddd; border-radius: 30px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
         .tab.active { background: #2e7d32; color: white; }
         .hidden { display: none; }
         .error { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
-        .stats { display: flex; gap: 8px; margin-bottom: 15px; }
-        .stat { flex: 1; background: #2e7d32; color: white; padding: 8px; border-radius: 10px; text-align: center; }
-        .stat .angka { font-size: 20px; font-weight: bold; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
         .stat-card { padding: 12px; border-radius: 12px; color: white; text-align: center; }
         .stat-card.green { background: linear-gradient(135deg, #43a047, #66bb6a); }
@@ -54,16 +52,13 @@
         .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 15px; }
         .spinner { width: 40px; height: 40px; border: 4px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .report-section { display: none; background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        .report-header { text-align: center; border-bottom: 2px solid #2e7d32; padding-bottom: 15px; margin-bottom: 20px; }
-        .report-title { font-size: 18px; color: #2e7d32; font-weight: bold; }
-        .report-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; background: #f5f5f5; padding: 12px; border-radius: 8px; }
         .asrama-section { margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 8px; }
-        .asrama-section h3 { color: #2e7d32; margin-bottom: 10px; }
         .assessment-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
         .assessment-table th, .assessment-table td { padding: 8px; border: 1px solid #ddd; text-align: left; }
         .assessment-table th { background: #2e7d32; color: white; }
         @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .btn-group { flex-direction: column; } }
+        .toast { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #333; color: white; padding: 12px; border-radius: 8px; text-align: center; z-index: 3000; animation: fadeOut 3s forwards; }
+        @keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
     </style>
 </head>
 <body>
@@ -117,7 +112,6 @@
                 <div class="btn-group">
                     <button class="btn btn-green" onclick="loadData()">🔄 REFRESH DATA</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerAsrama()">📄 PDF PER ASRAMA</button>
-                    <button class="btn btn-pdf" onclick="generatePDFPerIndividu()">📄 PDF PER INDIVIDU</button>
                     <button class="btn btn-wa" onclick="kirimWA()">📱 PENGINGAT WA</button>
                 </div>
             </div>
@@ -198,13 +192,13 @@
     </div>
 </div>
 
-<!-- REPORT SECTION UNTUK PDF -->
-<div id="reportSection" style="display:none; background:white; padding:20px; border-radius:12px;">
-    <div class="report-header">
-        <div class="report-title">📊 LAPORAN KINERJA MUSYRIF PER ASRAMA</div>
+<!-- REPORT SECTIONS -->
+<div id="reportSection" style="display:none; background:white; padding:20px; border-radius:12px; max-width:800px; margin:0 auto;">
+    <div class="report-header" style="text-align:center; border-bottom:2px solid #2e7d32; padding-bottom:15px; margin-bottom:20px;">
+        <div style="font-size:18px; color:#2e7d32; font-weight:bold;">📊 LAPORAN KINERJA MUSYRIF PER ASRAMA</div>
         <div>Pondok Pesantren - Sistem Absensi Digital</div>
     </div>
-    <div class="report-meta">
+    <div class="report-meta" style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:15px 0; background:#f5f5f5; padding:12px; border-radius:8px;">
         <div><strong>Periode:</strong> Minggu Ini</div>
         <div><strong>Tanggal Cetak:</strong> <span id="reportDate"></span></div>
         <div><strong>Total Musyrif:</strong> 12 orang</div>
@@ -213,15 +207,22 @@
     <div id="reportContent"></div>
 </div>
 
+<div id="individualReportSection" style="display:none; background:white; padding:20px; border-radius:12px; max-width:800px; margin:0 auto;">
+    <div id="individualReportContent"></div>
+</div>
+
 <div id="modalFoto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:3000; text-align:center; padding-top:20%;" onclick="this.style.display='none'">
     <img id="modalImg" style="max-width:90%; max-height:80%; border-radius:10px;">
 </div>
 
 <script>
 // ==================== KONFIGURASI ====================
-const API_URL = "https://script.google.com/macros/s/AKfycbw5CE9L4Ax7FYWLnW8j4G81us5af-yMbdICrpV4PlxUUgeuUD8GCUe2LoU-55isMH8j/exec";
+// 🔴 GANTI URL INI DENGAN URL DEPLOYMENT APPS SCRIPT ANDA!
+const API_URL = "https://script.google.com/macros/s/AKfycbxmQ6ws6VdErhhdrEY5Qw0iuS7qwmORbxzepgPhbUSYncDRhDFz4XDMWkR39_z7aQLT/exec";
+
 const PIN_ADMIN = "1234";
 
+// Data musyrif lokal (untuk validasi awal dan dropdown)
 const DATA_MUSYRIF = {
     hakim: { nama: "Asrama Al Hakim", pass: { "Ali Mashuri":"ali123", "Ali Zahid":"zahid123", "Reva Dwi":"reva123", "Imam Syafi'i":"imam123" }, kamar: { "Ali Mashuri":"Khondak", "Ali Zahid":"Badar", "Reva Dwi":"Khoibar", "Imam Syafi'i":"Multazam" } },
     fattah: { nama: "Asrama Al Fattah", pass: { "Fattahilah":"fattah123", "Brian Adi Waskito":"brian123", "Babil Yasar":"babil123", "Fahmi":"fahmi123", "Wawan Febi":"wawan123" }, kamar: { "Fattahilah":"Quba", "Brian Adi Waskito":"Bir Ali", "Babil Yasar":"Mina", "Fahmi":"Arofah", "Wawan Febi":"RBQ" } },
@@ -233,34 +234,57 @@ const JADWAL = ["Membangunkan Santri", "Pengajian Subuh", "Menggobraki Sekolah",
 let role = "", userLogin = "", asramaLogin = "", semuaData = [];
 let myChart = null, adminChart = null;
 
+// Toast notification
+function showToast(msg, isError = false) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.background = isError ? '#d32f2f' : '#2e7d32';
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
 // ==================== FUNGSI API ====================
 async function loadFromServer() {
     document.getElementById('loading').style.display = 'flex';
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
-        if (data && !data.error) {
+        if (Array.isArray(data)) {
             semuaData = data;
         } else {
             semuaData = [];
         }
     } catch(e) {
-        console.error("Gagal:", e);
+        console.error("Gagal load data:", e);
         semuaData = [];
+        showToast("⚠️ Gagal mengambil data dari server", true);
     }
     document.getElementById('loading').style.display = 'none';
 }
 
 async function saveToServer(data) {
     try {
-        await fetch(API_URL, {
+        const response = await fetch(`${API_URL}?action=save`, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        return true;
+        const result = await response.json();
+        return result.success === true;
     } catch(e) {
+        console.error("Save error:", e);
+        return false;
+    }
+}
+
+async function deleteFromServer(timestamp) {
+    try {
+        const response = await fetch(`${API_URL}?action=delete&timestamp=${encodeURIComponent(timestamp)}`);
+        const result = await response.json();
+        return result.success === true;
+    } catch(e) {
+        console.error("Delete error:", e);
         return false;
     }
 }
@@ -393,9 +417,9 @@ function renderAdmin() {
             }
             let persen = Math.min(100, Math.round(cnt/7*100));
             let assessment = getAssessment(persen);
-            perfHtml += `<div class="perf-item ${assessment.class}">
+            perfHtml += `<div class="perf-item" style="border-left-color:${assessment.color}">
                 <div><strong>${n}</strong><br><small>${DATA_MUSYRIF[a].nama} | ${DATA_MUSYRIF[a].kamar[n]}</small></div>
-                <span class="badge ${assessment.class}">${assessment.status} (${persen}%)</span>
+                <span class="badge ${assessment.class}" style="background:${assessment.color}">${assessment.status} (${persen}%)</span>
             </div>`;
         }
     }
@@ -443,15 +467,16 @@ function renderAdmin() {
 
 async function hapusData(timestamp) {
     if (confirm("Hapus data ini?")) {
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'delete', timestamp: timestamp })
-        });
-        await loadFromServer();
-        renderAdmin();
-        alert("Data dihapus!");
+        document.getElementById('loading').style.display = 'flex';
+        const success = await deleteFromServer(timestamp);
+        if (success) {
+            await loadFromServer();
+            renderAdmin();
+            showToast("✅ Data berhasil dihapus!");
+        } else {
+            showToast("❌ Gagal menghapus data", true);
+        }
+        document.getElementById('loading').style.display = 'none';
     }
 }
 
@@ -459,15 +484,16 @@ async function loadData() {
     await loadFromServer();
     if (role === "admin") renderAdmin();
     else renderUser();
-    alert("Data direfresh!");
+    showToast("✅ Data berhasil direfresh!");
 }
 
 function kirimWA() {
-    window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif");
+    window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif:%20Jangan%20lupa%20absensi%20hari%20ini!");
 }
 
 // ==================== PDF PER ASRAMA ====================
 async function generatePDFPerAsrama() {
+    document.getElementById('loading').style.display = 'flex';
     await loadFromServer();
     const weekAgo = new Date(Date.now() - 7*86400000);
     let totalAbsen = 0;
@@ -514,89 +540,13 @@ async function generatePDFPerAsrama() {
         const canvas = await html2canvas(element, { scale: 2, useCORS: true });
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
+        const imgWidth = pdf.internal.pageSize.getWidth();
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
         pdf.save(`Laporan_Kinerja_Asrama_${new Date().toISOString().slice(0,10)}.pdf`);
         document.getElementById('reportSection').style.display = 'none';
-        alert("✅ PDF Berhasil diunduh!");
-    }, 500);
-}
-
-// ==================== PDF PER INDIVIDU ====================
-async function generatePDFPerIndividu() {
-    const namaMusyrif = prompt("Masukkan nama musyrif:", "Ali Mashuri");
-    if (!namaMusyrif) return;
-    
-    await loadFromServer();
-    let asramaNama = "", kamarNama = "";
-    for (let a in DATA_MUSYRIF) {
-        if (DATA_MUSYRIF[a].pass[namaMusyrif]) {
-            asramaNama = DATA_MUSYRIF[a].nama;
-            kamarNama = DATA_MUSYRIF[a].kamar[namaMusyrif];
-            break;
-        }
-    }
-    
-    if (!asramaNama) {
-        alert("Nama musyrif tidak ditemukan!");
-        return;
-    }
-    
-    const myData = semuaData.filter(d => d.Nama === namaMusyrif);
-    const weekAgo = new Date(Date.now() - 7*86400000);
-    const monthAgo = new Date(Date.now() - 30*86400000);
-    const weeklyCount = myData.filter(d => new Date(d.Timestamp) >= weekAgo).length;
-    const monthlyCount = myData.filter(d => new Date(d.Timestamp) >= monthAgo).length;
-    const persenMinggu = Math.min(100, Math.round(weeklyCount/7*100));
-    const persenBulan = Math.min(100, Math.round(monthlyCount/30*100));
-    const assessment = getAssessment(persenMinggu);
-    
-    let htmlContent = `<div class="report-header">
-        <div class="report-title">📊 LAPORAN INDIVIDU MUSYRIF</div>
-    </div>
-    <div class="report-meta">
-        <div><strong>Nama:</strong> ${namaMusyrif}</div>
-        <div><strong>Asrama:</strong> ${asramaNama}</div>
-        <div><strong>Kamar:</strong> ${kamarNama}</div>
-        <div><strong>Tanggal:</strong> ${new Date().toLocaleString('id-ID')}</div>
-    </div>
-    <h4>📊 RINGKASAN KEHADIRAN</h4>
-    <table class="assessment-table">
-        <thead><th>Periode</th><th>Jumlah</th><th>Persentase</th><th>Status</th></thead>
-        <tbody>
-            <tr><td>Mingguan</td><td>${weeklyCount} kali</td><td>${persenMinggu}%</td><td>${assessment.status}</td></tr>
-            <tr><td>Bulanan</td><td>${monthlyCount} kali</td><td>${persenBulan}%</td><td>-</td></tr>
-        </tbody>
-    </table>
-    <h4>📜 RIWAYAT ABSENSI</h4>
-    <table class="assessment-table">
-        <thead><th>No</th><th>Tanggal</th><th>Kegiatan</th><th>Catatan</th></thead>
-        <tbody>`;
-    
-    let no = 1;
-    const sorted = [...myData].reverse();
-    for (let d of sorted) {
-        htmlContent += `<tr>
-            <td>${no++}</td>
-            <td>${new Date(d.Timestamp).toLocaleString('id-ID')}</td>
-            <td>${d.Kegiatan}</td>
-            <td>${d.Catatan || '-'}</td>
-        </tr>`;
-    }
-    htmlContent += `</tbody></table>`;
-    
-    document.getElementById('individualReportContent').innerHTML = htmlContent;
-    document.getElementById('individualReportSection').style.display = 'block';
-    
-    setTimeout(async () => {
-        const { jsPDF } = window.jspdf;
-        const element = document.getElementById('individualReportSection');
-        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
-        pdf.save(`Laporan_Individu_${namaMusyrif}_${new Date().toISOString().slice(0,10)}.pdf`);
-        document.getElementById('individualReportSection').style.display = 'none';
-        alert("✅ PDF Berhasil diunduh!");
+        document.getElementById('loading').style.display = 'none';
+        showToast("✅ PDF berhasil diunduh!");
     }, 500);
 }
 
@@ -639,7 +589,7 @@ function renderUser() {
     });
     
     if (myData.length === 0) {
-        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3">Belum ada data</td></tr>';
+        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3">Belum ada数据</td></tr>';
         return;
     }
     let html = "";
@@ -659,8 +609,8 @@ async function simpanAbsen() {
     const fileFoto = document.getElementById('pilihFoto').files[0];
     const catatan = document.getElementById('isiCatatan').value;
     
-    if (!kegiatan) { alert("Pilih kegiatan!"); return; }
-    if (!fileFoto) { alert("Ambil foto!"); return; }
+    if (!kegiatan) { showToast("❌ Pilih kegiatan!", true); return; }
+    if (!fileFoto) { showToast("❌ Ambil foto terlebih dahulu!", true); return; }
     
     const btn = document.getElementById('btnSimpan');
     btn.disabled = true;
@@ -669,26 +619,28 @@ async function simpanAbsen() {
     
     try {
         const fotoBase64 = await bacaFile(fileFoto);
-        await saveToServer({
-            action: 'save',
+        const success = await saveToServer({
             timestamp: new Date().toISOString(),
-            nama: userLogin,
-            asrama: DATA_MUSYRIF[asramaLogin].nama,
-            kamar: DATA_MUSYRIF[asramaLogin].kamar[userLogin],
-            kegiatan: kegiatan,
-            foto: fotoBase64,
-            catatan: catatan
+            Nama: userLogin,
+            Asrama: DATA_MUSYRIF[asramaLogin].nama,
+            Kamar: DATA_MUSYRIF[asramaLogin].kamar[userLogin],
+            Kegiatan: kegiatan,
+            Foto: fotoBase64,
+            Catatan: catatan
         });
         
-        await loadFromServer();
-        alert("✅ ABSENSI BERHASIL DISIMPAN!");
-        document.getElementById('pilihKegiatan').value = "";
-        document.getElementById('pilihFoto').value = "";
-        document.getElementById('isiCatatan').value = "";
-        renderUser();
-        
+        if (success) {
+            await loadFromServer();
+            showToast("✅ ABSENSI BERHASIL DISIMPAN!");
+            document.getElementById('pilihKegiatan').value = "";
+            document.getElementById('pilihFoto').value = "";
+            document.getElementById('isiCatatan').value = "";
+            renderUser();
+        } else {
+            showToast("❌ Gagal menyimpan data", true);
+        }
     } catch(err) {
-        alert("❌ Gagal: " + err.message);
+        showToast("❌ Error: " + err.message, true);
     } finally {
         btn.disabled = false;
         btn.innerHTML = "📤 KIRIM ABSENSI";
@@ -710,7 +662,7 @@ function lihatFoto(src) {
     document.getElementById('modalFoto').style.display = 'block';
 }
 
-console.log("✅ Aplikasi siap!");
+console.log("✅ Aplikasi siap! Pastikan API_URL sudah diganti dengan URL Apps Script Anda.");
 </script>
 </body>
 </html>
