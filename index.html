@@ -2,73 +2,73 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Absensi Musyrif - Siap Pakai</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Musyrif - Lengkap</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #e8f5e9; padding: 12px; }
+        body { font-family: Arial, sans-serif; background: #e8f5e9; padding: 15px; }
         .container { max-width: 600px; margin: 0 auto; }
-        .card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px; transition: 0.2s; }
-        .btn:active { opacity: 0.7; }
+        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; }
         .btn-green { background: #2e7d32; color: white; }
         .btn-red { background: #d32f2f; color: white; }
         .btn-wa { background: #25D366; color: white; }
         .btn-pdf { background: #d32f2f; color: white; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 10px; font-size: 14px; background: #fff; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #eee; }
-        .foto { width: 32px; height: 32px; object-fit: cover; border-radius: 6px; cursor: pointer; }
-        .header { background: #2e7d32; color: white; padding: 12px; border-radius: 12px; margin-bottom: 12px; position: relative; }
-        .logout { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+        th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #ddd; }
+        .foto { width: 35px; height: 35px; object-fit: cover; border-radius: 5px; cursor: pointer; }
+        .header { background: #2e7d32; color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
+        .logout { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 12px; border-radius: 20px; cursor: pointer; }
         .tab { display: inline-block; width: 49%; text-align: center; padding: 10px; background: #ddd; border-radius: 30px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
         .tab.active { background: #2e7d32; color: white; }
         .hidden { display: none; }
-        .error { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; font-size: 13px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
-        .stat-card { padding: 10px; border-radius: 12px; color: white; text-align: center; }
+        .error { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
+        .stats { display: flex; gap: 8px; margin-bottom: 15px; }
+        .stat { flex: 1; background: #2e7d32; color: white; padding: 8px; border-radius: 10px; text-align: center; }
+        .stat .angka { font-size: 20px; font-weight: bold; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        .stat-card { padding: 12px; border-radius: 12px; color: white; text-align: center; }
         .stat-card.green { background: linear-gradient(135deg, #43a047, #66bb6a); }
         .stat-card.blue { background: linear-gradient(135deg, #1e88e5, #42a5f5); }
         .stat-card.orange { background: linear-gradient(135deg, #fb8c00, #ffb74d); }
         .stat-card.red { background: linear-gradient(135deg, #e53935, #ef5350); }
-        .stat-card .val { font-size: 22px; font-weight: bold; }
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn-group .btn { flex: 1; margin-top: 0; font-size: 13px; padding: 10px; }
-        .perf-list { display: flex; flex-direction: column; gap: 6px; max-height: 350px; overflow-y: auto; }
-        .perf-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f5f5f5; border-radius: 10px; border-left: 4px solid #ccc; font-size: 13px; }
-        .badge { padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: bold; color: white; }
+        .stat-card .val { font-size: 24px; font-weight: bold; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-group .btn { flex: 1; margin-top: 0; }
+        .perf-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
+        .perf-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f5f5f5; border-radius: 10px; border-left: 4px solid #ccc; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; }
         .badge.active { background: #4caf50; }
         .badge.warning { background: #ff9800; }
         .badge.inactive { background: #f44336; }
-        .chart-container { height: 200px; margin-bottom: 12px; }
-        .stats-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-        .stat-box { background: #f5f5f5; padding: 10px; border-radius: 12px; text-align: center; }
-        .stat-box .value { font-size: 20px; font-weight: bold; color: #2e7d32; }
-        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
-        .schedule-item { padding: 8px; background: #f9f9f9; border-radius: 10px; border-left: 3px solid #2e7d32; font-size: 12px; }
-        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 10px; }
-        .spinner { width: 40px; height: 40px; border: 4px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .chart-container { height: 250px; margin-bottom: 15px; }
+        .stats-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .stat-box { background: #f5f5f5; padding: 12px; border-radius: 12px; text-align: center; }
+        .stat-box .value { font-size: 22px; font-weight: bold; color: #2e7d32; }
+        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        .schedule-item { padding: 10px; background: #f9f9f9; border-radius: 10px; border-left: 3px solid #2e7d32; }
+        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 15px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .report-section, .individual-report-section { display: none; background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        .report-header { text-align: center; border-bottom: 2px solid #2e7d32; padding-bottom: 12px; margin-bottom: 15px; }
-        .report-title { font-size: 16px; color: #2e7d32; font-weight: bold; }
-        .report-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; background: #f5f5f5; padding: 10px; border-radius: 8px; font-size: 12px; }
-        .asrama-section { margin: 15px 0; padding: 12px; background: #f9f9f9; border-radius: 8px; }
-        .asrama-section h3 { color: #2e7d32; margin-bottom: 8px; font-size: 14px; }
-        .assessment-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px; }
-        .assessment-table th, .assessment-table td { padding: 6px; border: 1px solid #ddd; text-align: left; }
+        .report-section { display: none; background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .report-header { text-align: center; border-bottom: 2px solid #2e7d32; padding-bottom: 15px; margin-bottom: 20px; }
+        .report-title { font-size: 18px; color: #2e7d32; font-weight: bold; }
+        .report-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; background: #f5f5f5; padding: 12px; border-radius: 8px; }
+        .asrama-section { margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+        .asrama-section h3 { color: #2e7d32; margin-bottom: 10px; }
+        .assessment-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .assessment-table th, .assessment-table td { padding: 8px; border: 1px solid #ddd; text-align: left; }
         .assessment-table th { background: #2e7d32; color: white; }
-        @media (max-width: 550px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .btn-group { flex-direction: column; } .schedule-grid { grid-template-columns: 1fr; } }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 30px; font-size: 12px; z-index: 1500; display: none; white-space: nowrap; }
+        @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .btn-group { flex-direction: column; } }
     </style>
 </head>
 <body>
 
 <div id="loading" class="loading"><div class="spinner"></div><div>Memuat data...</div></div>
-<div id="toast" class="toast"></div>
 
 <!-- LOGIN SECTION -->
 <div id="loginSection">
@@ -76,8 +76,8 @@
         <h3 style="text-align:center">📋 ABSENSI MUSYRIF</h3>
         <div id="loginError" class="error"></div>
         <div>
-            <span class="tab active" id="tabMusyrifBtn" onclick="pilihTab('musyrif')">👤 MUSYRIF</span>
-            <span class="tab" id="tabAdminBtn" onclick="pilihTab('admin')">🛡️ ADMIN</span>
+            <span class="tab active" id="tabMusyrifBtn" onclick="pilihTab('musyrif')">MUSYRIF</span>
+            <span class="tab" id="tabAdminBtn" onclick="pilihTab('admin')">ADMIN</span>
         </div>
         
         <form id="formMusyrif">
@@ -106,7 +106,7 @@
     <div class="container">
         <div class="header">
             <h4 id="titleApp">Dashboard</h4>
-            <p id="infoUser" style="font-size:11px; margin-top:4px;"></p>
+            <p id="infoUser" style="font-size:12px; margin-top:5px;"></p>
             <button class="logout" onclick="logout()">Keluar</button>
         </div>
         
@@ -115,10 +115,10 @@
             <div class="card">
                 <h4>⚙️ MENU ADMIN</h4>
                 <div class="btn-group">
-                    <button class="btn btn-green" onclick="refreshData()">🔄 REFRESH</button>
-                    <button class="btn btn-pdf" onclick="pdfPerAsrama()">📄 PDF ASRAMA</button>
-                    <button class="btn btn-pdf" onclick="pdfPerIndividu()">📄 PDF INDIVIDU</button>
-                    <button class="btn btn-wa" onclick="waReminder()">📱 PENGINGAT</button>
+                    <button class="btn btn-green" onclick="loadData()">🔄 REFRESH DATA</button>
+                    <button class="btn btn-pdf" onclick="generatePDFPerAsrama()">📄 PDF PER ASRAMA</button>
+                    <button class="btn btn-pdf" onclick="generatePDFPerIndividu()">📄 PDF PER INDIVIDU</button>
+                    <button class="btn btn-wa" onclick="kirimWA()">📱 PENGINGAT WA</button>
                 </div>
             </div>
             
@@ -126,27 +126,26 @@
                 <div class="stat-card green"><div class="val" id="statHari">0</div><div>HARI INI</div></div>
                 <div class="stat-card blue"><div class="val" id="statMinggu">0</div><div>MINGGU INI</div></div>
                 <div class="stat-card orange"><div class="val" id="statBulan">0</div><div>BULAN INI</div></div>
-                <div class="stat-card red"><div class="val" id="statAktif">0/12</div><div>AKTIF</div></div>
+                <div class="stat-card red"><div class="val" id="statAktif">0/12</div><div>MUSYRIF AKTIF</div></div>
             </div>
             
             <div class="card">
-                <h4>📊 PERFORM MUSYRIF</h4>
-                <div id="performaList" class="perf-list">Memuat...</div>
+                <h4>📊 PERFORM MUSYRIF (Minggu Ini)</h4>
+                <div id="performaList" class="perf-list">Loading...</div>
             </div>
             
             <div class="card">
-                <h4>📈 GRAFIK KINERJA</h4>
+                <h4>📈 GRAFIK KINERJA DETAIL</h4>
                 <div class="chart-container"><canvas id="adminChart"></canvas></div>
             </div>
             
             <div class="card">
                 <h4>📜 SEMUA DATA ABSENSI</h4>
                 <div style="overflow-x:auto">
-                    <table>
+                    <table id="tabelData">
                         <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kegiatan</th><th>Foto</th><th></th></tr></thead>
-                        <tbody id="adminTableBody"><tr><td colspan="6">Memuat...</td></tr>
-                    </tbody>
-                </table>
+                        <tbody id="adminTableBody"><tr><td colspan="6">Loading...</td></tr></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -182,17 +181,16 @@
                     <option value="Tidur Malam">Tidur Malam</option>
                 </select>
                 <input type="file" id="pilihFoto" accept="image/*" capture="user">
-                <textarea id="isiCatatan" rows="2" placeholder="Catatan (opsional)..."></textarea>
+                <textarea id="isiCatatan" rows="2" placeholder="Catatan..."></textarea>
                 <button class="btn btn-green" onclick="simpanAbsen()" id="btnSimpan">📤 KIRIM ABSENSI</button>
             </div>
             
             <div class="card">
                 <h4>📜 RIWAYAT ABSENSI SAYA</h4>
                 <div style="overflow-x:auto">
-                    <table>
+                    <table id="riwayatTable">
                         <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                        <tbody id="riwayatBody"><tr><td colspan="3">Memuat...</td></tr>
-                    </tbody>
+                        <tbody id="riwayatBody"><tr><td colspan="3">Belum ada data</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -200,16 +198,19 @@
     </div>
 </div>
 
-<!-- REPORT SECTIONS -->
+<!-- REPORT SECTION UNTUK PDF -->
 <div id="reportSection" style="display:none; background:white; padding:20px; border-radius:12px;">
-    <div class="report-header"><div class="report-title">📊 LAPORAN KINERJA PER ASRAMA</div></div>
-    <div class="report-meta"><div><strong>Tanggal:</strong> <span id="reportDate"></span></div><div><strong>Total Absen:</strong> <span id="reportTotalAbsen">0</span></div></div>
+    <div class="report-header">
+        <div class="report-title">📊 LAPORAN KINERJA MUSYRIF PER ASRAMA</div>
+        <div>Pondok Pesantren - Sistem Absensi Digital</div>
+    </div>
+    <div class="report-meta">
+        <div><strong>Periode:</strong> Minggu Ini</div>
+        <div><strong>Tanggal Cetak:</strong> <span id="reportDate"></span></div>
+        <div><strong>Total Musyrif:</strong> 12 orang</div>
+        <div><strong>Total Absensi:</strong> <span id="reportTotalAbsen">0</span> kali</div>
+    </div>
     <div id="reportContent"></div>
-</div>
-
-<div id="individualReportSection" style="display:none; background:white; padding:20px; border-radius:12px;">
-    <div class="report-header"><div class="report-title">📊 LAPORAN INDIVIDU</div></div>
-    <div id="individualReportContent"></div>
 </div>
 
 <div id="modalFoto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:3000; text-align:center; padding-top:20%;" onclick="this.style.display='none'">
@@ -218,8 +219,7 @@
 
 <script>
 // ==================== KONFIGURASI ====================
-// URL Google Apps Script ANDA
-const API_URL = "https://script.google.com/macros/s/AKfycbzqxdUO_DRmlyDfiT_ceVuW6U4Pqh6Cw8guD7A9ZPoNQ93WYNrwQvnHfFgAfmJkFWVV/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbw5CE9L4Ax7FYWLnW8j4G81us5af-yMbdICrpV4PlxUUgeuUD8GCUe2LoU-55isMH8j/exec";
 const PIN_ADMIN = "1234";
 
 const DATA_MUSYRIF = {
@@ -232,85 +232,40 @@ const JADWAL = ["Membangunkan Santri", "Pengajian Subuh", "Menggobraki Sekolah",
 
 let role = "", userLogin = "", asramaLogin = "", semuaData = [];
 let myChart = null, adminChart = null;
-let isLoading = false;
 
-// ==================== UTILITY ====================
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.style.display = 'block';
-    setTimeout(() => toast.style.display = 'none', 2000);
-}
-
-function showLoading(show) {
-    document.getElementById('loading').style.display = show ? 'flex' : 'none';
-}
-
-// ==================== API CALLS ====================
-async function fetchData() {
+// ==================== FUNGSI API ====================
+async function loadFromServer() {
+    document.getElementById('loading').style.display = 'flex';
     try {
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        return Array.isArray(data) ? data : [];
+        if (data && !data.error) {
+            semuaData = data;
+        } else {
+            semuaData = [];
+        }
     } catch(e) {
-        console.error("Fetch error:", e);
-        return null;
+        console.error("Gagal:", e);
+        semuaData = [];
     }
+    document.getElementById('loading').style.display = 'none';
 }
 
-async function postData( data) {
+async function saveToServer(data) {
     try {
-        const response = await fetch(API_URL, {
+        await fetch(API_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        // Karena mode no-cors, response tidak bisa dibaca
-        // Tapi request tetap terkirim
-        return { success: true };
+        return true;
     } catch(e) {
-        console.error("Post error:", e);
-        return null;
+        return false;
     }
 }
 
-// ==================== LOAD DATA ====================
-let dataCache = null;
-let lastLoadTime = 0;
-const CACHE_DURATION = 30000;
-
-async function loadData(force = false) {
-    if (!force && dataCache && (Date.now() - lastLoadTime) < CACHE_DURATION) {
-        semuaData = dataCache;
-        return true;
-    }
-    
-    showLoading(true);
-    const result = await fetchData();
-    showLoading(false);
-    
-    if (result !== null) {
-        semuaData = result;
-        dataCache = result;
-        lastLoadTime = Date.now();
-        return true;
-    }
-    return false;
-}
-
-async function saveData(data) {
-    const result = await postData(data);
-    if (result !== null) {
-        dataCache = null;
-        lastLoadTime = 0;
-        return true;
-    }
-    return false;
-}
-
-// ==================== LOGIN ====================
+// ==================== FUNGSI LOGIN ====================
 document.getElementById('inputAsrama').onchange = function() {
     const as = this.value;
     const selectNama = document.getElementById('inputNama');
@@ -353,18 +308,16 @@ document.getElementById('formMusyrif').onsubmit = async function(e) {
     const nm = document.getElementById('inputNama').value;
     const ps = document.getElementById('inputPassword').value;
     
-    if (as && nm && DATA_MUSYRIF[as] && DATA_MUSYRIF[as].pass[nm] === ps) {
+    if (DATA_MUSYRIF[as] && DATA_MUSYRIF[as].pass[nm] === ps) {
         role = "musyrif";
         userLogin = nm;
         asramaLogin = as;
-        
-        await loadData(true);
-        startApp();
+        await startApp();
     } else {
         const err = document.getElementById('loginError');
         err.innerHTML = "❌ Password salah!";
         err.style.display = 'block';
-        setTimeout(() => err.style.display = 'none', 2000);
+        setTimeout(() => err.style.display = 'none', 3000);
     }
 };
 
@@ -373,23 +326,23 @@ document.getElementById('formAdmin').onsubmit = async function(e) {
     const pin = document.getElementById('inputPin').value;
     if (pin === PIN_ADMIN) {
         role = "admin";
-        await loadData(true);
-        startApp();
+        await startApp();
     } else {
         const err = document.getElementById('loginError');
         err.innerHTML = "❌ PIN salah! PIN = 1234";
         err.style.display = 'block';
-        setTimeout(() => err.style.display = 'none', 2000);
+        setTimeout(() => err.style.display = 'none', 3000);
     }
 };
 
-function startApp() {
+async function startApp() {
+    await loadFromServer();
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('appSection').style.display = 'block';
     
     if (role === "admin") {
         document.getElementById('titleApp').innerHTML = "🛡️ ADMIN DASHBOARD";
-        document.getElementById('infoUser').innerHTML = "Administrator";
+        document.getElementById('infoUser').innerHTML = "Administrator | Data online";
         document.getElementById('adminArea').style.display = 'block';
         document.getElementById('userArea').classList.add('hidden');
         renderAdmin();
@@ -441,7 +394,7 @@ function renderAdmin() {
             let persen = Math.min(100, Math.round(cnt/7*100));
             let assessment = getAssessment(persen);
             perfHtml += `<div class="perf-item ${assessment.class}">
-                <div><strong>${n}</strong><br><small>${DATA_MUSYRIF[a].nama}</small></div>
+                <div><strong>${n}</strong><br><small>${DATA_MUSYRIF[a].nama} | ${DATA_MUSYRIF[a].kamar[n]}</small></div>
                 <span class="badge ${assessment.class}">${assessment.status} (${persen}%)</span>
             </div>`;
         }
@@ -465,7 +418,7 @@ function renderAdmin() {
     if (adminChart) adminChart.destroy();
     adminChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels: names, datasets: [{ label: 'Kehadiran (%)', data: persenData, backgroundColor: colors, borderRadius: 6 }] },
+        data: { labels: names, datasets: [{ label: 'Kehadiran Minggu Ini (%)', data: persenData, backgroundColor: colors, borderRadius: 8 }] },
         options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, max: 100 } } }
     });
     
@@ -490,31 +443,32 @@ function renderAdmin() {
 
 async function hapusData(timestamp) {
     if (confirm("Hapus data ini?")) {
-        const result = await saveData({ action: 'delete', timestamp: timestamp });
-        if (result) {
-            await loadData(true);
-            renderAdmin();
-            showToast("✅ Data dihapus");
-        } else {
-            showToast("❌ Gagal hapus data");
-        }
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', timestamp: timestamp })
+        });
+        await loadFromServer();
+        renderAdmin();
+        alert("Data dihapus!");
     }
 }
 
-async function refreshData() {
-    await loadData(true);
+async function loadData() {
+    await loadFromServer();
     if (role === "admin") renderAdmin();
     else renderUser();
-    showToast("✅ Data diperbarui");
+    alert("Data direfresh!");
 }
 
-function waReminder() {
-    window.open("https://wa.me/?text=Assalamualaikum%20Musyrif,%20jangan%20lupa%20isi%20absensi%20hari%20ini.");
+function kirimWA() {
+    window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif");
 }
 
-// ==================== PDF ====================
-async function pdfPerAsrama() {
-    await loadData();
+// ==================== PDF PER ASRAMA ====================
+async function generatePDFPerAsrama() {
+    await loadFromServer();
     const weekAgo = new Date(Date.now() - 7*86400000);
     let totalAbsen = 0;
     let htmlContent = "";
@@ -524,7 +478,7 @@ async function pdfPerAsrama() {
         let asramaHtml = `<div class="asrama-section">
             <h3>${asrama.nama}</h3>
             <table class="assessment-table">
-                <thead><tr><th>No</th><th>Nama</th><th>Kamar</th><th>Absen</th><th>%</th><th>Status</th></tr></thead>
+                <thead><tr><th>No</th><th>Nama Musyrif</th><th>Kamar</th><th>Jumlah Absen</th><th>Persentase</th><th>Status</th><th>Penilaian</th></tr></thead>
                 <tbody>`;
         let no = 1;
         for (let n in asrama.pass) {
@@ -542,6 +496,7 @@ async function pdfPerAsrama() {
                 <td>${cnt} kali</td>
                 <td>${persen}%</td>
                 <td><span style="background:${assessment.color}; color:white; padding:3px 8px; border-radius:12px;">${assessment.status}</span></td>
+                <td><strong>Grade ${assessment.grade}</strong></td>
             </tr>`;
         }
         asramaHtml += `</tbody></table></div>`;
@@ -560,18 +515,18 @@ async function pdfPerAsrama() {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
-        pdf.save(`Laporan_Kinerja_${new Date().toISOString().slice(0,10)}.pdf`);
+        pdf.save(`Laporan_Kinerja_Asrama_${new Date().toISOString().slice(0,10)}.pdf`);
         document.getElementById('reportSection').style.display = 'none';
-        showToast("✅ PDF selesai");
+        alert("✅ PDF Berhasil diunduh!");
     }, 500);
 }
 
-async function pdfPerIndividu() {
+// ==================== PDF PER INDIVIDU ====================
+async function generatePDFPerIndividu() {
     const namaMusyrif = prompt("Masukkan nama musyrif:", "Ali Mashuri");
     if (!namaMusyrif) return;
     
-    await loadData();
-    
+    await loadFromServer();
     let asramaNama = "", kamarNama = "";
     for (let a in DATA_MUSYRIF) {
         if (DATA_MUSYRIF[a].pass[namaMusyrif]) {
@@ -582,43 +537,54 @@ async function pdfPerIndividu() {
     }
     
     if (!asramaNama) {
-        alert("Nama tidak ditemukan!");
+        alert("Nama musyrif tidak ditemukan!");
         return;
     }
     
     const myData = semuaData.filter(d => d.Nama === namaMusyrif);
     const weekAgo = new Date(Date.now() - 7*86400000);
+    const monthAgo = new Date(Date.now() - 30*86400000);
     const weeklyCount = myData.filter(d => new Date(d.Timestamp) >= weekAgo).length;
+    const monthlyCount = myData.filter(d => new Date(d.Timestamp) >= monthAgo).length;
     const persenMinggu = Math.min(100, Math.round(weeklyCount/7*100));
+    const persenBulan = Math.min(100, Math.round(monthlyCount/30*100));
     const assessment = getAssessment(persenMinggu);
     
-    let html = `<div class="report-header"><div class="report-title">LAPORAN ${namaMusyrif}</div></div>
+    let htmlContent = `<div class="report-header">
+        <div class="report-title">📊 LAPORAN INDIVIDU MUSYRIF</div>
+    </div>
     <div class="report-meta">
         <div><strong>Nama:</strong> ${namaMusyrif}</div>
         <div><strong>Asrama:</strong> ${asramaNama}</div>
         <div><strong>Kamar:</strong> ${kamarNama}</div>
         <div><strong>Tanggal:</strong> ${new Date().toLocaleString('id-ID')}</div>
     </div>
-    <h4>📊 RINGKASAN</h4>
+    <h4>📊 RINGKASAN KEHADIRAN</h4>
     <table class="assessment-table">
-        <thead><th>Periode</th><th>Absen</th><th>Persen</th><th>Status</th></thead>
-        <tbody><tr><td>Mingguan</th><td>${weeklyCount} kali</th><td>${persenMinggu}%</th><td>${assessment.status}</th></tr></tbody>
-    追赶
-    <h4>📜 RIWAYAT</h4>
-    <table class="assessment-table"><thead><th>No</th><th>Tanggal</th><th>Kegiatan</th></thead><tbody>`;
+        <thead><th>Periode</th><th>Jumlah</th><th>Persentase</th><th>Status</th></thead>
+        <tbody>
+            <tr><td>Mingguan</td><td>${weeklyCount} kali</td><td>${persenMinggu}%</td><td>${assessment.status}</td></tr>
+            <tr><td>Bulanan</td><td>${monthlyCount} kali</td><td>${persenBulan}%</td><td>-</td></tr>
+        </tbody>
+    </table>
+    <h4>📜 RIWAYAT ABSENSI</h4>
+    <table class="assessment-table">
+        <thead><th>No</th><th>Tanggal</th><th>Kegiatan</th><th>Catatan</th></thead>
+        <tbody>`;
     
     let no = 1;
     const sorted = [...myData].reverse();
     for (let d of sorted) {
-        html += `<tr>
-            <td>${no++}</th>
-            <td>${new Date(d.Timestamp).toLocaleString('id-ID')}</th>
-            <td>${d.Kegiatan}</th>
+        htmlContent += `<tr>
+            <td>${no++}</td>
+            <td>${new Date(d.Timestamp).toLocaleString('id-ID')}</td>
+            <td>${d.Kegiatan}</td>
+            <td>${d.Catatan || '-'}</td>
         </tr>`;
     }
-    html += `</tbody></table>`;
+    htmlContent += `</tbody></table>`;
     
-    document.getElementById('individualReportContent').innerHTML = html;
+    document.getElementById('individualReportContent').innerHTML = htmlContent;
     document.getElementById('individualReportSection').style.display = 'block';
     
     setTimeout(async () => {
@@ -628,9 +594,9 @@ async function pdfPerIndividu() {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
-        pdf.save(`Laporan_${namaMusyrif}_${new Date().toISOString().slice(0,10)}.pdf`);
+        pdf.save(`Laporan_Individu_${namaMusyrif}_${new Date().toISOString().slice(0,10)}.pdf`);
         document.getElementById('individualReportSection').style.display = 'none';
-        showToast("✅ PDF selesai");
+        alert("✅ PDF Berhasil diunduh!");
     }, 500);
 }
 
@@ -668,21 +634,21 @@ function renderUser() {
     if (myChart) myChart.destroy();
     myChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels: days, datasets: [{ label: 'Absensi', data: chartData, backgroundColor: '#4caf50', borderRadius: 6 }] },
+        data: { labels: days, datasets: [{ label: 'Jumlah Absensi', data: chartData, backgroundColor: '#4caf50', borderRadius: 8 }] },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
     });
     
     if (myData.length === 0) {
-        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3">Belum ada data</th></tr>';
+        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3">Belum ada data</td></tr>';
         return;
     }
     let html = "";
     const sorted = [...myData].reverse();
     for (let d of sorted) {
         html += `<tr>
-            <td>${new Date(d.Timestamp).toLocaleString()}</th>
-            <td>${d.Kegiatan}</th>
-            <td>${d.Foto ? `<img src="${d.Foto}" class="foto" onclick="lihatFoto('${d.Foto}')">` : '-'}</th>
+            <td>${new Date(d.Timestamp).toLocaleString()}</td>
+            <td>${d.Kegiatan}</td>
+            <td>${d.Foto ? `<img src="${d.Foto}" class="foto" onclick="lihatFoto('${d.Foto}')">` : '-'}</td>
         </tr>`;
     }
     document.getElementById('riwayatBody').innerHTML = html;
@@ -693,16 +659,18 @@ async function simpanAbsen() {
     const fileFoto = document.getElementById('pilihFoto').files[0];
     const catatan = document.getElementById('isiCatatan').value;
     
-    if (!kegiatan) { showToast("⚠️ Pilih kegiatan!"); return; }
-    if (!fileFoto) { showToast("⚠️ Ambil foto dulu!"); return; }
+    if (!kegiatan) { alert("Pilih kegiatan!"); return; }
+    if (!fileFoto) { alert("Ambil foto!"); return; }
     
     const btn = document.getElementById('btnSimpan');
     btn.disabled = true;
-    btn.innerHTML = "⏳ Menyimpan...";
+    btn.innerHTML = "Menyimpan...";
+    document.getElementById('loading').style.display = 'flex';
     
     try {
         const fotoBase64 = await bacaFile(fileFoto);
-        const result = await saveData({
+        await saveToServer({
+            action: 'save',
             timestamp: new Date().toISOString(),
             nama: userLogin,
             asrama: DATA_MUSYRIF[asramaLogin].nama,
@@ -712,22 +680,19 @@ async function simpanAbsen() {
             catatan: catatan
         });
         
-        if (result) {
-            await loadData(true);
-            renderUser();
-            if (role === "admin") renderAdmin();
-            showToast("✅ Absensi tersimpan!");
-            document.getElementById('pilihKegiatan').value = "";
-            document.getElementById('pilihFoto').value = "";
-            document.getElementById('isiCatatan').value = "";
-        } else {
-            showToast("❌ Gagal menyimpan!");
-        }
+        await loadFromServer();
+        alert("✅ ABSENSI BERHASIL DISIMPAN!");
+        document.getElementById('pilihKegiatan').value = "";
+        document.getElementById('pilihFoto').value = "";
+        document.getElementById('isiCatatan').value = "";
+        renderUser();
+        
     } catch(err) {
-        showToast("❌ Error: " + err.message);
+        alert("❌ Gagal: " + err.message);
     } finally {
         btn.disabled = false;
         btn.innerHTML = "📤 KIRIM ABSENSI";
+        document.getElementById('loading').style.display = 'none';
     }
 }
 
@@ -745,7 +710,7 @@ function lihatFoto(src) {
     document.getElementById('modalFoto').style.display = 'block';
 }
 
-console.log("✅ Aplikasi siap dengan URL Web App Anda!");
+console.log("✅ Aplikasi siap!");
 </script>
 </body>
 </html>
