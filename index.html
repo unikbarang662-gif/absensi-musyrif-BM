@@ -24,6 +24,7 @@
     .btn-primary { background: var(--primary); }
     .btn-wa { background: #25D366; }
     .btn-pdf { background: #d32f2f; }
+    .btn-success { background: var(--success); }
     .error-msg { background: #ffebee; color: var(--danger); padding: 8px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 10px; display: none; }
     #main-app { display: none; max-width: 1200px; margin: 0 auto; }
     header { text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-radius: 12px; position: relative; }
@@ -43,9 +44,14 @@
     .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
     .btn-group .btn { flex: 1; min-width: 100px; font-size: 0.9rem; padding: 10px; }
     .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
-    .schedule-item { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; }
-    .schedule-item.active { border-color: var(--primary); background: #e8f5e9; }
+    .schedule-item { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; position: relative; }
+    .schedule-item.active { border-color: var(--primary); background: #e8f5e9; border-left: 4px solid var(--success); }
+    .schedule-item.done { opacity: 0.6; background: #f0f0f0; }
     .time { font-weight: bold; color: var(--primary); font-size: 0.9rem; }
+    .time-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; display: inline-block; margin-top: 6px; }
+    .time-badge.active { background: var(--success); color: white; }
+    .time-badge.done { background: #9e9e9e; color: white; }
+    .time-badge.waiting { background: #ff9800; color: white; }
     table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
     th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); }
     th { background: #f1f1f1; }
@@ -77,11 +83,16 @@
     .grade-d { background: #ffcdd2; color: #c62828; }
     .asrama-section { margin: 30px 0; padding: 20px; background: #f9f9f9; border-radius: 8px; }
     .asrama-section h3 { color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+    .live-clock { font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 20px; display: inline-block; margin-top: 4px; }
+    .current-time { background: var(--info); color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; margin-left: 10px; }
+    .readonly-badge { background: #ff9800; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
     @media print { .no-print, #login-screen, header .logout-btn, .btn-group, .admin-section { display: none !important; } .report-section { display: block !important; } body { background: white; padding: 0; } .card { box-shadow: none; border: 1px solid #ddd; } }
     @media (max-width: 600px) { .schedule-grid { grid-template-columns: 1fr; } .btn-group { flex-direction: column; } .stats-summary { grid-template-columns: 1fr; } .chart-container { height: 200px; } .grade-legend { grid-template-columns: repeat(2, 1fr); } .report-meta { grid-template-columns: 1fr; } }
     .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .act-msg-active { color: var(--success); font-weight: 500; }
+    .act-msg-inactive { color: var(--warning); font-weight: 500; }
   </style>
 </head>
 <body>
@@ -124,6 +135,10 @@
     <header>
       <h1 id="app-title">Dashboard</h1>
       <p id="user-label" style="font-size:0.9rem;opacity:0.9;margin-top:4px;"></p>
+      <div style="margin-top: 8px;">
+        <span class="live-clock" id="live-clock"></span>
+        <span class="current-time" id="current-time-status"></span>
+      </div>
       <button class="logout-btn" onclick="logout()">Keluar</button>
     </header>
     <div id="alert-box"></div>
@@ -196,19 +211,32 @@
           <div class="stat-box"><div class="label">Bulanan</div><div class="value" id="ms-m">0%</div><div class="bar"><div id="mb-m" class="fill" style="width:0%"></div></div></div>
         </div>
       </div>
-      <div class="card"><h2>📅 Jadwal Hari Ini</h2><div class="schedule-grid" id="sched-grid"></div></div>
+      <div class="card"><h2>📅 Jadwal & Kegiatan Hari Ini</h2><div class="schedule-grid" id="sched-grid"></div></div>
       <div class="card">
         <h2>📝 Input Absensi</h2>
         <form id="absen-form">
-          <div class="form-group"><label>Kegiatan</label><select id="act-select" required><option value="">-- Pilih Kegiatan --</option></select><small id="act-msg">Menunggu jadwal...</small></div>
-          <div class="form-group"><label>Foto Kegiatan</label><input type="file" id="photo-in" accept="image/*" capture="user" required><small>📷 Gunakan kamera depan untuk foto bukti kegiatan</small></div>
-          <div class="form-group"><label>Catatan</label><textarea id="notes" rows="2"></textarea></div>
+          <div class="form-group">
+            <label>Kegiatan <span id="active-badge" style="font-size:0.7rem;"></span></label>
+            <select id="act-select" required onchange="onActivitySelect()">
+              <option value="">-- Pilih Kegiatan --</option>
+            </select>
+            <small id="act-msg" style="display: block; margin-top: 5px;"></small>
+          </div>
+          <div class="form-group">
+            <label>📷 Foto Bukti Kegiatan</label>
+            <input type="file" id="photo-in" accept="image/*" capture="user" required>
+            <small>Gunakan kamera depan untuk selfie/foto kegiatan</small>
+          </div>
+          <div class="form-group">
+            <label>📝 Catatan (opsional)</label>
+            <textarea id="notes" rows="2" placeholder="Contoh: Kegiatan berjalan lancar..."></textarea>
+          </div>
           <button type="submit" class="btn btn-primary" id="sub-btn">✅ Kirim Absensi</button>
         </form>
       </div>
       <div class="card">
         <h2>📜 Riwayat Absensi Saya <span class="readonly-badge">Tidak Dapat Dihapus</span></h2>
-        <div style="overflow-x:auto;"><table class="history-table"><thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead><tbody id="my-tbody"><tr><td colspan="3" style="text-align:center;padding:15px;color:var(--text-light);">Memuat riwayat...</td></tr></tbody></table></div>
+        <div style="overflow-x:auto;"><table class="history-table"><thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th> </tr></thead><tbody id="my-tbody"><tr><td colspan="3" style="text-align:center;padding:15px;color:var(--text-light);">Memuat riwayat...</td></tr></tbody></table></div>
       </div>
     </div>
   </div>
@@ -306,6 +334,7 @@
         document.getElementById('stats-panel').style.display = 'none';
       }
       
+      startClock();
       renderSched();
       updJobs();
       
@@ -314,33 +343,152 @@
     
     function showError(m) { const e=document.getElementById('login-error'); e.textContent=m; e.style.display='block'; setTimeout(()=>e.style.display='none',3000); }
 
+    function startClock() {
+      function updateClock() {
+        const now = new Date();
+        document.getElementById('live-clock').textContent = now.toLocaleTimeString('id-ID');
+        document.getElementById('current-time-status').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    function getTimeStatus(startTime, endTime) {
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const [startH, startM] = startTime.split(':').map(Number);
+      const [endH, endM] = endTime.split(':').map(Number);
+      const startMinutes = startH * 60 + startM;
+      const endMinutes = endH * 60 + endM;
+      
+      if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
+        const remaining = endMinutes - currentMinutes;
+        return { status: 'active', text: '🟢 Sedang Berlangsung', remaining: `${Math.floor(remaining/60)}j ${remaining%60}m lagi selesai` };
+      } else if (currentMinutes < startMinutes) {
+        const wait = startMinutes - currentMinutes;
+        return { status: 'waiting', text: '⏳ Akan Datang', remaining: `Mulai dalam ${Math.floor(wait/60)}j ${wait%60}m` };
+      } else {
+        return { status: 'done', text: '✅ Selesai', remaining: '' };
+      }
+    }
+
     function renderSched() {
-      const now = new Date(), nm = now.getHours()*60+now.getMinutes(), day = now.getDay();
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const day = now.getDay();
+      
       document.getElementById('sched-grid').innerHTML = JOBS.filter(j => j.days.includes(day)).map(j => {
-        const s = j.tf ? j.tf : j.t;
-        const [sh,sm]=s.split(':').map(Number), [eh,em]=j.e.split(':').map(Number);
-        const st=sh*60+sm, et=eh*60+em;
-        const cls = nm>=st && nm<=et ? 'active' : nm>et ? 'done' : '';
-        const txt = cls==='active' ? '🟢 Berjalan' : cls==='done' ? '✅ Selesai' : '⏳ Belum';
-        return `<div class="schedule-item ${cls}"><div class="time">${s} - ${j.e}</div><div style="margin:4px 0;font-weight:500;">${j.n}</div><div style="font-size:0.8rem;color:var(--text-light);">${txt}</div></div>`;
+        const startTime = j.tf ? j.tf : j.t;
+        const timeStatus = getTimeStatus(startTime, j.e);
+        let statusClass = '', statusBadge = '';
+        
+        if (timeStatus.status === 'active') {
+          statusClass = 'active';
+          statusBadge = `<span class="time-badge active">${timeStatus.text}<br><small>${timeStatus.remaining}</small></span>`;
+        } else if (timeStatus.status === 'waiting') {
+          statusClass = 'waiting';
+          statusBadge = `<span class="time-badge waiting">${timeStatus.text}<br><small>${timeStatus.remaining}</small></span>`;
+        } else {
+          statusClass = 'done';
+          statusBadge = `<span class="time-badge done">${timeStatus.text}</span>`;
+        }
+        
+        return `<div class="schedule-item ${statusClass}">
+          <div class="time">⏰ ${startTime} - ${j.e}</div>
+          <div style="margin:6px 0;font-weight:600;">📌 ${j.n}</div>
+          ${statusBadge}
+        </div>`;
       }).join('');
+      
+      // Update juga status badge di header form
+      const activeJobs = JOBS.filter(j => j.days.includes(day) && getTimeStatus(j.tf || j.t, j.e).status === 'active');
+      const badgeEl = document.getElementById('active-badge');
+      if (badgeEl) {
+        if (activeJobs.length > 0) {
+          badgeEl.innerHTML = `🎯 ${activeJobs.length} kegiatan aktif`;
+          badgeEl.style.color = 'var(--success)';
+        } else {
+          badgeEl.innerHTML = `⏸️ Tidak ada kegiatan aktif`;
+          badgeEl.style.color = 'var(--warning)';
+        }
+      }
+    }
+    
+    function onActivitySelect() {
+      const selected = document.getElementById('act-select').value;
+      const msg = document.getElementById('act-msg');
+      if (!selected) return;
+      
+      const day = new Date().getDay();
+      const job = JOBS.find(j => j.n === selected && j.days.includes(day));
+      if (job) {
+        const startTime = job.tf || job.t;
+        const timeStatus = getTimeStatus(startTime, job.e);
+        if (timeStatus.status === 'active') {
+          msg.innerHTML = `✅ Kegiatan sedang berlangsung. ${timeStatus.remaining}`;
+          msg.className = 'act-msg-active';
+        } else if (timeStatus.status === 'waiting') {
+          msg.innerHTML = `⏳ ${timeStatus.text}. ${timeStatus.remaining}`;
+          msg.className = 'act-msg-inactive';
+        } else {
+          msg.innerHTML = `❌ Kegiatan sudah selesai untuk hari ini.`;
+          msg.className = 'act-msg-inactive';
+        }
+      }
     }
     
     function updJobs() {
-      const now = new Date(), nm = now.getHours()*60+now.getMinutes(), day = now.getDay();
-      const sel = document.getElementById('act-select'), msg = document.getElementById('act-msg');
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const day = now.getDay();
+      const sel = document.getElementById('act-select');
+      const msg = document.getElementById('act-msg');
+      
+      if (!sel) return;
+      
       sel.innerHTML = '<option value="">-- Pilih Kegiatan --</option>';
-      let act = false;
+      let hasActive = false;
+      let activeJobName = '';
+      
       JOBS.filter(j => j.days.includes(day)).forEach(j => {
-        const s = j.tf ? j.tf : j.t;
-        const [sh,sm]=s.split(':').map(Number), [eh,em]=j.e.split(':').map(Number);
-        const st=sh*60+sm, et=eh*60+em, ok = nm>=st && nm<=et;
-        const o = document.createElement('option'); o.value=j.n; o.textContent=`${j.n} (${s}-${j.e})`;
-        if(!ok) { o.disabled=true; o.textContent+=' (Di luar jadwal)'; } else { o.selected=true; act=true; }
+        const startTime = j.tf ? j.tf : j.t;
+        const timeStatus = getTimeStatus(startTime, j.e);
+        const o = document.createElement('option');
+        o.value = j.n;
+        o.textContent = `${j.n} (${startTime} - ${j.e})`;
+        
+        if (timeStatus.status === 'active') {
+          o.selected = true;
+          hasActive = true;
+          activeJobName = j.n;
+          o.style.backgroundColor = '#e8f5e9';
+          o.style.fontWeight = 'bold';
+          o.textContent += ' 🔴 SEDANG BERLANGSUNG';
+        } else if (timeStatus.status === 'waiting') {
+          o.disabled = true;
+          o.textContent += ' ⏳ Belum waktunya';
+        } else {
+          o.disabled = true;
+          o.textContent += ' ✓ Selesai';
+        }
         sel.appendChild(o);
       });
-      msg.textContent = act ? '✅ Pilih kegiatan aktif' : '⚠️ Tidak ada kegiatan berjalan';
-      msg.style.color = act ? 'var(--success)' : 'var(--warning)';
+      
+      if (hasActive) {
+        msg.innerHTML = `🎯 Waktu yang tepat untuk absen! Kegiatan "${activeJobName}" sedang berlangsung.`;
+        msg.className = 'act-msg-active';
+      } else {
+        const nextJob = JOBS.filter(j => j.days.includes(day)).find(j => getTimeStatus(j.tf || j.t, j.e).status === 'waiting');
+        if (nextJob) {
+          const startTime = nextJob.tf || nextJob.t;
+          const timeStatus = getTimeStatus(startTime, nextJob.e);
+          msg.innerHTML = `⏰ ${timeStatus.text}. ${timeStatus.remaining}. Silakan tunggu jadwal berikutnya.`;
+          msg.className = 'act-msg-inactive';
+        } else {
+          msg.innerHTML = `📅 Semua kegiatan hari ini sudah selesai. Silakan absen besok lagi.`;
+          msg.className = 'act-msg-inactive';
+        }
+      }
     }
 
     function getStats(nm) {
@@ -377,7 +525,7 @@
       if (!data.length) return;
       const s = getStats(user.name);
       document.getElementById('stats-panel').style.display='block';
-      const set = (id,val) => { document.getElementById(id).textContent=val+'%'; const b=document.getElementById(id.replace('ms','mb')); b.style.width=val+'%'; };
+      const set = (id,val) => { document.getElementById(id).textContent=val+'%'; const b=document.getElementById(id.replace('ms','mb')); if(b) b.style.width=val+'%'; };
       set('ms-d',s.d); set('ms-w',s.w); set('ms-m',s.m);
       renderChart();
     }
@@ -390,7 +538,8 @@
       document.getElementById('s-month').textContent = data.filter(x=>new Date(x.Timestamp)>=mo).length;
       const act = new Set(data.filter(x=>new Date(x.Timestamp)>=wk).map(x=>x['Nama Musyrif']));
       document.getElementById('s-active').textContent = `${act.size}/12`;
-      const pc = document.getElementById('perf-container'); pc.innerHTML='';
+      const pc = document.getElementById('perf-container'); if(!pc) return;
+      pc.innerHTML='';
       Object.keys(MUSYRIF_BY_ASMARA).forEach(asramaKey => {
         const asrama = MUSYRIF_BY_ASMARA[asramaKey];
         Object.keys(asrama.musyrif).forEach(n => {
@@ -424,10 +573,13 @@
       isLoadingData = true;
       
       if (role === 'admin') {
-        document.getElementById('admin-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">⏳ Mengambil data dari server...</td></tr>';
-        document.getElementById('perf-container').innerHTML = '<div style="text-align:center;padding:15px;">⏳ Memuat performa...</div>';
+        const adminTbody = document.getElementById('admin-tbody');
+        if(adminTbody) adminTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">⏳ Mengambil data dari server...</td></tr>';
+        const perfContainer = document.getElementById('perf-container');
+        if(perfContainer) perfContainer.innerHTML = '<div style="text-align:center;padding:15px;">⏳ Memuat performa...</div>';
       } else {
-        document.getElementById('my-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">⏳ Mengambil data...</td></tr>';
+        const myTbody = document.getElementById('my-tbody');
+        if(myTbody) myTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">⏳ Mengambil data...</td></tr>';
       }
       
       try {
@@ -445,10 +597,13 @@
       } catch (e) {
         const errorMsg = e.name === 'AbortError' ? '⏱️ Koneksi timeout. Server lambat atau offline.' : '❌ Gagal terhubung ke server. Periksa koneksi.';
         if (role === 'admin') {
-          document.getElementById('admin-tbody').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--danger);">${errorMsg}<br><button onclick="loadData(true)" style="margin-top:10px;padding:6px 12px;">🔄 Coba Lagi</button></td></tr>`;
-          document.getElementById('perf-container').innerHTML = `<div style="text-align:center;padding:15px;color:var(--danger);">${errorMsg}</div>`;
+          const adminTbody = document.getElementById('admin-tbody');
+          if(adminTbody) adminTbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--danger);">${errorMsg}<br><button onclick="loadData(true)" style="margin-top:10px;padding:6px 12px;">🔄 Coba Lagi</button></td></tr>`;
+          const perfContainer = document.getElementById('perf-container');
+          if(perfContainer) perfContainer.innerHTML = `<div style="text-align:center;padding:15px;color:var(--danger);">${errorMsg}</div>`;
         } else {
-          document.getElementById('my-tbody').innerHTML = `<tr><td colspan="3" style="text-align:center;padding:15px;color:var(--danger);">${errorMsg}<br><button onclick="loadData(true)" style="margin-top:10px;padding:6px 12px;">🔄 Coba Lagi</button></td></tr>`;
+          const myTbody = document.getElementById('my-tbody');
+          if(myTbody) myTbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:15px;color:var(--danger);">${errorMsg}<br><button onclick="loadData(true)" style="margin-top:10px;padding:6px 12px;">🔄 Coba Lagi</button></td></tr>`;
         }
       } finally {
         isLoadingData = false;
@@ -456,15 +611,19 @@
     }
     
     function renderAdminTable() {
-      if (!data.length) { document.getElementById('admin-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-light);">Belum ada data absensi</td></tr>'; return; }
-      document.getElementById('admin-tbody').innerHTML = data.slice().reverse().map(d=>`<tr><td>${new Date(d.Timestamp).toLocaleString()}</td><td>${d['Nama Musyrif']}</td><td>${d.Asrma || '-'}</td><td>${d.Kamar}</td><td>${d.Kegiatan}</td><td>${d.Foto?`<img src="${d.Foto}" class="photo-thumb" onclick="viewImg('${d.Foto.replace(/'/g,"\\'")}')" alt="foto">`:'-'}</td><td><button style="padding:4px 8px;font-size:0.7rem;background:var(--danger);border:none;color:white;border-radius:4px;cursor:pointer;" onclick="delRow('${d.Timestamp}','${d['Nama Musyrif']}')">Hapus</button></td></tr>`).join('');
+      const adminTbody = document.getElementById('admin-tbody');
+      if (!adminTbody) return;
+      if (!data.length) { adminTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-light);">Belum ada data absensi</td></tr>'; return; }
+      adminTbody.innerHTML = data.slice().reverse().map(d=>`<tr><td>${new Date(d.Timestamp).toLocaleString()}</td><td>${d['Nama Musyrif']}</td><td>${d.Asrma || '-'}</td><td>${d.Kamar}</td><td>${d.Kegiatan}</td><td>${d.Foto?`<img src="${d.Foto}" class="photo-thumb" onclick="viewImg('${d.Foto.replace(/'/g,"\\'")}')" alt="foto">`:'-'}</td><td><button style="padding:4px 8px;font-size:0.7rem;background:var(--danger);border:none;color:white;border-radius:4px;cursor:pointer;" onclick="delRow('${d.Timestamp}','${d['Nama Musyrif']}')">Hapus</button></td></tr>`).join('');
     }
     
     function renderMyTable() {
-      if (!data.length) { document.getElementById('my-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr>'; return; }
+      const myTbody = document.getElementById('my-tbody');
+      if (!myTbody) return;
+      if (!data.length) { myTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr>'; return; }
       const my = data.filter(d=>d['Nama Musyrif']===user.name).reverse();
-      if (my.length === 0) { document.getElementById('my-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr>'; return; }
-      document.getElementById('my-tbody').innerHTML = my.map(d=>`<tr><td>${new Date(d.Timestamp).toLocaleString()}</td><td>${d.Kegiatan}</td><td>${d.Foto?`<img src="${d.Foto}" class="photo-thumb" onclick="viewImg('${d.Foto.replace(/'/g,"\\'")}')" alt="foto">`:'-'}</td></tr>`).join('');
+      if (my.length === 0) { myTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr>'; return; }
+      myTbody.innerHTML = my.map(d=>`<tr><td>${new Date(d.Timestamp).toLocaleString()}</td><td>${d.Kegiatan}</td><td>${d.Foto?`<img src="${d.Foto}" class="photo-thumb" onclick="viewImg('${d.Foto.replace(/'/g,"\\'")}')" alt="foto">`:'-'}</td></tr>`).join('');
     }
     
     function viewImg(s) { const w=window.open(); w.document.write(`<img src="${s}" style="max-width:100%;margin-top:20px;">`); }
@@ -473,24 +632,72 @@
       e.preventDefault();
       const act = document.getElementById('act-select').value;
       const photo = document.getElementById('photo-in').files[0];
-      if (!act) { alert('⚠️ Pilih kegiatan terlebih dahulu!'); return; }
-      if (!photo) { alert('⚠️ Upload foto kegiatan!'); return; }
-      const now=new Date(), nm=now.getHours()*60+now.getMinutes(), day = now.getDay();
-      const j = JOBS.find(x=>x.n===act && x.days.includes(day));
-      if(j) {
-        const s=j.tf?j.tf:j.t, [sh,sm]=s.split(':').map(Number), [eh,em]=j.e.split(':').map(Number);
-        if(nm<sh*60+sm || nm>eh*60+em) return alert('❌ Absensi hanya bisa dilakukan saat jadwal kegiatan berlangsung!');
+      
+      if (!act) { 
+        alert('⚠️ Pilih kegiatan terlebih dahulu!'); 
+        updJobs();
+        return; 
       }
-      const btn = document.getElementById('sub-btn'); btn.disabled=true; btn.innerHTML='<span class="loading-spinner"></span> Mengirim...';
+      if (!photo) { 
+        alert('⚠️ Upload foto kegiatan!'); 
+        return; 
+      }
+      
+      // Validasi waktu absensi
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const day = now.getDay();
+      const job = JOBS.find(x => x.n === act && x.days.includes(day));
+      
+      if(job) {
+        const startTime = job.tf ? job.tf : job.t;
+        const [sh, sm] = startTime.split(':').map(Number);
+        const [eh, em] = job.e.split(':').map(Number);
+        const startMinutes = sh * 60 + sm;
+        const endMinutes = eh * 60 + em;
+        
+        if(currentMinutes < startMinutes) {
+          alert(`❌ Absensi untuk "${act}" belum bisa dilakukan!\nWaktu mulai: ${startTime}\nSilakan tunggu hingga jadwal dimulai.`);
+          return;
+        }
+        if(currentMinutes > endMinutes) {
+          alert(`❌ Absensi untuk "${act}" sudah melewati batas waktu!\nBatas akhir: ${job.e}\nHarap absen sesuai jadwal.`);
+          return;
+        }
+      }
+      
+      const btn = document.getElementById('sub-btn'); 
+      btn.disabled = true; 
+      btn.innerHTML = '<span class="loading-spinner"></span> Mengirim...';
+      
       try {
         const b64 = await new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.onerror=j;rd.readAsDataURL(photo);});
-        const pay = {musyrif:user.name, kamar:user.room, asrama: currentAsrama ? MUSYRIF_BY_ASMARA[currentAsrama].name : '', kegiatan:act, foto:b64, catatan:document.getElementById('notes').value};
+        const pay = {
+          musyrif: user.name, 
+          kamar: user.room, 
+          asrama: currentAsrama ? MUSYRIF_BY_ASMARA[currentAsrama].name : '', 
+          kegiatan: act, 
+          foto: b64, 
+          catatan: document.getElementById('notes').value || ''
+        };
         const res = await fetch(GOOGLE_SCRIPT_URL, {method:'POST', body:JSON.stringify(pay)});
         const out = await res.json();
-        if(out.status==='success') { alert('✅ Absensi berhasil dikirim!'); document.getElementById('absen-form').reset(); loadData(true); }
-        else throw new Error(out.message);
-      } catch(err) { alert('❌ Gagal: '+err.message); }
-      finally { btn.disabled=false; btn.innerHTML='✅ Kirim Absensi'; }
+        if(out.status === 'success') { 
+          alert('✅ Absensi berhasil dikirim!'); 
+          document.getElementById('absen-form').reset(); 
+          document.getElementById('notes').value = '';
+          await loadData(true); 
+          renderSched();
+          updJobs();
+        } else {
+          throw new Error(out.message || 'Gagal mengirim');
+        }
+      } catch(err) { 
+        alert('❌ Gagal: ' + err.message); 
+      } finally { 
+        btn.disabled = false; 
+        btn.innerHTML = '✅ Kirim Absensi'; 
+      }
     };
 
     async function delRow(ts, nm) {
@@ -580,11 +787,17 @@
           if (!data.some(d=>d['Nama Musyrif']===n && new Date(d.Timestamp).toDateString()===td)) miss.push(n);
         });
       });
-      if(!miss.length) return alert('✅ Semua sudah absen!');
-      window.open(`https://wa.me/?text=${encodeURIComponent(`*REMINDER ABSENSI*\nYth. ${miss.join(', ')},\nAnda belum absen hari ini.`)}`);
+      if(!miss.length) return alert('✅ Semua sudah absen hari ini!');
+      window.open(`https://wa.me/?text=${encodeURIComponent(`*REMINDER ABSENSI*\n\nYth. Musyrif yang belum absen:\n${miss.join('\n')}\n\nHarap segera melakukan absensi sesuai jadwal masing-masing.\n\nTerima kasih.`)}`);
     }
 
-    setInterval(()=>{if(role){renderSched();updJobs();}}, 60000);
+    // Auto refresh setiap 30 detik untuk jadwal dan kegiatan
+    setInterval(() => {
+      if(role) {
+        renderSched();
+        updJobs();
+      }
+    }, 30000);
   </script>
 </body>
 </html>
