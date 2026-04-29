@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Absensi Musyrif - Unlimited Storage</title>
+    <title>Absensi Musyrif - Online Sync</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -24,7 +24,7 @@
         input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #ddd; }
-        .foto { width: 35px; height: 35px; object-fit: cover; border-radius: 5px; cursor: pointer; }
+        .foto-thumb { width: 35px; height: 35px; object-fit: cover; border-radius: 5px; cursor: pointer; background: #eee; }
         .header { background: #2e7d32; color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
         .logout { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; }
         .tab { display: inline-block; width: 49%; text-align: center; padding: 10px; background: #ddd; border-radius: 30px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
@@ -53,7 +53,7 @@
         .stat-box .value { font-size: 22px; font-weight: bold; color: #2e7d32; }
         .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
         .schedule-item { padding: 10px; background: #f9f9f9; border-radius: 10px; border-left: 3px solid #2e7d32; }
-        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 15px; }
+        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 15px; z-index: 10000; }
         .spinner { width: 40px; height: 40px; border: 4px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .report-section, .individual-report-section { display: none; background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
@@ -66,7 +66,9 @@
         .assessment-table th { background: #2e7d32; color: white; }
         .delete-btn { background: #d32f2f; color: white; border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 11px; }
         .delete-btn:hover { background: #b71c1c; }
-        .info-storage { background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 12px; text-align: center; }
+        .sync-status { background: #e3f2fd; padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 11px; text-align: center; color: #1565c0; }
+        .sync-status.online { background: #c8e6c9; color: #2e7d32; }
+        .sync-status.offline { background: #ffcdd2; color: #c62828; }
         h4 { margin-bottom: 12px; color: #2e7d32; }
         @media (max-width: 600px) { 
             .stats-grid { grid-template-columns: repeat(2, 1fr); } 
@@ -77,7 +79,7 @@
 </head>
 <body>
 
-<div id="loading" class="loading"><div class="spinner"></div><div>Memuat data...</div></div>
+<div id="loading" class="loading"><div class="spinner"></div><div id="loadingText">Memuat data...</div></div>
 
 <!-- LOGIN SECTION -->
 <div id="loginSection">
@@ -124,16 +126,13 @@
         <div id="adminArea">
             <div class="card">
                 <h4>⚙️ MENU ADMIN</h4>
-                <div id="infoStorage" class="info-storage">📊 Menghitung penggunaan storage...</div>
+                <div id="syncStatus" class="sync-status">🔍 Mengecek koneksi...</div>
                 <div class="btn-group">
                     <button class="btn btn-green" onclick="loadData()">🔄 REFRESH</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerAsrama()">📄 PDF ASRAMA</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerIndividu()">📄 PDF INDIVIDU</button>
                     <button class="btn btn-wa" onclick="kirimWA()">📱 WA</button>
-                    <button class="btn btn-blue" onclick="backupData()">💾 BACKUP</button>
-                    <button class="btn btn-green" onclick="restoreData()">📂 RESTORE</button>
-                    <button class="btn btn-red" onclick="clearOldData()">🗑 HAPUS DATA LAMA</button>
-                    <button class="btn btn-red" onclick="clearAllData()">⚠️ HAPUS SEMUA DATA</button>
+                    <button class="btn btn-red" onclick="clearAllData()">⚠️ HAPUS SEMUA</button>
                 </div>
             </div>
             
@@ -232,16 +231,16 @@
     <div id="individualReportContent"></div>
 </div>
 
-<div id="modalFoto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:3000; text-align:center; padding-top:20%;" onclick="this.style.display='none'">
+<div id="modalFoto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:20000; text-align:center; padding-top:20%;" onclick="this.style.display='none'">
     <img id="modalImg" style="max-width:90%; max-height:80%; border-radius:10px;">
 </div>
 
 <script>
 // ==================== KONFIGURASI ====================
+// ⚠️ GANTI URL INI DENGAN URL DEPLOY ANDA DARI GOOGLE APPS SCRIPT ⚠️
+const API_URL = "https://script.google.com/macros/s/AKfycbwm2fplXrEudmeM71K6Habh9XLcPcchO5MiFtMqQ3YzkRQleExQzuakPKQDdDoZYdgN/exec";
+
 const PIN_ADMIN = "1234";
-const DB_NAME = "AbsensiMusyrifDB";
-const STORE_NAME = "absensi";
-const DB_VERSION = 1;
 
 const DATA_MUSYRIF = {
     hakim: { nama: "Asrama Al Hakim", pass: { "Ali Mashuri":"ali123", "Ali Zahid":"zahid123", "Reva Dwi":"reva123", "Imam Syafi'i":"imam123" }, kamar: { "Ali Mashuri":"Khondak", "Ali Zahid":"Badar", "Reva Dwi":"Khoibar", "Imam Syafi'i":"Multazam" } },
@@ -262,142 +261,16 @@ const JADWAL = [
 
 let role = "", userLogin = "", asramaLogin = "", semuaData = [];
 let myChart = null, adminChart = null;
-let db = null;
-
-// ==================== INDEXEDDB (UNLIMITED STORAGE) ====================
-function openDatabase() {
-    return new Promise((resolve, reject) => {
-        if (db) {
-            resolve(db);
-            return;
-        }
-        
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        
-        request.onerror = (event) => {
-            console.error("Database error:", event.target.error);
-            reject(event.target.error);
-        };
-        
-        request.onsuccess = (event) => {
-            db = event.target.result;
-            console.log("Database opened successfully");
-            resolve(db);
-        };
-        
-        request.onupgradeneeded = (event) => {
-            const database = event.target.result;
-            if (!database.objectStoreNames.contains(STORE_NAME)) {
-                const store = database.createObjectStore(STORE_NAME, { keyPath: "Timestamp" });
-                store.createIndex("Nama", "Nama", { unique: false });
-                store.createIndex("Timestamp", "Timestamp", { unique: true });
-                console.log("Object store created");
-            }
-        };
-    });
-}
-
-async function getAllData() {
-    await openDatabase();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], "readonly");
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.getAll();
-        
-        request.onsuccess = () => {
-            const data = request.result || [];
-            // Sort by timestamp descending
-            data.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
-            resolve(data);
-        };
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function addData(item) {
-    await openDatabase();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], "readwrite");
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.add(item);
-        
-        request.onsuccess = () => resolve(true);
-        request.onerror = (event) => {
-            if (event.target.error.name === "ConstraintError") {
-                // Data already exists, try put instead
-                const putRequest = store.put(item);
-                putRequest.onsuccess = () => resolve(true);
-                putRequest.onerror = () => reject(putRequest.error);
-            } else {
-                reject(event.target.error);
-            }
-        };
-    });
-}
-
-async function deleteData(timestamp) {
-    await openDatabase();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], "readwrite");
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.delete(timestamp);
-        
-        request.onsuccess = () => resolve(true);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function clearAllDataDB() {
-    await openDatabase();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], "readwrite");
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.clear();
-        
-        request.onsuccess = () => resolve(true);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function getStorageInfo() {
-    if ('storage' in navigator && 'estimate' in navigator.storage) {
-        const estimate = await navigator.storage.estimate();
-        const usageMB = (estimate.usage / 1024 / 1024).toFixed(2);
-        const quotaMB = (estimate.quota / 1024 / 1024).toFixed(2);
-        return { usageMB, quotaMB, percent: (estimate.usage / estimate.quota * 100).toFixed(1) };
-    }
-    return { usageMB: '?', quotaMB: '?', percent: '?' };
-}
-
-async function updateStorageInfo() {
-    try {
-        const info = await getStorageInfo();
-        const data = await getAllData();
-        const infoDiv = document.getElementById('infoStorage');
-        if (infoDiv) {
-            infoDiv.innerHTML = `📊 Penyimpanan: ${info.usageMB} MB / ${info.quotaMB} MB (${info.percent}%) | Total Data: ${data.length} absensi`;
-            if (parseFloat(info.percent) > 80) {
-                infoDiv.style.background = "#ffebee";
-                infoDiv.style.color = "#c62828";
-            } else {
-                infoDiv.style.background = "#e3f2fd";
-                infoDiv.style.color = "#1565c0";
-            }
-        }
-    } catch(e) {
-        console.error("Storage info error:", e);
-    }
-}
 
 // ==================== KOMPRESI FOTO ====================
-function compressImage(dataUrl, maxSizeMB = 0.2, callback) {
+function compressImage(dataUrl, maxSizeMB = 0.15, callback) {
     const img = new Image();
     img.onload = function() {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
         
-        const maxSize = 600;
+        const maxSize = 500;
         if (width > maxSize || height > maxSize) {
             if (width > height) {
                 height = (height * maxSize) / width;
@@ -426,18 +299,76 @@ function compressImage(dataUrl, maxSizeMB = 0.2, callback) {
     img.src = dataUrl;
 }
 
-// ==================== LOAD DATA ====================
+// ==================== API KE GOOGLE SHEET ====================
 async function loadFromServer() {
-    document.getElementById('loading').style.display = 'flex';
     try {
-        semuaData = await getAllData();
-        await updateStorageInfo();
+        document.getElementById('loading').style.display = 'flex';
+        document.getElementById('loadingText').innerText = 'Mengambil data dari server...';
+        
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        if (Array.isArray(data)) {
+            semuaData = data;
+            updateSyncStatus(true);
+        } else {
+            semuaData = [];
+            updateSyncStatus(false, "Data kosong");
+        }
     } catch(e) {
-        console.error("Load data error:", e);
+        console.error("Gagal load:", e);
         semuaData = [];
+        updateSyncStatus(false, e.message);
+    } finally {
+        document.getElementById('loading').style.display = 'none';
     }
-    document.getElementById('loading').style.display = 'none';
     return semuaData;
+}
+
+async function saveToServer(data) {
+    try {
+        document.getElementById('loadingText').innerText = 'Menyimpan ke server...';
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        updateSyncStatus(true);
+        return true;
+    } catch(e) {
+        console.error("Gagal save:", e);
+        updateSyncStatus(false, e.message);
+        return false;
+    }
+}
+
+async function deleteFromServer(timestamp) {
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', Timestamp: timestamp })
+        });
+        return true;
+    } catch(e) {
+        console.error("Gagal hapus:", e);
+        return false;
+    }
+}
+
+function updateSyncStatus(online, msg = "") {
+    const statusDiv = document.getElementById('syncStatus');
+    if (statusDiv) {
+        if (online) {
+            statusDiv.innerHTML = "✅ Tersimpan di Cloud | Data bisa diakses dari HP/PC manapun";
+            statusDiv.className = "sync-status online";
+        } else {
+            statusDiv.innerHTML = "⚠️ Offline mode: " + msg + " | Data hanya lokal";
+            statusDiv.className = "sync-status offline";
+        }
+    }
 }
 
 // ==================== FUNGSI LOGIN ====================
@@ -528,7 +459,7 @@ async function startApp() {
     
     if (role === "admin") {
         document.getElementById('titleApp').innerHTML = "🛡️ ADMIN DASHBOARD";
-        document.getElementById('infoUser').innerHTML = "Administrator | Data tersimpan di IndexedDB (Unlimited)";
+        document.getElementById('infoUser').innerHTML = "Administrator | Data tersimpan di Google Spreadsheet (Cloud)";
         document.getElementById('adminArea').style.display = 'block';
         document.getElementById('userArea').classList.add('hidden');
         renderAdmin();
@@ -621,7 +552,7 @@ function renderAdmin() {
     });
     
     if (semuaData.length === 0) {
-        document.getElementById('adminTableBody').innerHTML = '<td><td colspan="6" style="text-align:center">Belum ada data</td></tr>';
+        document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center">Belum ada data</td></tr>';
         return;
     }
     let html = "";
@@ -640,7 +571,7 @@ function renderAdmin() {
 
 async function hapusData(timestamp) {
     if (confirm("Yakin hapus data ini?")) {
-        await deleteData(timestamp);
+        await deleteFromServer(timestamp);
         await loadFromServer();
         renderAdmin();
         showSuccess("✅ Data dihapus!");
@@ -651,87 +582,24 @@ async function loadData() {
     await loadFromServer();
     if (role === "admin") renderAdmin();
     else if (role === "musyrif") renderUser();
-    showSuccess("✅ Data direfresh!");
+    showSuccess("✅ Data direfresh dari Cloud!");
 }
 
 function kirimWA() {
     window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif%3A%20Jangan%20lupa%20mengisi%20absensi%20hari%20ini!");
 }
 
-async function clearOldData() {
-    const confirmClear = confirm("⚠️ Hapus semua data yang lebih dari 30 hari? Data 30 hari terakhir akan tetap ada.");
-    if (!confirmClear) return;
-    
-    const monthAgo = new Date(Date.now() - 30 * 86400000);
-    const semuaDataCurrent = await getAllData();
-    const toDelete = semuaDataCurrent.filter(item => new Date(item.Timestamp) < monthAgo);
-    
-    let deleted = 0;
-    for (let item of toDelete) {
-        await deleteData(item.Timestamp);
-        deleted++;
-    }
-    
-    await loadFromServer();
-    if (role === "admin") renderAdmin();
-    else if (role === "musyrif") renderUser();
-    alert(`✅ Berhasil menghapus ${deleted} data lama.`);
-}
-
 async function clearAllData() {
-    const confirmClear = confirm("⚠️⚠️ PERINGATAN! Ini akan menghapus SEMUA data absensi! Lanjutkan?");
-    if (!confirmClear) return;
-    
-    await clearAllDataDB();
-    await loadFromServer();
-    if (role === "admin") renderAdmin();
-    else if (role === "musyrif") renderUser();
-    alert("✅ Semua data telah dihapus!");
-}
-
-async function backupData() {
-    const data = await getAllData();
-    const dataStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([dataStr], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup_absensi_${new Date().toISOString().slice(0,19)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    alert("✅ Backup berhasil! File JSON tersimpan.");
-}
-
-function restoreData() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = async function(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = async function(evt) {
-            try {
-                const restoredData = JSON.parse(evt.target.result);
-                if (Array.isArray(restoredData)) {
-                    // Clear existing data first
-                    await clearAllDataDB();
-                    for (let item of restoredData) {
-                        await addData(item);
-                    }
-                    await loadFromServer();
-                    if (role === "admin") renderAdmin();
-                    else if (role === "musyrif") renderUser();
-                    alert("✅ Restore berhasil! " + restoredData.length + " data dipulihkan.");
-                } else {
-                    alert("❌ File tidak valid!");
-                }
-            } catch(err) {
-                alert("❌ Gagal: " + err.message);
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
+    if (confirm("⚠️⚠️ PERINGATAN! Ini akan menghapus SEMUA data di Cloud! Lanjutkan?")) {
+        if (!confirm("Ketik YES untuk konfirmasi:")) return;
+        for (let item of semuaData) {
+            await deleteFromServer(item.Timestamp);
+        }
+        await loadFromServer();
+        if (role === "admin") renderAdmin();
+        else if (role === "musyrif") renderUser();
+        alert("✅ Semua data telah dihapus!");
+    }
 }
 
 // ==================== PDF ====================
@@ -766,7 +634,7 @@ async function generatePDFPerAsrama() {
                 <td><span style="background:${assessment.color}; color:white; padding:3px 8px; border-radius:12px;">${assessment.status}</span></td>
             </tr>`;
         }
-        asramaHtml += `</tbody>赶</div>`;
+        asramaHtml += `</tbody></table></div>`;
         htmlContent += asramaHtml;
     }
     
@@ -840,7 +708,7 @@ async function generatePDFPerIndividu() {
         htmlContent += `<tr><td>${no++}</td><td>${new Date(d.Timestamp).toLocaleString('id-ID')}</td><td>${d.Kegiatan}</td></tr>`;
     }
     if (myData.length === 0) htmlContent += `<tr><td colspan="3" style="text-align:center">Belum ada absensi</td></tr>`;
-    htmlContent += `</tbody>赶</div>`;
+    htmlContent += `</tbody></table></div>`;
     
     document.getElementById('individualReportContent').innerHTML = htmlContent;
     document.getElementById('individualReportSection').style.display = 'block';
@@ -907,7 +775,7 @@ function renderUser() {
         html += `<tr>
             <td style="font-size:11px">${new Date(d.Timestamp).toLocaleString('id-ID')}</td>
             <td>${d.Kegiatan}</td>
-            <td>${d.Foto ? `<img src="${d.Foto}" class="foto" onclick="lihatFoto('${d.Foto}')">` : '-'}</td>
+            <td>${d.Foto ? `<img src="${d.Foto}" class="foto-thumb" onclick="lihatFoto('${d.Foto}')">` : '-'}</td>
         </tr>`;
     }
     document.getElementById('riwayatBody').innerHTML = html;
@@ -923,15 +791,15 @@ async function simpanAbsen() {
     
     const btn = document.getElementById('btnSimpan');
     btn.disabled = true;
-    btn.innerHTML = "⏳ Memproses foto...";
+    btn.innerHTML = "⏳ Memproses...";
     document.getElementById('loading').style.display = 'flex';
     
     try {
         const originalBase64 = await bacaFile(fileFoto);
         
-        btn.innerHTML = "⏳ Mengompres foto...";
+        document.getElementById('loadingText').innerText = 'Mengompres foto...';
         const compressedBase64 = await new Promise((resolve) => {
-            compressImage(originalBase64, 0.2, resolve);
+            compressImage(originalBase64, 0.15, resolve);
         });
         
         const newData = {
@@ -944,11 +812,10 @@ async function simpanAbsen() {
             Catatan: catatan
         };
         
-        btn.innerHTML = "⏳ Menyimpan ke database...";
-        await addData(newData);
-        
+        await saveToServer(newData);
         await loadFromServer();
-        alert("✅ ABSENSI BERHASIL DISIMPAN!");
+        
+        alert("✅ ABSENSI BERHASIL DISIMPAN KE CLOUD!");
         document.getElementById('pilihKegiatan').value = "";
         document.getElementById('pilihFoto').value = "";
         document.getElementById('isiCatatan').value = "";
@@ -977,25 +844,8 @@ function lihatFoto(src) {
     document.getElementById('modalFoto').style.display = 'block';
 }
 
-// Inisialisasi database dan data contoh
-(async function init() {
-    await openDatabase();
-    const existing = await getAllData();
-    if (existing.length === 0) {
-        const sampleData = {
-            Timestamp: new Date().toISOString(),
-            Nama: "Ali Mashuri",
-            Asrama: "Asrama Al Hakim",
-            Kamar: "Khondak",
-            Kegiatan: "Membangunkan Santri",
-            Foto: "",
-            Catatan: "Contoh data awal"
-        };
-        await addData(sampleData);
-    }
-    await updateStorageInfo();
-    console.log("✅ Aplikasi siap! PIN Admin: 1234 | Storage: IndexedDB (Unlimited!)");
-})();
+// ==================== INISIALISASI ====================
+console.log("✅ Aplikasi siap! PIN Admin: 1234");
 </script>
 </body>
 </html>
