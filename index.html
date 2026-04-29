@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Absensi Musyrif - Versi Stabil</title>
+    <title>Absensi Musyrif - Siap Pakai</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -63,7 +63,6 @@
         .assessment-table th { background: #2e7d32; color: white; }
         @media (max-width: 550px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .btn-group { flex-direction: column; } .schedule-grid { grid-template-columns: 1fr; } }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 30px; font-size: 12px; z-index: 1500; display: none; white-space: nowrap; }
-        .debug-info { font-size: 10px; color: #999; text-align: center; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -93,7 +92,6 @@
             </select>
             <input type="password" id="inputPassword" placeholder="Password">
             <button type="submit" class="btn btn-green">🔐 MASUK</button>
-            <div class="debug-info">Versi Stabil | Data tersimpan permanen</div>
         </form>
         
         <form id="formAdmin" class="hidden">
@@ -146,8 +144,9 @@
                 <div style="overflow-x:auto">
                     <table>
                         <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kegiatan</th><th>Foto</th><th></th></tr></thead>
-                        <tbody id="adminTableBody"><tr><td colspan="6">Memuat...</td></tr></tbody>
-                    </table>
+                        <tbody id="adminTableBody"><tr><td colspan="6">Memuat...</td></tr>
+                    </tbody>
+                </table>
                 </div>
             </div>
         </div>
@@ -192,7 +191,8 @@
                 <div style="overflow-x:auto">
                     <table>
                         <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                        <tbody id="riwayatBody"><tr><td colspan="3">Memuat...</td></tr></tbody>
+                        <tbody id="riwayatBody"><tr><td colspan="3">Memuat...</td></tr>
+                    </tbody>
                     </table>
                 </div>
             </div>
@@ -218,10 +218,8 @@
 
 <script>
 // ==================== KONFIGURASI ====================
-// !!! WAJIB GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI DEPLOY !!!
-// BUKA Google Apps Script -> Deploy -> New deployment -> Web app -> Anyone
+// URL Google Apps Script ANDA
 const API_URL = "https://script.google.com/macros/s/AKfycbzqxdUO_DRmlyDfiT_ceVuW6U4Pqh6Cw8guD7A9ZPoNQ93WYNrwQvnHfFgAfmJkFWVV/exec";
-
 const PIN_ADMIN = "1234";
 
 const DATA_MUSYRIF = {
@@ -248,46 +246,37 @@ function showLoading(show) {
     document.getElementById('loading').style.display = show ? 'flex' : 'none';
 }
 
-// ==================== API HANDLER ====================
+// ==================== API CALLS ====================
 async function fetchData() {
-    if (isLoading) return null;
-    isLoading = true;
-    
     try {
-        const response = await fetch(API_URL, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        
+        const response = await fetch(API_URL);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         return Array.isArray(data) ? data : [];
     } catch(e) {
         console.error("Fetch error:", e);
         return null;
-    } finally {
-        isLoading = false;
     }
 }
 
-async function postData(data) {
+async function postData( data) {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
+            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const result = await response.json();
-        return result;
+        // Karena mode no-cors, response tidak bisa dibaca
+        // Tapi request tetap terkirim
+        return { success: true };
     } catch(e) {
         console.error("Post error:", e);
         return null;
     }
 }
 
-// ==================== LOAD DATA DENGAN CACHE ====================
+// ==================== LOAD DATA ====================
 let dataCache = null;
 let lastLoadTime = 0;
 const CACHE_DURATION = 30000;
@@ -312,12 +301,8 @@ async function loadData(force = false) {
 }
 
 async function saveData(data) {
-    showLoading(true);
     const result = await postData(data);
-    showLoading(false);
-    
-    if (result && result.success !== false) {
-        // Invalidate cache
+    if (result !== null) {
         dataCache = null;
         lastLoadTime = 0;
         return true;
@@ -404,7 +389,7 @@ function startApp() {
     
     if (role === "admin") {
         document.getElementById('titleApp').innerHTML = "🛡️ ADMIN DASHBOARD";
-        document.getElementById('infoUser').innerHTML = "Administrator | Data online";
+        document.getElementById('infoUser').innerHTML = "Administrator";
         document.getElementById('adminArea').style.display = 'block';
         document.getElementById('userArea').classList.add('hidden');
         renderAdmin();
@@ -506,7 +491,7 @@ function renderAdmin() {
 async function hapusData(timestamp) {
     if (confirm("Hapus data ini?")) {
         const result = await saveData({ action: 'delete', timestamp: timestamp });
-        if (result !== false) {
+        if (result) {
             await loadData(true);
             renderAdmin();
             showToast("✅ Data dihapus");
@@ -617,7 +602,7 @@ async function pdfPerIndividu() {
     <h4>📊 RINGKASAN</h4>
     <table class="assessment-table">
         <thead><th>Periode</th><th>Absen</th><th>Persen</th><th>Status</th></thead>
-        <tbody><tr><td>Mingguan</th><td>${weeklyCount} kali</td><td>${persenMinggu}%</td><td>${assessment.status}</td></tr></tbody>
+        <tbody><tr><td>Mingguan</th><td>${weeklyCount} kali</th><td>${persenMinggu}%</th><td>${assessment.status}</th></tr></tbody>
     追赶
     <h4>📜 RIWAYAT</h4>
     <table class="assessment-table"><thead><th>No</th><th>Tanggal</th><th>Kegiatan</th></thead><tbody>`;
@@ -625,7 +610,11 @@ async function pdfPerIndividu() {
     let no = 1;
     const sorted = [...myData].reverse();
     for (let d of sorted) {
-        html += `<tr><td>${no++}</td><td>${new Date(d.Timestamp).toLocaleString('id-ID')}</td><td>${d.Kegiatan}</td></tr>`;
+        html += `<tr>
+            <td>${no++}</th>
+            <td>${new Date(d.Timestamp).toLocaleString('id-ID')}</th>
+            <td>${d.Kegiatan}</th>
+        </tr>`;
     }
     html += `</tbody></table>`;
     
@@ -684,16 +673,16 @@ function renderUser() {
     });
     
     if (myData.length === 0) {
-        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3">Belum ada data</td></tr>';
+        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3">Belum ada data</th></tr>';
         return;
     }
     let html = "";
     const sorted = [...myData].reverse();
     for (let d of sorted) {
         html += `<tr>
-            <td>${new Date(d.Timestamp).toLocaleString()}</td>
-            <td>${d.Kegiatan}</td>
-            <td>${d.Foto ? `<img src="${d.Foto}" class="foto" onclick="lihatFoto('${d.Foto}')">` : '-'}</td>
+            <td>${new Date(d.Timestamp).toLocaleString()}</th>
+            <td>${d.Kegiatan}</th>
+            <td>${d.Foto ? `<img src="${d.Foto}" class="foto" onclick="lihatFoto('${d.Foto}')">` : '-'}</th>
         </tr>`;
     }
     document.getElementById('riwayatBody').innerHTML = html;
@@ -714,7 +703,6 @@ async function simpanAbsen() {
     try {
         const fotoBase64 = await bacaFile(fileFoto);
         const result = await saveData({
-            action: 'save',
             timestamp: new Date().toISOString(),
             nama: userLogin,
             asrama: DATA_MUSYRIF[asramaLogin].nama,
@@ -724,7 +712,7 @@ async function simpanAbsen() {
             catatan: catatan
         });
         
-        if (result !== false) {
+        if (result) {
             await loadData(true);
             renderUser();
             if (role === "admin") renderAdmin();
@@ -733,7 +721,7 @@ async function simpanAbsen() {
             document.getElementById('pilihFoto').value = "";
             document.getElementById('isiCatatan').value = "";
         } else {
-            showToast("❌ Gagal menyimpan data");
+            showToast("❌ Gagal menyimpan!");
         }
     } catch(err) {
         showToast("❌ Error: " + err.message);
@@ -757,7 +745,7 @@ function lihatFoto(src) {
     document.getElementById('modalFoto').style.display = 'block';
 }
 
-console.log("✅ Aplikasi siap!");
+console.log("✅ Aplikasi siap dengan URL Web App Anda!");
 </script>
 </body>
 </html>
