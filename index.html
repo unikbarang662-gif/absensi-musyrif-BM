@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Absensi Musyrif - Cloud Sync</title>
+    <title>Absensi Musyrif - Sistem Mandiri</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #e8f5e9; padding: 15px; }
+        body { font-family: Arial, sans-serif; background: #e8f5e9; padding: 15px; padding-bottom: 80px; }
         .container { max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; transition: all 0.3s; }
@@ -20,6 +20,9 @@
         .btn-wa { background: #25D366; color: white; }
         .btn-pdf { background: #d32f2f; color: white; }
         .btn-blue { background: #1565c0; color: white; }
+        .btn-blue:hover { background: #0d47a1; }
+        .btn-orange { background: #ff9800; color: white; }
+        .btn-orange:hover { background: #f57c00; }
         input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #ddd; }
@@ -31,6 +34,7 @@
         .hidden { display: none; }
         .error { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
         .success { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
+        .warning { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
         .stat-card { padding: 12px; border-radius: 12px; color: white; text-align: center; }
         .stat-card.green { background: linear-gradient(135deg, #43a047, #66bb6a); }
@@ -65,10 +69,8 @@
         .assessment-table th { background: #2e7d32; color: white; }
         .delete-btn { background: #d32f2f; color: white; border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 11px; }
         .delete-btn:hover { background: #b71c1c; }
-        .sync-status { background: #e3f2fd; padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 11px; text-align: center; color: #1565c0; }
-        .sync-status.online { background: #c8e6c9; color: #2e7d32; }
-        .sync-status.offline { background: #ffcdd2; color: #c62828; }
-        .debug-info { background: #fff3e0; padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 10px; font-family: monospace; display: none; }
+        .info-box { background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 12px; text-align: center; color: #1565c0; }
+        .info-box.warning { background: #fff3e0; color: #e65100; }
         h4 { margin-bottom: 12px; color: #2e7d32; }
         @media (max-width: 600px) { 
             .stats-grid { grid-template-columns: repeat(2, 1fr); } 
@@ -87,6 +89,10 @@
         <h3 style="text-align:center">📋 ABSENSI MUSYRIF</h3>
         <div id="loginError" class="error"></div>
         <div id="loginSuccess" class="success"></div>
+        <div class="info-box warning">
+            📌 DATA TERSIMPAN DI HANDPHONE/PC INI SAJA<br>
+            ✅ Untuk pindah data ke HP/PC lain: klik BACKUP → kirim file → RESTORE
+        </div>
         <div>
             <span class="tab active" id="tabMusyrifBtn" onclick="pilihTab('musyrif')">MUSYRIF</span>
             <span class="tab" id="tabAdminBtn" onclick="pilihTab('admin')">ADMIN</span>
@@ -126,15 +132,17 @@
         <div id="adminArea">
             <div class="card">
                 <h4>⚙️ MENU ADMIN</h4>
-                <div id="syncStatus" class="sync-status">🔍 Mengecek koneksi...</div>
+                <div class="info-box" id="storageInfo">📊 Menghitung data...</div>
                 <div class="btn-group">
-                    <button class="btn btn-green" onclick="loadData()">🔄 REFRESH</button>
+                    <button class="btn btn-green" onclick="refreshData()">🔄 REFRESH</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerAsrama()">📄 PDF ASRAMA</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerIndividu()">📄 PDF INDIVIDU</button>
-                    <button class="btn btn-wa" onclick="kirimWA()">📱 WA</button>
+                    <button class="btn btn-wa" onclick="kirimWA()">📱 PENGINGAT WA</button>
+                    <button class="btn btn-blue" onclick="backupData()">💾 BACKUP (EXPORT)</button>
+                    <button class="btn btn-orange" onclick="restoreData()">📂 RESTORE (IMPORT)</button>
+                    <button class="btn btn-red" onclick="clearOldData()">🗑 HAPUS DATA LAMA</button>
                     <button class="btn btn-red" onclick="clearAllData()">⚠️ HAPUS SEMUA</button>
                 </div>
-                <div id="debugInfo" class="debug-info"></div>
             </div>
             
             <div class="stats-grid">
@@ -159,7 +167,7 @@
                 <div style="overflow-x:auto; max-height: 400px; overflow-y: auto;">
                     <table id="tabelData">
                         <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kamar</th><th>Kegiatan</th><th>Aksi</th></tr></thead>
-                        <tbody id="adminTableBody"><td><td colspan="6">Loading...</td></tr></tbody>
+                        <tbody id="adminTableBody"><tr><td colspan="6"><center>Loading...</center></td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -186,14 +194,14 @@
                 <h4>📝 FORM ABSENSI</h4>
                 <select id="pilihKegiatan">
                     <option value="">-- Pilih Kegiatan --</option>
-                    <option value="Membangunkan Santri">🌅 Membangunkan Santri</option>
-                    <option value="Pengajian Subuh">📖 Pengajian Subuh</option>
-                    <option value="Menggobraki Sekolah">🏫 Menggobraki Sekolah</option>
-                    <option value="Piket Kamar">🧹 Piket Kamar</option>
-                    <option value="Pendampingan Dalail">📚 Pendampingan Dalail</option>
-                    <option value="Pendampingan Tawasulan">🤲 Pendampingan Tawasulan</option>
-                    <option value="Muthola'ah">📖 Muthola'ah</option>
-                    <option value="Tidur Malam">😴 Tidur Malam</option>
+                    <option value="Membangunkan Santri">🌅 Membangunkan Santri (04:00)</option>
+                    <option value="Pengajian Subuh">📖 Pengajian Subuh (04:30)</option>
+                    <option value="Menggobraki Sekolah">🏫 Menggobraki Sekolah (07:00)</option>
+                    <option value="Piket Kamar">🧹 Piket Kamar (10:00)</option>
+                    <option value="Pendampingan Dalail">📚 Pendampingan Dalail (13:00)</option>
+                    <option value="Pendampingan Tawasulan">🤲 Pendampingan Tawasulan (15:00)</option>
+                    <option value="Muthola'ah">📖 Muthola'ah (19:00)</option>
+                    <option value="Tidur Malam">😴 Tidur Malam (21:00)</option>
                 </select>
                 <input type="file" id="pilihFoto" accept="image/*" capture="user">
                 <textarea id="isiCatatan" rows="2" placeholder="Catatan (opsional)..."></textarea>
@@ -238,10 +246,8 @@
 
 <script>
 // ==================== KONFIGURASI ====================
-// ⚠️⚠️⚠️ GANTI URL INI DENGAN URL DEPLOY GOOGLE APPS SCRIPT ANDA ⚠️⚠️⚠️
-const API_URL = "https://script.google.com/macros/s/AKfycbwm2fplXrEudmeM71K6Habh9XLcPcchO5MiFtMqQ3YzkRQleExQzuakPKQDdDoZYdgN/exec";
-
 const PIN_ADMIN = "1234";
+const STORAGE_KEY = "absensi_musyrif_data_v2";
 
 const DATA_MUSYRIF = {
     hakim: { nama: "Asrama Al Hakim", pass: { "Ali Mashuri":"ali123", "Ali Zahid":"zahid123", "Reva Dwi":"reva123", "Imam Syafi'i":"imam123" }, kamar: { "Ali Mashuri":"Khondak", "Ali Zahid":"Badar", "Reva Dwi":"Khoibar", "Imam Syafi'i":"Multazam" } },
@@ -262,7 +268,139 @@ const JADWAL = [
 
 let role = "", userLogin = "", asramaLogin = "", semuaData = [];
 let myChart = null, adminChart = null;
-let offlineCache = [];
+
+// ==================== STORAGE FUNCTIONS ====================
+function getLocalData() {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch(e) {
+        console.error("Gagal baca storage:", e);
+    }
+    return [];
+}
+
+function saveLocalData(data) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        semuaData = data;
+        updateStorageInfo();
+        return true;
+    } catch(e) {
+        if (e.name === 'QuotaExceededError') {
+            alert("⚠️ STORAGE PENUH!\n\nSolusi:\n1. Klik HAPUS DATA LAMA\n2. Atau BACKUP lalu HAPUS SEMUA\n3. Atau RESTORE dari file backup yang lebih kecil");
+            return false;
+        }
+        return false;
+    }
+}
+
+function updateStorageInfo() {
+    const data = getLocalData();
+    const jsonStr = JSON.stringify(data);
+    const sizeKB = (jsonStr.length / 1024).toFixed(1);
+    const infoDiv = document.getElementById('storageInfo');
+    if (infoDiv) {
+        let warning = "";
+        if (parseFloat(sizeKB) > 4000) {
+            warning = " ⚠️ STORAGE HAMPIR PENUH! Segera backup dan hapus data lama.";
+            infoDiv.style.background = "#ffebee";
+            infoDiv.style.color = "#c62828";
+        } else {
+            infoDiv.style.background = "#e3f2fd";
+            infoDiv.style.color = "#1565c0";
+        }
+        infoDiv.innerHTML = `📊 Total Data: ${data.length} absensi | Ukuran: ${sizeKB} KB${warning}<br>📌 Cara pindah data: klik BACKUP → kirim file → buka di HP lain → RESTORE`;
+    }
+}
+
+function addToLocalData(newItem) {
+    const current = getLocalData();
+    current.push(newItem);
+    return saveLocalData(current);
+}
+
+function deleteFromLocalData(timestamp) {
+    let current = getLocalData();
+    current = current.filter(item => item.Timestamp !== timestamp);
+    return saveLocalData(current);
+}
+
+// ==================== BACKUP & RESTORE ====================
+function backupData() {
+    const data = getLocalData();
+    // Buat backup tanpa foto (opsional, lebih kecil)
+    const backupData = data.map(item => ({
+        Timestamp: item.Timestamp,
+        Nama: item.Nama,
+        Asrama: item.Asrama,
+        Kamar: item.Kamar,
+        Kegiatan: item.Kegiatan,
+        Catatan: item.Catatan,
+        Foto: item.Foto ? "[FOTO TERSIMPAN DI PERANGKAT ASLI]" : ""
+    }));
+    
+    const dataStr = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([dataStr], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_absensi_${new Date().toISOString().slice(0,19)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert("✅ Backup berhasil!\n\n📌 CARA PINDAH DATA KE HP/PC LAIN:\n1. Kirim file backup ini ke perangkat lain (via WA/Email)\n2. Buka aplikasi di perangkat tujuan\n3. Login sebagai ADMIN\n4. Klik RESTORE (IMPORT) → pilih file ini");
+}
+
+function restoreData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                const restoredData = JSON.parse(evt.target.result);
+                if (Array.isArray(restoredData)) {
+                    saveLocalData(restoredData);
+                    refreshData();
+                    alert("✅ Restore berhasil! " + restoredData.length + " data dipulihkan.");
+                } else {
+                    alert("❌ File tidak valid!");
+                }
+            } catch(err) {
+                alert("❌ Gagal: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function clearOldData() {
+    const confirmClear = confirm("⚠️ Hapus semua data yang lebih dari 30 hari? Data 1 bulan terakhir akan tetap ada.");
+    if (!confirmClear) return;
+    
+    const monthAgo = new Date(Date.now() - 30 * 86400000);
+    let current = getLocalData();
+    const newData = current.filter(item => new Date(item.Timestamp) >= monthAgo);
+    const deletedCount = current.length - newData.length;
+    
+    if (saveLocalData(newData)) {
+        alert(`✅ Berhasil menghapus ${deletedCount} data lama. Tersisa ${newData.length} data.`);
+        refreshData();
+    }
+}
+
+function clearAllData() {
+    if (confirm("⚠️⚠️ PERINGATAN! Ini akan menghapus SEMUA data!\nLanjutkan?")) {
+        saveLocalData([]);
+        refreshData();
+        alert("✅ Semua data telah dihapus!");
+    }
+}
 
 // ==================== KOMPRESI FOTO ====================
 function compressImage(dataUrl, maxSizeMB = 0.15, callback) {
@@ -301,135 +439,21 @@ function compressImage(dataUrl, maxSizeMB = 0.15, callback) {
     img.src = dataUrl;
 }
 
-// ==================== API KE GOOGLE SHEET ====================
-async function loadFromServer() {
-    try {
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('loadingText').innerText = 'Mengambil data dari server...';
-        
-        const response = await fetch(API_URL);
-        const textResponse = await response.text();
-        
-        console.log("Raw response:", textResponse.substring(0, 200));
-        
-        let data;
-        try {
-            data = JSON.parse(textResponse);
-        } catch(e) {
-            console.error("JSON parse error:", e);
-            data = [];
-        }
-        
-        if (Array.isArray(data)) {
-            semuaData = data;
-            offlineCache = data;
-            // Simpan ke localStorage sebagai backup offline
-            localStorage.setItem('absensi_offline_cache', JSON.stringify(data));
-            updateSyncStatus(true, `${data.length} data`);
-            showDebug("✅ Load success: " + data.length + " data");
-        } else {
-            throw new Error("Response bukan array");
-        }
-    } catch(e) {
-        console.error("Gagal load:", e);
-        showDebug("❌ Load error: " + e.message);
-        
-        // Ambil dari cache offline
-        const cached = localStorage.getItem('absensi_offline_cache');
-        if (cached) {
-            semuaData = JSON.parse(cached);
-            updateSyncStatus(false, `Mode offline: ${semuaData.length} data (cached)`);
-            showDebug("📱 Mode offline, pakai cache: " + semuaData.length + " data");
-        } else {
-            semuaData = [];
-            updateSyncStatus(false, e.message);
-        }
-    } finally {
-        document.getElementById('loading').style.display = 'none';
+// ==================== LOAD DATA ====================
+function refreshData() {
+    semuaData = getLocalData();
+    updateStorageInfo();
+    
+    if (role === "admin") renderAdmin();
+    else if (role === "musyrif") renderUser();
+    
+    const msgDiv = document.getElementById('loginSuccess');
+    if (msgDiv) {
+        msgDiv.innerHTML = "✅ Data dimuat! Total: " + semuaData.length + " absensi";
+        msgDiv.style.display = 'block';
+        setTimeout(() => msgDiv.style.display = 'none', 2000);
     }
     return semuaData;
-}
-
-async function saveToServer(data) {
-    try {
-        document.getElementById('loadingText').innerText = 'Menyimpan ke server...';
-        
-        // Kirim ke server
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        
-        const result = await response.text();
-        console.log("Save response:", result);
-        
-        // Update cache offline
-        offlineCache.push(data);
-        localStorage.setItem('absensi_offline_cache', JSON.stringify(offlineCache));
-        
-        updateSyncStatus(true, "Tersimpan");
-        showDebug("✅ Save success: " + data.Timestamp);
-        return true;
-    } catch(e) {
-        console.error("Gagal save:", e);
-        showDebug("❌ Save error: " + e.message);
-        
-        // Simpan ke cache offline dulu
-        offlineCache.push(data);
-        localStorage.setItem('absensi_offline_cache', JSON.stringify(offlineCache));
-        updateSyncStatus(false, "Disimpan lokal (offline mode)");
-        
-        alert("⚠️ Koneksi bermasalah, data disimpan lokal. Akan sync saat refresh.");
-        return true; // Tetap true karena sudah disimpan lokal
-    }
-}
-
-async function deleteFromServer(timestamp) {
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'delete', Timestamp: timestamp })
-        });
-        
-        // Update cache offline
-        offlineCache = offlineCache.filter(item => item.Timestamp !== timestamp);
-        localStorage.setItem('absensi_offline_cache', JSON.stringify(offlineCache));
-        
-        return true;
-    } catch(e) {
-        console.error("Gagal hapus:", e);
-        return false;
-    }
-}
-
-function updateSyncStatus(online, msg = "") {
-    const statusDiv = document.getElementById('syncStatus');
-    if (statusDiv) {
-        if (online) {
-            statusDiv.innerHTML = "✅ Tersimpan di Cloud | Data bisa diakses dari HP/PC manapun | " + msg;
-            statusDiv.className = "sync-status online";
-        } else {
-            statusDiv.innerHTML = "⚠️ Mode Offline: " + msg + " | Data hanya tersimpan lokal";
-            statusDiv.className = "sync-status offline";
-        }
-    }
-}
-
-function showDebug(msg) {
-    const debugDiv = document.getElementById('debugInfo');
-    if (debugDiv) {
-        debugDiv.style.display = 'block';
-        debugDiv.innerHTML = new Date().toLocaleTimeString() + " - " + msg + "<br>" + debugDiv.innerHTML;
-        setTimeout(() => {
-            if (debugDiv.innerHTML.split('<br>').length > 5) {
-                debugDiv.innerHTML = debugDiv.innerHTML.split('<br>').slice(0, 4).join('<br>');
-            }
-        }, 100);
-    }
 }
 
 // ==================== FUNGSI LOGIN ====================
@@ -469,7 +493,7 @@ function pilihTab(tab) {
     if (loginError) loginError.style.display = 'none';
 }
 
-async function loginMusyrif() {
+function loginMusyrif() {
     const as = document.getElementById('inputAsrama').value;
     const nm = document.getElementById('inputNama').value;
     const ps = document.getElementById('inputPassword').value;
@@ -483,17 +507,17 @@ async function loginMusyrif() {
         role = "musyrif";
         userLogin = nm;
         asramaLogin = as;
-        await startApp();
+        startApp();
     } else {
         showError("❌ Password salah!");
     }
 }
 
-async function loginAdmin() {
+function loginAdmin() {
     const pin = document.getElementById('inputPin').value;
     if (pin === PIN_ADMIN) {
         role = "admin";
-        await startApp();
+        startApp();
     } else {
         showError("❌ PIN salah! PIN = 1234");
     }
@@ -506,21 +530,14 @@ function showError(msg) {
     setTimeout(() => err.style.display = 'none', 3000);
 }
 
-function showSuccess(msg) {
-    const success = document.getElementById('loginSuccess');
-    success.innerHTML = msg;
-    success.style.display = 'block';
-    setTimeout(() => success.style.display = 'none', 3000);
-}
-
-async function startApp() {
-    await loadFromServer();
+function startApp() {
+    refreshData();
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('appSection').style.display = 'block';
     
     if (role === "admin") {
         document.getElementById('titleApp').innerHTML = "🛡️ ADMIN DASHBOARD";
-        document.getElementById('infoUser').innerHTML = "Administrator | Data tersimpan di Google Spreadsheet (Cloud)";
+        document.getElementById('infoUser').innerHTML = "Administrator | Data tersimpan di browser ini";
         document.getElementById('adminArea').style.display = 'block';
         document.getElementById('userArea').classList.add('hidden');
         renderAdmin();
@@ -615,7 +632,7 @@ function renderAdmin() {
     }
     
     if (semuaData.length === 0) {
-        document.getElementById('adminTableBody').innerHTML = '<td><td colspan="6" style="text-align:center">Belum ada data</td></tr>';
+        document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center">Belum ada data</td></tr>';
         return;
     }
     let html = "";
@@ -632,42 +649,21 @@ function renderAdmin() {
     document.getElementById('adminTableBody').innerHTML = html;
 }
 
-async function hapusData(timestamp) {
+function hapusData(timestamp) {
     if (confirm("Yakin hapus data ini?")) {
-        await deleteFromServer(timestamp);
-        await loadFromServer();
-        renderAdmin();
-        showSuccess("✅ Data dihapus!");
+        deleteFromLocalData(timestamp);
+        refreshData();
+        alert("✅ Data dihapus!");
     }
-}
-
-async function loadData() {
-    await loadFromServer();
-    if (role === "admin") renderAdmin();
-    else if (role === "musyrif") renderUser();
-    showSuccess("✅ Data direfresh dari Cloud!");
 }
 
 function kirimWA() {
     window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif%3A%20Jangan%20lupa%20mengisi%20absensi%20hari%20ini!");
 }
 
-async function clearAllData() {
-    if (confirm("⚠️⚠️ PERINGATAN! Ini akan menghapus SEMUA data di Cloud! Lanjutkan?")) {
-        if (!confirm("Ketik YES untuk konfirmasi:")) return;
-        for (let item of semuaData) {
-            await deleteFromServer(item.Timestamp);
-        }
-        await loadFromServer();
-        if (role === "admin") renderAdmin();
-        else if (role === "musyrif") renderUser();
-        alert("✅ Semua data telah dihapus!");
-    }
-}
-
 // ==================== PDF ====================
 async function generatePDFPerAsrama() {
-    await loadFromServer();
+    refreshData();
     const weekAgo = new Date(Date.now() - 7*86400000);
     let totalAbsen = 0;
     let htmlContent = "";
@@ -695,9 +691,9 @@ async function generatePDFPerAsrama() {
                 <td>${cnt} kali</td>
                 <td>${persen}%</td>
                 <td><span style="background:${assessment.color}; color:white; padding:3px 8px; border-radius:12px;">${assessment.status}</span></td>
-            </tr>`;
+            <tr>`;
         }
-        asramaHtml += `</tbody></table></div>`;
+        asramaHtml += `</tbody>赶</div>`;
         htmlContent += asramaHtml;
     }
     
@@ -725,7 +721,7 @@ async function generatePDFPerIndividu() {
     const namaMusyrif = prompt("Masukkan nama musyrif:", "Ali Mashuri");
     if (!namaMusyrif) return;
     
-    await loadFromServer();
+    refreshData();
     let asramaNama = "", kamarNama = "";
     for (let a in DATA_MUSYRIF) {
         if (DATA_MUSYRIF[a].pass[namaMusyrif]) {
@@ -771,7 +767,7 @@ async function generatePDFPerIndividu() {
         htmlContent += `<tr><td>${no++}</td><td>${new Date(d.Timestamp).toLocaleString('id-ID')}</td><td>${d.Kegiatan}</td></tr>`;
     }
     if (myData.length === 0) htmlContent += `<tr><td colspan="3" style="text-align:center">Belum ada absensi</td></tr>`;
-    htmlContent += `</tbody></table></div>`;
+    htmlContent += `</tbody>赶</div>`;
     
     document.getElementById('individualReportContent').innerHTML = htmlContent;
     document.getElementById('individualReportSection').style.display = 'block';
@@ -844,7 +840,7 @@ function renderUser() {
     document.getElementById('riwayatBody').innerHTML = html;
 }
 
-async function simpanAbsen() {
+function simpanAbsen() {
     const kegiatan = document.getElementById('pilihKegiatan').value;
     const fileFoto = document.getElementById('pilihFoto').files[0];
     const catatan = document.getElementById('isiCatatan').value;
@@ -857,53 +853,38 @@ async function simpanAbsen() {
     btn.innerHTML = "⏳ Memproses...";
     document.getElementById('loading').style.display = 'flex';
     
-    try {
-        const originalBase64 = await bacaFile(fileFoto);
-        
-        document.getElementById('loadingText').innerText = 'Mengompres foto...';
-        const compressedBase64 = await new Promise((resolve) => {
-            compressImage(originalBase64, 0.15, resolve);
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        compressImage(evt.target.result, 0.15, function(compressedBase64) {
+            const newData = {
+                Timestamp: new Date().toISOString(),
+                Nama: userLogin,
+                Asrama: DATA_MUSYRIF[asramaLogin].nama,
+                Kamar: DATA_MUSYRIF[asramaLogin].kamar[userLogin],
+                Kegiatan: kegiatan,
+                Foto: compressedBase64,
+                Catatan: catatan
+            };
+            
+            const success = addToLocalData(newData);
+            
+            document.getElementById('loading').style.display = 'none';
+            if (success) {
+                refreshData();
+                alert("✅ ABSENSI BERHASIL DISIMPAN!");
+                document.getElementById('pilihKegiatan').value = "";
+                document.getElementById('pilihFoto').value = "";
+                document.getElementById('isiCatatan').value = "";
+                if (role === "musyrif") renderUser();
+            } else {
+                alert("❌ Storage penuh! Gunakan menu HAPUS DATA LAMA atau BACKUP.");
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = "📤 KIRIM ABSENSI";
         });
-        
-        const newData = {
-            Timestamp: new Date().toISOString(),
-            Nama: userLogin,
-            Asrama: DATA_MUSYRIF[asramaLogin].nama,
-            Kamar: DATA_MUSYRIF[asramaLogin].kamar[userLogin],
-            Kegiatan: kegiatan,
-            Foto: compressedBase64,
-            Catatan: catatan
-        };
-        
-        await saveToServer(newData);
-        await loadFromServer();
-        
-        alert("✅ ABSENSI BERHASIL DISIMPAN!");
-        document.getElementById('pilihKegiatan').value = "";
-        document.getElementById('pilihFoto').value = "";
-        document.getElementById('isiCatatan').value = "";
-        renderUser();
-        
-        // Jika admin sedang login, refresh juga admin view
-        if (role === "admin") renderAdmin();
-        
-    } catch(err) {
-        alert("❌ Gagal: " + err.message);
-        console.error(err);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = "📤 KIRIM ABSENSI";
-        document.getElementById('loading').style.display = 'none';
-    }
-}
-
-function bacaFile(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-    });
+    };
+    reader.readAsDataURL(fileFoto);
 }
 
 function lihatFoto(src) {
@@ -912,8 +893,23 @@ function lihatFoto(src) {
 }
 
 // ==================== INISIALISASI ====================
+// Buat data contoh jika kosong
+const existingData = getLocalData();
+if (existingData.length === 0) {
+    const sampleData = [{
+        Timestamp: new Date().toISOString(),
+        Nama: "Ali Mashuri",
+        Asrama: "Asrama Al Hakim",
+        Kamar: "Khondak",
+        Kegiatan: "Membangunkan Santri",
+        Foto: "",
+        Catatan: "Contoh data awal"
+    }];
+    saveLocalData(sampleData);
+}
+
 console.log("✅ Aplikasi siap! PIN Admin: 1234");
-showDebug("📱 App started, API URL: " + API_URL.substring(0, 50) + "...");
+updateStorageInfo();
 </script>
 </body>
 </html>
