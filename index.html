@@ -2,12 +2,11 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi Musyrif</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Absensi Musyrif - Final</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #e8f5e9; padding: 15px; }
@@ -16,10 +15,10 @@
         .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; }
         .btn-green { background: #2e7d32; color: white; }
         .btn-red { background: #d32f2f; color: white; }
-        .btn-wa { background: #25D366; color: white; }
-        .btn-pdf { background: #d32f2f; color: white; }
         .btn-blue { background: #1565c0; color: white; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; }
+        .btn-pdf { background: #d32f2f; color: white; }
+        .btn-wa { background: #25D366; color: white; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #ddd; }
         .foto-thumb { width: 35px; height: 35px; object-fit: cover; border-radius: 5px; cursor: pointer; }
@@ -54,7 +53,6 @@
         .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 15px; }
         .spinner { width: 40px; height: 40px; border: 4px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .info-box { background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 12px; text-align: center; }
         h4 { margin-bottom: 12px; color: #2e7d32; }
         @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .btn-group { flex-direction: column; } }
     </style>
@@ -68,7 +66,6 @@
         <h3 style="text-align:center">📋 ABSENSI MUSYRIF</h3>
         <div id="loginError" class="error"></div>
         <div id="loginSuccess" class="success"></div>
-        <div class="info-box" id="connectionStatus">🔄 Menghubungkan ke database...</div>
         <div>
             <span class="tab active" id="tabMusyrifBtn" onclick="pilihTab('musyrif')">MUSYRIF</span>
             <span class="tab" id="tabAdminBtn" onclick="pilihTab('admin')">ADMIN</span>
@@ -110,8 +107,11 @@
                     <button class="btn btn-green" onclick="refreshData()">🔄 REFRESH</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerAsrama()">📄 PDF ASRAMA</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerIndividu()">📄 PDF INDIVIDU</button>
-                    <button class="btn btn-wa" onclick="kirimWA()">📱 WA</button>
-                    <button class="btn btn-red" onclick="deleteAllData()">⚠️ HAPUS SEMUA</button>
+                    <button class="btn btn-wa" onclick="kirimWA()">📱 PENGINGAT WA</button>
+                    <button class="btn btn-blue" onclick="backupData()">💾 BACKUP</button>
+                    <button class="btn btn-green" onclick="restoreData()">📂 RESTORE</button>
+                    <button class="btn btn-red" onclick="clearOldData()">🗑 HAPUS DATA LAMA</button>
+                    <button class="btn btn-red" onclick="clearAllData()">⚠️ HAPUS SEMUA</button>
                 </div>
             </div>
             
@@ -134,21 +134,31 @@
             
             <div class="card">
                 <h4>📜 SEMUA DATA ABSENSI</h4>
-                <div style="overflow-x:auto"><table id="tabelData"><thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kamar</th><th>Kegiatan</th><th>Aksi</th></tr></thead><tbody id="adminTableBody"><tr><td colspan="6">Loading...</td></tr></tbody></table></div>
+                <div style="overflow-x:auto; max-height: 400px; overflow-y: auto;">
+                    <table id="tabelData">
+                        <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kamar</th><th>Kegiatan</th><th>Aksi</th></tr></thead>
+                        <tbody id="adminTableBody"><tr><td colspan="6"><center>Loading...</center></td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
         <div id="userArea" class="hidden">
             <div class="card">
                 <h4>📊 GRAFIK KEHADIRAN ANDA</h4>
-                <div class="chart-container" style="height:220px"><canvas id="myChart"></canvas></div>
+                <div class="chart-container" style="height: 220px;"><canvas id="myChart"></canvas></div>
                 <div class="stats-summary">
                     <div class="stat-box"><div class="value" id="userHarian">0%</div><div>HARIAN</div></div>
                     <div class="stat-box"><div class="value" id="userMingguan">0%</div><div>MINGGUAN</div></div>
                     <div class="stat-box"><div class="value" id="userBulanan">0%</div><div>BULANAN</div></div>
                 </div>
             </div>
-            <div class="card"><h4>📅 JADWAL HARI INI</h4><div id="jadwalList" class="schedule-grid"></div></div>
+            
+            <div class="card">
+                <h4>📅 JADWAL KEGIATAN HARI INI</h4>
+                <div id="jadwalList" class="schedule-grid"></div>
+            </div>
+            
             <div class="card">
                 <h4>📝 FORM ABSENSI</h4>
                 <select id="pilihKegiatan">
@@ -163,25 +173,31 @@
                     <option value="Tidur Malam">😴 Tidur Malam</option>
                 </select>
                 <input type="file" id="pilihFoto" accept="image/*" capture="user">
-                <textarea id="isiCatatan" rows="2" placeholder="Catatan..."></textarea>
+                <textarea id="isiCatatan" rows="2" placeholder="Catatan (opsional)..."></textarea>
                 <button class="btn btn-green" onclick="simpanAbsen()" id="btnSimpan">📤 KIRIM ABSENSI</button>
             </div>
-            <div class="card"><h4>📜 RIWAYAT ABSENSI SAYA</h4><div style="overflow-x:auto"><table><thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead><tbody id="riwayatBody"><tr><td colspan="3">Belum ada data</td></tr></tbody></table></div></div>
+            
+            <div class="card">
+                <h4>📜 RIWAYAT ABSENSI SAYA</h4>
+                <div style="overflow-x:auto; max-height: 300px; overflow-y: auto;">
+                    <table style="width:100%">
+                        <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
+                        <tbody id="riwayatBody"><tr><td colspan="3" style="text-align:center">Belum ada data</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<div id="reportSection" style="display:none; background:white; padding:20px; border-radius:12px;"><div id="reportContent"></div></div>
-<div id="individualReportSection" style="display:none; background:white; padding:20px; border-radius:12px;"><div id="individualReportContent"></div></div>
+<div id="reportSection" style="display:none; background:white; padding:20px; border-radius:12px; max-width:800px; margin:0 auto;"></div>
+<div id="individualReportSection" style="display:none; background:white; padding:20px; border-radius:12px; max-width:800px; margin:0 auto;"></div>
 <div id="modalFoto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:20000; text-align:center; padding-top:20%;" onclick="this.style.display='none'"><img id="modalImg" style="max-width:90%; max-height:80%; border-radius:10px;"></div>
 
 <script>
-// SUPABASE CONFIG
-const supabaseUrl = "https://kwhsxqekuydurhygpxvk.supabase.co";
-const supabaseKey = "sb_publishable_D55E372eEF8EifpT7KsaZw_I3xdH2Yz";
-const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-
+// ==================== KONFIGURASI ====================
 const PIN_ADMIN = "1234";
+const STORAGE_KEY = "absensi_musyrif_final";
 
 const DATA_MUSYRIF = {
     hakim: { nama: "Asrama Al Hakim", pass: { "Ali Mashuri":"ali123", "Ali Zahid":"zahid123", "Reva Dwi":"reva123", "Imam Syafi'i":"imam123" }, kamar: { "Ali Mashuri":"Khondak", "Ali Zahid":"Badar", "Reva Dwi":"Khoibar", "Imam Syafi'i":"Multazam" } },
@@ -194,42 +210,79 @@ const JADWAL = ["🌅 Membangunkan Santri (04:00)", "📖 Pengajian Subuh (04:30
 let role = "", userLogin = "", asramaLogin = "", semuaData = [];
 let myChart = null, adminChart = null;
 
-async function refreshData() {
-    document.getElementById('loading').style.display = 'flex';
+// ==================== STORAGE ====================
+function getData() {
     try {
-        const { data, error } = await supabaseClient.from('absensi').select('*').order('timestamp', { ascending: false });
-        if (error) throw error;
-        semuaData = data || [];
-        if (role === "admin") renderAdmin();
-        else if (role === "musyrif") renderUser();
-        document.getElementById('connectionStatus').innerHTML = "✅ Terhubung | Total: " + semuaData.length + " data";
-    } catch(e) { alert("Error: " + e.message); }
-    document.getElementById('loading').style.display = 'none';
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch(e) { return []; }
 }
 
-async function simpanData(newData) {
-    const { error } = await supabaseClient.from('absensi').insert([{
-        timestamp: newData.Timestamp, nama: newData.Nama, asrama: newData.Asrama,
-        kamar: newData.Kamar, kegiatan: newData.Kegiatan, foto: newData.Foto, catatan: newData.Catatan
-    }]);
-    if (error) throw error;
-    await refreshData();
+function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    semuaData = data;
 }
 
-async function hapusDataFromDB(id) {
-    if (!confirm("Hapus data ini?")) return;
-    await supabaseClient.from('absensi').delete().eq('id', id);
-    await refreshData();
-    alert("Data dihapus!");
+function refreshData() {
+    semuaData = getData();
+    if (role === "admin") renderAdmin();
+    else if (role === "musyrif") renderUser();
+    return semuaData;
 }
 
-async function deleteAllData() {
-    if (!confirm("HAPUS SEMUA DATA?")) return;
-    await supabaseClient.from('absensi').delete().neq('id', 0);
-    await refreshData();
-    alert("Semua data dihapus!");
+function backupData() {
+    const data = getData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_absensi_${new Date().toISOString().slice(0,19)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert("✅ Backup berhasil! File JSON tersimpan.");
 }
 
+function restoreData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                const restored = JSON.parse(evt.target.result);
+                if (Array.isArray(restored)) {
+                    saveData(restored);
+                    refreshData();
+                    alert("✅ Restore berhasil! " + restored.length + " data.");
+                } else { alert("File tidak valid!"); }
+            } catch(err) { alert("Gagal: " + err.message); }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function clearOldData() {
+    if (!confirm("Hapus data lebih dari 30 hari?")) return;
+    const monthAgo = new Date(Date.now() - 30*86400000);
+    const current = getData();
+    const newData = current.filter(item => new Date(item.timestamp) >= monthAgo);
+    saveData(newData);
+    refreshData();
+    alert(`✅ Terhapus ${current.length - newData.length} data. Tersisa ${newData.length} data.`);
+}
+
+function clearAllData() {
+    if (confirm("⚠️ HAPUS SEMUA DATA?")) {
+        saveData([]);
+        refreshData();
+        alert("✅ Semua data dihapus!");
+    }
+}
+
+// ==================== KOMPRESI FOTO ====================
 function compressImage(dataUrl, callback) {
     const img = new Image();
     img.onload = function() {
@@ -244,12 +297,16 @@ function compressImage(dataUrl, callback) {
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         let quality = 0.6;
         let result = canvas.toDataURL('image/jpeg', quality);
-        while (result.length > 150 * 1024 && quality > 0.2) { quality -= 0.1; result = canvas.toDataURL('image/jpeg', quality); }
+        while (result.length > 150 * 1024 && quality > 0.2) {
+            quality -= 0.1;
+            result = canvas.toDataURL('image/jpeg', quality);
+        }
         callback(result);
     };
     img.src = dataUrl;
 }
 
+// ==================== LOGIN ====================
 document.getElementById('inputAsrama').onchange = function() {
     const as = this.value;
     const sn = document.getElementById('inputNama');
@@ -257,7 +314,10 @@ document.getElementById('inputAsrama').onchange = function() {
         sn.disabled = false;
         sn.innerHTML = '<option value="">-- Pilih Musyrif --</option>';
         for (let n in DATA_MUSYRIF[as].pass) sn.innerHTML += `<option value="${n}">${n}</option>`;
-    } else { sn.disabled = true; sn.innerHTML = '<option value="">-- Pilih Asrama dulu --</option>'; }
+    } else {
+        sn.disabled = true;
+        sn.innerHTML = '<option value="">-- Pilih Asrama dulu --</option>';
+    }
 };
 
 function pilihTab(tab) {
@@ -272,30 +332,30 @@ function pilihTab(tab) {
     }
 }
 
-async function loginMusyrif() {
+function loginMusyrif() {
     const as = document.getElementById('inputAsrama').value;
     const nm = document.getElementById('inputNama').value;
     const ps = document.getElementById('inputPassword').value;
     if (!as || !nm || !ps) { alert("Isi semua!"); return; }
     if (DATA_MUSYRIF[as] && DATA_MUSYRIF[as].pass[nm] === ps) {
         role = "musyrif"; userLogin = nm; asramaLogin = as;
-        await startApp();
+        startApp();
     } else { alert("Password salah!"); }
 }
 
-async function loginAdmin() {
+function loginAdmin() {
     const pin = document.getElementById('inputPin').value;
-    if (pin === PIN_ADMIN) { role = "admin"; await startApp(); }
+    if (pin === PIN_ADMIN) { role = "admin"; startApp(); }
     else { alert("PIN salah! PIN = 1234"); }
 }
 
-async function startApp() {
-    await refreshData();
+function startApp() {
+    refreshData();
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('appSection').style.display = 'block';
     if (role === "admin") {
         document.getElementById('titleApp').innerHTML = "🛡️ ADMIN DASHBOARD";
-        document.getElementById('infoUser').innerHTML = "Administrator | Cloud Database";
+        document.getElementById('infoUser').innerHTML = "Administrator | Data tersimpan di browser ini";
         document.getElementById('adminArea').style.display = 'block';
         document.getElementById('userArea').classList.add('hidden');
         renderAdmin();
@@ -312,6 +372,7 @@ async function startApp() {
 
 function logout() { location.reload(); }
 
+// ==================== ADMIN ====================
 function getAssessment(p) {
     if (p >= 70) return { status: 'Sangat Aktif', class: 'active', color: '#4caf50' };
     if (p >= 50) return { status: 'Aktif', class: 'warning', color: '#ff9800' };
@@ -321,7 +382,7 @@ function getAssessment(p) {
 
 function renderAdmin() {
     const today = new Date().toDateString(), weekAgo = new Date(Date.now()-7*86400000), monthAgo = new Date(Date.now()-30*86400000);
-    let h=0,m=0,b=0; const aktif = new Set();
+    let h=0, m=0, b=0; const aktif = new Set();
     for (let d of semuaData) {
         const tgl = new Date(d.timestamp);
         if (tgl.toDateString() === today) h++;
@@ -349,13 +410,23 @@ function renderAdmin() {
         names.push(n); persen.push(p); colors.push(getAssessment(p).color);
     }
     if (adminChart) adminChart.destroy();
-    if (names.length) adminChart = new Chart(ctx, { type: 'bar', data: { labels: names, datasets: [{ label: 'Kehadiran (%)', data: persen, backgroundColor: colors }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
+    if (names.length) adminChart = new Chart(ctx, { type: 'bar', data: { labels: names, datasets: [{ label: 'Kehadiran Minggu Ini (%)', data: persen, backgroundColor: colors, borderRadius: 8 }] }, options: { scales: { y: { beginAtZero: true, max: 100 } } } });
     
     let html = "";
-    for (let d of semuaData) html += `<tr><td>${new Date(d.timestamp).toLocaleString()}</td><td>${d.nama}</td><td>${d.asrama}</td><td>${d.kamar}</td><td>${d.kegiatan}</td><td><button class="delete-btn" onclick="hapusDataFromDB(${d.id})">Hapus</button></td></tr>`;
-    document.getElementById('adminTableBody').innerHTML = html || '<tr><td colspan="6">Belum ada data</td></tr>';
+    for (let d of semuaData) html += `<tr><td style="font-size:11px">${new Date(d.timestamp).toLocaleString('id-ID')}</td><td>${d.nama}</td><td>${d.asrama}</td><td>${d.kamar}</td><td>${d.kegiatan}</td><td><button class="delete-btn" style="background:#d32f2f; color:white; border:none; padding:4px 12px; border-radius:20px; cursor:pointer;" onclick="hapusData('${d.timestamp}')">Hapus</button></td></tr>`;
+    document.getElementById('adminTableBody').innerHTML = html || '<tr><td colspan="6" style="text-align:center">Belum ada data</td></tr>';
 }
 
+function hapusData(timestamp) {
+    if (confirm("Hapus data ini?")) {
+        const newData = semuaData.filter(d => d.timestamp !== timestamp);
+        saveData(newData);
+        refreshData();
+        alert("✅ Data dihapus!");
+    }
+}
+
+// ==================== MUSYRIF ====================
 function renderUser() {
     const myData = semuaData.filter(d => d.nama === userLogin);
     const today = new Date().toDateString(), weekAgo = new Date(Date.now()-7*86400000), monthAgo = new Date(Date.now()-30*86400000);
@@ -367,11 +438,11 @@ function renderUser() {
     const data = [0,0,0,0,0,0,0];
     myData.forEach(d => { const idx = new Date(d.timestamp).getDay(); const i = idx === 0 ? 6 : idx-1; if (i>=0 && i<7) data[i]++; });
     if (myChart) myChart.destroy();
-    myChart = new Chart(document.getElementById('myChart'), { type: 'bar', data: { labels: days, datasets: [{ label: 'Absensi', data: data, backgroundColor: '#4caf50' }] }, options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
+    myChart = new Chart(document.getElementById('myChart'), { type: 'bar', data: { labels: days, datasets: [{ label: 'Jumlah Absensi', data: data, backgroundColor: '#4caf50', borderRadius: 8 }] }, options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
     
     let html = "";
-    for (let d of myData) html += `<tr><td>${new Date(d.timestamp).toLocaleString()}</td><td>${d.kegiatan}</td><td>${d.foto ? `<img src="${d.foto}" class="foto-thumb" onclick="lihatFoto('${d.foto}')">` : '-'}</td></tr>`;
-    document.getElementById('riwayatBody').innerHTML = html || '<tr><td colspan="3">Belum ada data</td></tr>';
+    for (let d of myData) html += `<tr><td style="font-size:11px">${new Date(d.timestamp).toLocaleString('id-ID')}</td><td>${d.kegiatan}</td><td>${d.foto ? `<img src="${d.foto}" class="foto-thumb" onclick="lihatFoto('${d.foto}')">` : '-'}</td></tr>`;
+    document.getElementById('riwayatBody').innerHTML = html || '<tr><td colspan="3" style="text-align:center">Belum ada data</td></tr>';
 }
 
 function simpanAbsen() {
@@ -379,16 +450,30 @@ function simpanAbsen() {
     const file = document.getElementById('pilihFoto').files[0];
     const catatan = document.getElementById('isiCatatan').value;
     if (!kegiatan) { alert("Pilih kegiatan!"); return; }
-    if (!file) { alert("Ambil foto!"); return; }
+    if (!file) { alert("Ambil foto selfie!"); return; }
+    
     const btn = document.getElementById('btnSimpan');
-    btn.disabled = true; btn.innerHTML = "⏳...";
+    btn.disabled = true; btn.innerHTML = "⏳ Memproses...";
     document.getElementById('loading').style.display = 'flex';
+    
     const reader = new FileReader();
     reader.onload = function(evt) {
-        compressImage(evt.target.result, async function(compressed) {
-            await simpanData({ Timestamp: new Date().toISOString(), Nama: userLogin, Asrama: DATA_MUSYRIF[asramaLogin].nama, Kamar: DATA_MUSYRIF[asramaLogin].kamar[userLogin], Kegiatan: kegiatan, Foto: compressed, Catatan: catatan });
+        compressImage(evt.target.result, function(compressed) {
+            const newData = {
+                timestamp: new Date().toISOString(),
+                nama: userLogin,
+                asrama: DATA_MUSYRIF[asramaLogin].nama,
+                kamar: DATA_MUSYRIF[asramaLogin].kamar[userLogin],
+                kegiatan: kegiatan,
+                foto: compressed,
+                catatan: catatan
+            };
+            const current = getData();
+            current.push(newData);
+            saveData(current);
+            refreshData();
             document.getElementById('loading').style.display = 'none';
-            alert("✅ Absensi tersimpan!");
+            alert("✅ ABSENSI BERHASIL DISIMPAN!");
             document.getElementById('pilihKegiatan').value = "";
             document.getElementById('pilihFoto').value = "";
             document.getElementById('isiCatatan').value = "";
@@ -399,26 +484,24 @@ function simpanAbsen() {
     reader.readAsDataURL(file);
 }
 
-function lihatFoto(src) { document.getElementById('modalImg').src = src; document.getElementById('modalFoto').style.display = 'block'; }
-function kirimWA() { window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif"); }
-
+// ==================== PDF ====================
 async function generatePDFPerAsrama() {
-    await refreshData();
+    refreshData();
     const weekAgo = new Date(Date.now()-7*86400000);
-    let html = `<div><h3>LAPORAN PER ASRAMA</h3><p>Tanggal: ${new Date().toLocaleString()}</p>`;
+    let html = `<div style="padding:20px"><h2 style="color:#2e7d32">LAPORAN PER ASRAMA</h2><p>Tanggal: ${new Date().toLocaleString()}</p>`;
     for (let a in DATA_MUSYRIF) {
         const as = DATA_MUSYRIF[a];
-        html += `<div><h4>${as.nama}</h4><table border="1" cellpadding="5"><tr><th>No</th><th>Nama</th><th>Kamar</th><th>Absen</th><th>%</th><th>Status</th></tr>`;
+        html += `<div style="margin-bottom:20px"><h3>${as.nama}</h3><table border="1" cellpadding="5" style="border-collapse:collapse; width:100%"><thead><th>No</th><th>Nama</th><th>Kamar</th><th>Absen</th><th>%</th><th>Status</th></thead><tbody>`;
         let no = 1;
         for (let n in as.pass) {
             let cnt = 0; for (let d of semuaData) if (d.nama === n && new Date(d.timestamp) >= weekAgo) cnt++;
             let p = Math.min(100, Math.round(cnt/7*100)), ass = getAssessment(p);
             html += `<tr><td>${no++}</td><td>${n}</td><td>${as.kamar[n]}</td><td>${cnt}</td><td>${p}%</td><td>${ass.status}</td></tr>`;
         }
-        html += `</table></div>`;
+        html += `</tbody></table></div>`;
     }
     html += `</div>`;
-    document.getElementById('reportContent').innerHTML = html;
+    document.getElementById('reportSection').innerHTML = html;
     document.getElementById('reportSection').style.display = 'block';
     setTimeout(async () => {
         const { jsPDF } = window.jspdf;
@@ -427,14 +510,14 @@ async function generatePDFPerAsrama() {
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
         pdf.save(`Laporan_Asrama_${new Date().toISOString().slice(0,10)}.pdf`);
         document.getElementById('reportSection').style.display = 'none';
-        alert("PDF selesai!");
+        alert("✅ PDF selesai!");
     }, 500);
 }
 
 async function generatePDFPerIndividu() {
     const nama = prompt("Masukkan nama musyrif:", "Ali Mashuri");
     if (!nama) return;
-    await refreshData();
+    refreshData();
     let asramaNama = "", kamarNama = "";
     for (let a in DATA_MUSYRIF) if (DATA_MUSYRIF[a].pass[nama]) { asramaNama = DATA_MUSYRIF[a].nama; kamarNama = DATA_MUSYRIF[a].kamar[nama]; break; }
     if (!asramaNama) { alert("Nama tidak ditemukan!"); return; }
@@ -443,11 +526,11 @@ async function generatePDFPerIndividu() {
     const weeklyCount = myData.filter(d => new Date(d.timestamp) >= weekAgo).length;
     const persen = Math.min(100, Math.round(weeklyCount/7*100));
     const ass = getAssessment(persen);
-    let html = `<div><h3>LAPORAN INDIVIDU</h3><p><strong>Nama:</strong> ${nama}<br><strong>Asrama:</strong> ${asramaNama}<br><strong>Kamar:</strong> ${kamarNama}<br><strong>Tanggal:</strong> ${new Date().toLocaleString()}</p><h4>RINGKASAN</h4><table border="1" cellpadding="5"><thead><th>Periode</th><th>Jumlah</th><th>Persentase</th><th>Status</th></thead><tbody><tr><td>Mingguan</td><td>${weeklyCount} dari 7</td><td>${persen}%</td><td>${ass.status}</td></tr></tbody></table><h4>RIWAYAT</h4><table border="1" cellpadding="5"><thead><th>No</th><th>Tanggal</th><th>Kegiatan</th></thead><tbody>`;
+    let html = `<div style="padding:20px"><h2 style="color:#2e7d32">LAPORAN INDIVIDU</h2><p><strong>Nama:</strong> ${nama}<br><strong>Asrama:</strong> ${asramaNama}<br><strong>Kamar:</strong> ${kamarNama}<br><strong>Tanggal:</strong> ${new Date().toLocaleString()}</p><h3>RINGKASAN</h3><table border="1" cellpadding="5" style="border-collapse:collapse"><thead><th>Periode</th><th>Jumlah</th><th>Persentase</th><th>Status</th></thead><tbody><tr><td>Mingguan</td><td>${weeklyCount} dari 7</td><td>${persen}%</td><td>${ass.status}</td></tr></tbody></table><h3>RIWAYAT</h3><table border="1" cellpadding="5" style="border-collapse:collapse"><thead><th>No</th><th>Tanggal</th><th>Kegiatan</th></thead><tbody>`;
     let no = 1;
-    for (let d of myData) html += `<tr><td>${no++}</td><td>${new Date(d.timestamp).toLocaleString()}</td><td>${d.kegiatan}</td></tr>`;
-    html += `</tbody>赶</div>`;
-    document.getElementById('individualReportContent').innerHTML = html;
+    for (let d of myData) html += `<td>${no++}</td><td>${new Date(d.timestamp).toLocaleString()}</td><td>${d.kegiatan}</td></tr>`;
+    html += `</tbody></table></div>`;
+    document.getElementById('individualReportSection').innerHTML = html;
     document.getElementById('individualReportSection').style.display = 'block';
     setTimeout(async () => {
         const { jsPDF } = window.jspdf;
@@ -456,10 +539,18 @@ async function generatePDFPerIndividu() {
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
         pdf.save(`Laporan_${nama}.pdf`);
         document.getElementById('individualReportSection').style.display = 'none';
-        alert("PDF selesai!");
+        alert("✅ PDF selesai!");
     }, 500);
 }
 
+function kirimWA() { window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif%3A%20Jangan%20lupa%20mengisi%20absensi%20hari%20ini!"); }
+function lihatFoto(src) { document.getElementById('modalImg').src = src; document.getElementById('modalFoto').style.display = 'block'; }
+
+// Inisialisasi data contoh
+const existing = getData();
+if (existing.length === 0) {
+    saveData([{ timestamp: new Date().toISOString(), nama: "Ali Mashuri", asrama: "Asrama Al Hakim", kamar: "Khondak", kegiatan: "Membangunkan Santri", foto: "", catatan: "Contoh data" }]);
+}
 console.log("✅ Aplikasi siap! PIN Admin: 1234");
 </script>
 </body>
