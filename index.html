@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Absensi Musyrif - Sistem Mandiri</title>
+    <title>Absensi Musyrif - Cloud Database</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #e8f5e9; padding: 15px; padding-bottom: 80px; }
+        body { font-family: Arial, sans-serif; background: #e8f5e9; padding: 15px; }
         .container { max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 8px; transition: all 0.3s; }
@@ -20,9 +21,6 @@
         .btn-wa { background: #25D366; color: white; }
         .btn-pdf { background: #d32f2f; color: white; }
         .btn-blue { background: #1565c0; color: white; }
-        .btn-blue:hover { background: #0d47a1; }
-        .btn-orange { background: #ff9800; color: white; }
-        .btn-orange:hover { background: #f57c00; }
         input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid #ddd; }
@@ -34,7 +32,6 @@
         .hidden { display: none; }
         .error { background: #ffebee; color: #d32f2f; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
         .success { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
-        .warning { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
         .stat-card { padding: 12px; border-radius: 12px; color: white; text-align: center; }
         .stat-card.green { background: linear-gradient(135deg, #43a047, #66bb6a); }
@@ -70,18 +67,17 @@
         .delete-btn { background: #d32f2f; color: white; border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 11px; }
         .delete-btn:hover { background: #b71c1c; }
         .info-box { background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 12px; text-align: center; color: #1565c0; }
-        .info-box.warning { background: #fff3e0; color: #e65100; }
+        .info-box.online { background: #c8e6c9; color: #2e7d32; }
         h4 { margin-bottom: 12px; color: #2e7d32; }
         @media (max-width: 600px) { 
             .stats-grid { grid-template-columns: repeat(2, 1fr); } 
             .btn-group { flex-direction: column; }
-            .btn-group .btn { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading"><div class="spinner"></div><div id="loadingText">Memuat data...</div></div>
+<div id="loading" class="loading"><div class="spinner"></div><div id="loadingText">Menghubungkan ke database...</div></div>
 
 <!-- LOGIN SECTION -->
 <div id="loginSection">
@@ -89,10 +85,7 @@
         <h3 style="text-align:center">📋 ABSENSI MUSYRIF</h3>
         <div id="loginError" class="error"></div>
         <div id="loginSuccess" class="success"></div>
-        <div class="info-box warning">
-            📌 DATA TERSIMPAN DI HANDPHONE/PC INI SAJA<br>
-            ✅ Untuk pindah data ke HP/PC lain: klik BACKUP → kirim file → RESTORE
-        </div>
+        <div class="info-box" id="connectionStatus">🔄 Menghubungkan ke server...</div>
         <div>
             <span class="tab active" id="tabMusyrifBtn" onclick="pilihTab('musyrif')">MUSYRIF</span>
             <span class="tab" id="tabAdminBtn" onclick="pilihTab('admin')">ADMIN</span>
@@ -132,16 +125,12 @@
         <div id="adminArea">
             <div class="card">
                 <h4>⚙️ MENU ADMIN</h4>
-                <div class="info-box" id="storageInfo">📊 Menghitung data...</div>
                 <div class="btn-group">
-                    <button class="btn btn-green" onclick="refreshData()">🔄 REFRESH</button>
+                    <button class="btn btn-green" onclick="loadData()">🔄 REFRESH DATA</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerAsrama()">📄 PDF ASRAMA</button>
                     <button class="btn btn-pdf" onclick="generatePDFPerIndividu()">📄 PDF INDIVIDU</button>
                     <button class="btn btn-wa" onclick="kirimWA()">📱 PENGINGAT WA</button>
-                    <button class="btn btn-blue" onclick="backupData()">💾 BACKUP (EXPORT)</button>
-                    <button class="btn btn-orange" onclick="restoreData()">📂 RESTORE (IMPORT)</button>
-                    <button class="btn btn-red" onclick="clearOldData()">🗑 HAPUS DATA LAMA</button>
-                    <button class="btn btn-red" onclick="clearAllData()">⚠️ HAPUS SEMUA</button>
+                    <button class="btn btn-red" onclick="deleteAllData()">⚠️ HAPUS SEMUA DATA</button>
                 </div>
             </div>
             
@@ -245,9 +234,16 @@
 </div>
 
 <script>
-// ==================== KONFIGURASI ====================
+// ==================== SUPABASE CONFIG ====================
+// ⚠️ GANTI DENGAN CREDENTIALS DARI SUPABASE ANDA ⚠️
+const SUPABASE_URL = "https://kwhsxqekuydurhygpxvk.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_D55E372eEF8EifpT7KsaZw_I3xdH2Yz"; // <-- GANTI INI!
+
+// Inisialisasi Supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Konfigurasi Lainnya
 const PIN_ADMIN = "1234";
-const STORAGE_KEY = "absensi_musyrif_data_v2";
 
 const DATA_MUSYRIF = {
     hakim: { nama: "Asrama Al Hakim", pass: { "Ali Mashuri":"ali123", "Ali Zahid":"zahid123", "Reva Dwi":"reva123", "Imam Syafi'i":"imam123" }, kamar: { "Ali Mashuri":"Khondak", "Ali Zahid":"Badar", "Reva Dwi":"Khoibar", "Imam Syafi'i":"Multazam" } },
@@ -269,148 +265,152 @@ const JADWAL = [
 let role = "", userLogin = "", asramaLogin = "", semuaData = [];
 let myChart = null, adminChart = null;
 
-// ==================== STORAGE FUNCTIONS ====================
-function getLocalData() {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            return JSON.parse(stored);
-        }
-    } catch(e) {
-        console.error("Gagal baca storage:", e);
-    }
-    return [];
+// ==================== BUAT TABEL (Otomatis via SQL) ====================
+async function createTableIfNotExists() {
+    // Tabel akan dibuat manual via SQL Editor di Supabase
+    // Jalankan SQL ini di Supabase SQL Editor:
+    /*
+    CREATE TABLE IF NOT EXISTS absensi (
+        id SERIAL PRIMARY KEY,
+        timestamp TIMESTAMP DEFAULT NOW(),
+        nama VARCHAR(100) NOT NULL,
+        asrama VARCHAR(100) NOT NULL,
+        kamar VARCHAR(50) NOT NULL,
+        kegiatan VARCHAR(200) NOT NULL,
+        foto TEXT,
+        catatan TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+    );
+    
+    ALTER TABLE absensi ENABLE ROW LEVEL SECURITY;
+    CREATE POLICY "Enable all for public" ON absensi FOR ALL USING (true);
+    */
+    console.log("Pastikan tabel 'absensi' sudah dibuat di Supabase SQL Editor");
 }
 
-function saveLocalData(data) {
+// ==================== FUNGSI DATABASE ====================
+async function testConnection() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        semuaData = data;
-        updateStorageInfo();
+        const { data, error } = await supabase.from('absensi').select('count', { count: 'exact', head: true });
+        if (error) {
+            if (error.message.includes('relation') && error.message.includes('does not exist')) {
+                document.getElementById('connectionStatus').innerHTML = "⚠️ TABEL BELUM DIBUAT! Jalankan SQL di Supabase SQL Editor terlebih dahulu.";
+                document.getElementById('connectionStatus').style.background = "#ffebee";
+                document.getElementById('connectionStatus').style.color = "#c62828";
+                return false;
+            }
+            throw error;
+        }
+        document.getElementById('connectionStatus').innerHTML = "✅ Terhubung ke Database Cloud | Data bisa diakses dari HP/PC manapun";
+        document.getElementById('connectionStatus').classList.add('online');
         return true;
     } catch(e) {
-        if (e.name === 'QuotaExceededError') {
-            alert("⚠️ STORAGE PENUH!\n\nSolusi:\n1. Klik HAPUS DATA LAMA\n2. Atau BACKUP lalu HAPUS SEMUA\n3. Atau RESTORE dari file backup yang lebih kecil");
-            return false;
-        }
+        console.error(e);
+        document.getElementById('connectionStatus').innerHTML = "⚠️ " + e.message;
+        document.getElementById('connectionStatus').style.background = "#ffebee";
+        document.getElementById('connectionStatus').style.color = "#c62828";
         return false;
     }
 }
 
-function updateStorageInfo() {
-    const data = getLocalData();
-    const jsonStr = JSON.stringify(data);
-    const sizeKB = (jsonStr.length / 1024).toFixed(1);
-    const infoDiv = document.getElementById('storageInfo');
-    if (infoDiv) {
-        let warning = "";
-        if (parseFloat(sizeKB) > 4000) {
-            warning = " ⚠️ STORAGE HAMPIR PENUH! Segera backup dan hapus data lama.";
-            infoDiv.style.background = "#ffebee";
-            infoDiv.style.color = "#c62828";
-        } else {
-            infoDiv.style.background = "#e3f2fd";
-            infoDiv.style.color = "#1565c0";
-        }
-        infoDiv.innerHTML = `📊 Total Data: ${data.length} absensi | Ukuran: ${sizeKB} KB${warning}<br>📌 Cara pindah data: klik BACKUP → kirim file → buka di HP lain → RESTORE`;
+async function loadData() {
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('loadingText').innerText = 'Mengambil data dari Cloud...';
+    
+    try {
+        const { data, error } = await supabase
+            .from('absensi')
+            .select('*')
+            .order('timestamp', { ascending: false });
+        
+        if (error) throw error;
+        
+        semuaData = data || [];
+        document.getElementById('loading').style.display = 'none';
+        
+        if (role === "admin") renderAdmin();
+        else if (role === "musyrif") renderUser();
+        
+        return semuaData;
+    } catch(e) {
+        console.error("Error load data:", e);
+        alert("❌ Gagal mengambil data: " + e.message);
+        document.getElementById('loading').style.display = 'none';
+        return [];
     }
 }
 
-function addToLocalData(newItem) {
-    const current = getLocalData();
-    current.push(newItem);
-    return saveLocalData(current);
-}
-
-function deleteFromLocalData(timestamp) {
-    let current = getLocalData();
-    current = current.filter(item => item.Timestamp !== timestamp);
-    return saveLocalData(current);
-}
-
-// ==================== BACKUP & RESTORE ====================
-function backupData() {
-    const data = getLocalData();
-    // Buat backup tanpa foto (opsional, lebih kecil)
-    const backupData = data.map(item => ({
-        Timestamp: item.Timestamp,
-        Nama: item.Nama,
-        Asrama: item.Asrama,
-        Kamar: item.Kamar,
-        Kegiatan: item.Kegiatan,
-        Catatan: item.Catatan,
-        Foto: item.Foto ? "[FOTO TERSIMPAN DI PERANGKAT ASLI]" : ""
-    }));
+async function simpanData(newData) {
+    document.getElementById('loadingText').innerText = 'Menyimpan ke Cloud...';
     
-    const dataStr = JSON.stringify(backupData, null, 2);
-    const blob = new Blob([dataStr], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup_absensi_${new Date().toISOString().slice(0,19)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    alert("✅ Backup berhasil!\n\n📌 CARA PINDAH DATA KE HP/PC LAIN:\n1. Kirim file backup ini ke perangkat lain (via WA/Email)\n2. Buka aplikasi di perangkat tujuan\n3. Login sebagai ADMIN\n4. Klik RESTORE (IMPORT) → pilih file ini");
-}
-
-function restoreData() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = function(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            try {
-                const restoredData = JSON.parse(evt.target.result);
-                if (Array.isArray(restoredData)) {
-                    saveLocalData(restoredData);
-                    refreshData();
-                    alert("✅ Restore berhasil! " + restoredData.length + " data dipulihkan.");
-                } else {
-                    alert("❌ File tidak valid!");
-                }
-            } catch(err) {
-                alert("❌ Gagal: " + err.message);
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
-
-function clearOldData() {
-    const confirmClear = confirm("⚠️ Hapus semua data yang lebih dari 30 hari? Data 1 bulan terakhir akan tetap ada.");
-    if (!confirmClear) return;
-    
-    const monthAgo = new Date(Date.now() - 30 * 86400000);
-    let current = getLocalData();
-    const newData = current.filter(item => new Date(item.Timestamp) >= monthAgo);
-    const deletedCount = current.length - newData.length;
-    
-    if (saveLocalData(newData)) {
-        alert(`✅ Berhasil menghapus ${deletedCount} data lama. Tersisa ${newData.length} data.`);
-        refreshData();
+    try {
+        const { data, error } = await supabase
+            .from('absensi')
+            .insert([{
+                timestamp: newData.Timestamp,
+                nama: newData.Nama,
+                asrama: newData.Asrama,
+                kamar: newData.Kamar,
+                kegiatan: newData.Kegiatan,
+                foto: newData.Foto,
+                catatan: newData.Catatan
+            }]);
+        
+        if (error) throw error;
+        
+        await loadData();
+        return true;
+    } catch(e) {
+        alert("❌ Gagal menyimpan: " + e.message);
+        return false;
     }
 }
 
-function clearAllData() {
-    if (confirm("⚠️⚠️ PERINGATAN! Ini akan menghapus SEMUA data!\nLanjutkan?")) {
-        saveLocalData([]);
-        refreshData();
-        alert("✅ Semua data telah dihapus!");
+async function hapusDataFromDB(id) {
+    try {
+        const { error } = await supabase
+            .from('absensi')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        await loadData();
+        alert("✅ Data dihapus!");
+        return true;
+    } catch(e) {
+        alert("❌ Gagal hapus: " + e.message);
+        return false;
+    }
+}
+
+async function deleteAllData() {
+    if (!confirm("⚠️⚠️ PERINGATAN! Ini akan menghapus SEMUA data absensi dari Cloud!\nData akan hilang dari semua perangkat.\nLanjutkan?")) return;
+    
+    try {
+        const { error } = await supabase
+            .from('absensi')
+            .delete()
+            .neq('id', 0);
+        
+        if (error) throw error;
+        
+        await loadData();
+        alert("✅ SEMUA DATA BERHASIL DIHAPUS!");
+    } catch(e) {
+        alert("❌ Gagal hapus: " + e.message);
     }
 }
 
 // ==================== KOMPRESI FOTO ====================
-function compressImage(dataUrl, maxSizeMB = 0.15, callback) {
+function compressImage(dataUrl, maxSizeMB = 0.2, callback) {
     const img = new Image();
     img.onload = function() {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
         
-        const maxSize = 500;
+        const maxSize = 600;
         if (width > maxSize || height > maxSize) {
             if (width > height) {
                 height = (height * maxSize) / width;
@@ -426,7 +426,7 @@ function compressImage(dataUrl, maxSizeMB = 0.15, callback) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         
-        let quality = 0.5;
+        let quality = 0.6;
         let result = canvas.toDataURL('image/jpeg', quality);
         
         while (result.length > maxSizeMB * 1024 * 1024 && quality > 0.2) {
@@ -437,23 +437,6 @@ function compressImage(dataUrl, maxSizeMB = 0.15, callback) {
         callback(result);
     };
     img.src = dataUrl;
-}
-
-// ==================== LOAD DATA ====================
-function refreshData() {
-    semuaData = getLocalData();
-    updateStorageInfo();
-    
-    if (role === "admin") renderAdmin();
-    else if (role === "musyrif") renderUser();
-    
-    const msgDiv = document.getElementById('loginSuccess');
-    if (msgDiv) {
-        msgDiv.innerHTML = "✅ Data dimuat! Total: " + semuaData.length + " absensi";
-        msgDiv.style.display = 'block';
-        setTimeout(() => msgDiv.style.display = 'none', 2000);
-    }
-    return semuaData;
 }
 
 // ==================== FUNGSI LOGIN ====================
@@ -493,7 +476,7 @@ function pilihTab(tab) {
     if (loginError) loginError.style.display = 'none';
 }
 
-function loginMusyrif() {
+async function loginMusyrif() {
     const as = document.getElementById('inputAsrama').value;
     const nm = document.getElementById('inputNama').value;
     const ps = document.getElementById('inputPassword').value;
@@ -507,17 +490,17 @@ function loginMusyrif() {
         role = "musyrif";
         userLogin = nm;
         asramaLogin = as;
-        startApp();
+        await startApp();
     } else {
         showError("❌ Password salah!");
     }
 }
 
-function loginAdmin() {
+async function loginAdmin() {
     const pin = document.getElementById('inputPin').value;
     if (pin === PIN_ADMIN) {
         role = "admin";
-        startApp();
+        await startApp();
     } else {
         showError("❌ PIN salah! PIN = 1234");
     }
@@ -530,14 +513,17 @@ function showError(msg) {
     setTimeout(() => err.style.display = 'none', 3000);
 }
 
-function startApp() {
-    refreshData();
+async function startApp() {
+    const connected = await testConnection();
+    if (!connected) return;
+    
+    await loadData();
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('appSection').style.display = 'block';
     
     if (role === "admin") {
         document.getElementById('titleApp').innerHTML = "🛡️ ADMIN DASHBOARD";
-        document.getElementById('infoUser').innerHTML = "Administrator | Data tersimpan di browser ini";
+        document.getElementById('infoUser').innerHTML = "Administrator | Data tersimpan di Cloud (Supabase)";
         document.getElementById('adminArea').style.display = 'block';
         document.getElementById('userArea').classList.add('hidden');
         renderAdmin();
@@ -581,9 +567,9 @@ function renderAdmin() {
     const aktifSet = new Set();
     
     for (let d of semuaData) {
-        const tgl = new Date(d.Timestamp);
+        const tgl = new Date(d.timestamp);
         if (tgl.toDateString() === today) h++;
-        if (tgl >= weekAgo) { m++; aktifSet.add(d.Nama); }
+        if (tgl >= weekAgo) { m++; aktifSet.add(d.nama); }
         if (tgl >= monthAgo) b++;
     }
     document.getElementById('statHari').innerHTML = h;
@@ -596,7 +582,7 @@ function renderAdmin() {
         for (let n in DATA_MUSYRIF[a].pass) {
             let cnt = 0;
             for (let d of semuaData) {
-                if (d.Nama === n && new Date(d.Timestamp) >= weekAgo) cnt++;
+                if (d.nama === n && new Date(d.timestamp) >= weekAgo) cnt++;
             }
             let persen = Math.min(100, Math.round(cnt/7*100));
             let assessment = getAssessment(persen);
@@ -611,305 +597,4 @@ function renderAdmin() {
     const ctx = document.getElementById('adminChart').getContext('2d');
     const names = [], persenData = [], colors = [];
     for (let a in DATA_MUSYRIF) {
-        for (let n in DATA_MUSYRIF[a].pass) {
-            let cnt = 0;
-            for (let d of semuaData) {
-                if (d.Nama === n && new Date(d.Timestamp) >= weekAgo) cnt++;
-            }
-            let persen = Math.min(100, Math.round(cnt/7*100));
-            names.push(n);
-            persenData.push(persen);
-            colors.push(getAssessment(persen).color);
-        }
-    }
-    if (adminChart) adminChart.destroy();
-    if (names.length > 0) {
-        adminChart = new Chart(ctx, {
-            type: 'bar',
-            data: { labels: names, datasets: [{ label: 'Kehadiran Minggu Ini (%)', data: persenData, backgroundColor: colors, borderRadius: 8 }] },
-            options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, max: 100 } } }
-        });
-    }
-    
-    if (semuaData.length === 0) {
-        document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center">Belum ada data</td></tr>';
-        return;
-    }
-    let html = "";
-    for (let d of semuaData) {
-        html += `<tr>
-            <td style="font-size:11px">${new Date(d.Timestamp).toLocaleString('id-ID')}</td>
-            <td>${d.Nama}</td>
-            <td>${d.Asrama || '-'}</td>
-            <td>${d.Kamar || '-'}</td>
-            <td>${d.Kegiatan}</td>
-            <td><button class="delete-btn" onclick="hapusData('${d.Timestamp}')">🗑 Hapus</button></td>
-        </tr>`;
-    }
-    document.getElementById('adminTableBody').innerHTML = html;
-}
-
-function hapusData(timestamp) {
-    if (confirm("Yakin hapus data ini?")) {
-        deleteFromLocalData(timestamp);
-        refreshData();
-        alert("✅ Data dihapus!");
-    }
-}
-
-function kirimWA() {
-    window.open("https://wa.me/?text=Pengingat%20Absensi%20Musyrif%3A%20Jangan%20lupa%20mengisi%20absensi%20hari%20ini!");
-}
-
-// ==================== PDF ====================
-async function generatePDFPerAsrama() {
-    refreshData();
-    const weekAgo = new Date(Date.now() - 7*86400000);
-    let totalAbsen = 0;
-    let htmlContent = "";
-    
-    for (let a in DATA_MUSYRIF) {
-        const asrama = DATA_MUSYRIF[a];
-        let asramaHtml = `<div class="asrama-section">
-            <h3>📌 ${asrama.nama}</h3>
-            <table class="assessment-table">
-                <thead><th>No</th><th>Nama Musyrif</th><th>Kamar</th><th>Jumlah Absen</th><th>Persentase</th><th>Status</th></thead>
-                <tbody>`;
-        let no = 1;
-        for (let n in asrama.pass) {
-            let cnt = 0;
-            for (let d of semuaData) {
-                if (d.Nama === n && new Date(d.Timestamp) >= weekAgo) cnt++;
-            }
-            totalAbsen += cnt;
-            let persen = Math.min(100, Math.round(cnt/7*100));
-            let assessment = getAssessment(persen);
-            asramaHtml += `<tr>
-                <td>${no++}</td>
-                <td><strong>${n}</strong></td>
-                <td>${asrama.kamar[n]}</td>
-                <td>${cnt} kali</td>
-                <td>${persen}%</td>
-                <td><span style="background:${assessment.color}; color:white; padding:3px 8px; border-radius:12px;">${assessment.status}</span></td>
-            <tr>`;
-        }
-        asramaHtml += `</tbody>赶</div>`;
-        htmlContent += asramaHtml;
-    }
-    
-    document.getElementById('reportContent').innerHTML = htmlContent;
-    document.getElementById('reportTotalAbsen').innerHTML = totalAbsen;
-    document.getElementById('reportDate').innerHTML = new Date().toLocaleString('id-ID');
-    document.getElementById('reportSection').style.display = 'block';
-    
-    setTimeout(async () => {
-        const { jsPDF } = window.jspdf;
-        const element = document.getElementById('reportSection');
-        const canvas = await html2canvas(element, { scale: 2 });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = pdf.internal.pageSize.getWidth();
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-        pdf.save(`Laporan_Kinerja_Asrama_${new Date().toISOString().slice(0,10)}.pdf`);
-        document.getElementById('reportSection').style.display = 'none';
-        alert("✅ PDF selesai!");
-    }, 500);
-}
-
-async function generatePDFPerIndividu() {
-    const namaMusyrif = prompt("Masukkan nama musyrif:", "Ali Mashuri");
-    if (!namaMusyrif) return;
-    
-    refreshData();
-    let asramaNama = "", kamarNama = "";
-    for (let a in DATA_MUSYRIF) {
-        if (DATA_MUSYRIF[a].pass[namaMusyrif]) {
-            asramaNama = DATA_MUSYRIF[a].nama;
-            kamarNama = DATA_MUSYRIF[a].kamar[namaMusyrif];
-            break;
-        }
-    }
-    
-    if (!asramaNama) {
-        alert("❌ Nama tidak ditemukan!");
-        return;
-    }
-    
-    const myData = semuaData.filter(d => d.Nama === namaMusyrif);
-    const weekAgo = new Date(Date.now() - 7*86400000);
-    const weeklyCount = myData.filter(d => new Date(d.Timestamp) >= weekAgo).length;
-    const persenMinggu = Math.min(100, Math.round(weeklyCount/7*100));
-    const assessment = getAssessment(persenMinggu);
-    
-    let htmlContent = `<div class="report-header">
-        <div class="report-title">📊 LAPORAN INDIVIDU MUSYRIF</div>
-        <div>Pondok Pesantren</div>
-    </div>
-    <div class="report-meta">
-        <div><strong>Nama:</strong> ${namaMusyrif}</div>
-        <div><strong>Asrama:</strong> ${asramaNama}</div>
-        <div><strong>Kamar:</strong> ${kamarNama}</div>
-        <div><strong>Tanggal:</strong> ${new Date().toLocaleString('id-ID')}</div>
-    </div>
-    <h4>📊 RINGKASAN KEHADIRAN</h4>
-    <table class="assessment-table">
-        <thead><th>Periode</th><th>Jumlah</th><th>Persentase</th><th>Status</th></thead>
-        <tbody>
-            <tr><td><strong>Mingguan (7 hari)</strong></td><td>${weeklyCount} dari 7</td><td>${persenMinggu}%</td><td>${assessment.status}</td></tr>
-        </tbody>
-    </table>
-    <h4>📜 RIWAYAT ABSENSI</h4>
-    <table class="assessment-table"><thead><th>No</th><th>Tanggal</th><th>Kegiatan</th></thead><tbody>`;
-    
-    let no = 1;
-    for (let d of myData) {
-        htmlContent += `<tr><td>${no++}</td><td>${new Date(d.Timestamp).toLocaleString('id-ID')}</td><td>${d.Kegiatan}</td></tr>`;
-    }
-    if (myData.length === 0) htmlContent += `<tr><td colspan="3" style="text-align:center">Belum ada absensi</td></tr>`;
-    htmlContent += `</tbody>赶</div>`;
-    
-    document.getElementById('individualReportContent').innerHTML = htmlContent;
-    document.getElementById('individualReportSection').style.display = 'block';
-    
-    setTimeout(async () => {
-        const { jsPDF } = window.jspdf;
-        const element = document.getElementById('individualReportSection');
-        const canvas = await html2canvas(element, { scale: 2 });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = pdf.internal.pageSize.getWidth();
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-        pdf.save(`Laporan_${namaMusyrif}.pdf`);
-        document.getElementById('individualReportSection').style.display = 'none';
-        alert("✅ PDF selesai!");
-    }, 500);
-}
-
-// ==================== FUNGSI MUSYRIF ====================
-function renderJadwal() {
-    let html = "";
-    for (let j of JADWAL) {
-        html += `<div class="schedule-item">⏰ ${j}</div>`;
-    }
-    document.getElementById('jadwalList').innerHTML = html;
-}
-
-function renderUser() {
-    const myData = semuaData.filter(d => d.Nama === userLogin);
-    const today = new Date().toDateString();
-    const weekAgo = new Date(Date.now() - 7*86400000);
-    const monthAgo = new Date(Date.now() - 30*86400000);
-    
-    const h = myData.some(d => new Date(d.Timestamp).toDateString() === today) ? 100 : 0;
-    const m = Math.min(100, Math.round(myData.filter(d => new Date(d.Timestamp) >= weekAgo).length / 7 * 100));
-    const b = Math.min(100, Math.round(myData.filter(d => new Date(d.Timestamp) >= monthAgo).length / 30 * 100));
-    
-    document.getElementById('userHarian').innerHTML = h + "%";
-    document.getElementById('userMingguan').innerHTML = m + "%";
-    document.getElementById('userBulanan').innerHTML = b + "%";
-    
-    const ctx = document.getElementById('myChart').getContext('2d');
-    const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-    const chartData = [0,0,0,0,0,0,0];
-    myData.forEach(d => {
-        const day = new Date(d.Timestamp).getDay();
-        const idx = day === 0 ? 6 : day - 1;
-        if (idx >= 0 && idx < 7) chartData[idx]++;
-    });
-    if (myChart) myChart.destroy();
-    myChart = new Chart(ctx, {
-        type: 'bar',
-        data: { labels: days, datasets: [{ label: 'Jumlah Absensi', data: chartData, backgroundColor: '#4caf50', borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-    });
-    
-    if (myData.length === 0) {
-        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3" style="text-align:center">Belum ada data</td></tr>';
-        return;
-    }
-    let html = "";
-    for (let d of myData) {
-        html += `<tr>
-            <td style="font-size:11px">${new Date(d.Timestamp).toLocaleString('id-ID')}</td>
-            <td>${d.Kegiatan}</td>
-            <td>${d.Foto ? `<img src="${d.Foto}" class="foto-thumb" onclick="lihatFoto('${d.Foto}')">` : '-'}</td>
-        </tr>`;
-    }
-    document.getElementById('riwayatBody').innerHTML = html;
-}
-
-function simpanAbsen() {
-    const kegiatan = document.getElementById('pilihKegiatan').value;
-    const fileFoto = document.getElementById('pilihFoto').files[0];
-    const catatan = document.getElementById('isiCatatan').value;
-    
-    if (!kegiatan) { alert("❌ Pilih kegiatan!"); return; }
-    if (!fileFoto) { alert("❌ Ambil foto selfie terlebih dahulu!"); return; }
-    
-    const btn = document.getElementById('btnSimpan');
-    btn.disabled = true;
-    btn.innerHTML = "⏳ Memproses...";
-    document.getElementById('loading').style.display = 'flex';
-    
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        compressImage(evt.target.result, 0.15, function(compressedBase64) {
-            const newData = {
-                Timestamp: new Date().toISOString(),
-                Nama: userLogin,
-                Asrama: DATA_MUSYRIF[asramaLogin].nama,
-                Kamar: DATA_MUSYRIF[asramaLogin].kamar[userLogin],
-                Kegiatan: kegiatan,
-                Foto: compressedBase64,
-                Catatan: catatan
-            };
-            
-            const success = addToLocalData(newData);
-            
-            document.getElementById('loading').style.display = 'none';
-            if (success) {
-                refreshData();
-                alert("✅ ABSENSI BERHASIL DISIMPAN!");
-                document.getElementById('pilihKegiatan').value = "";
-                document.getElementById('pilihFoto').value = "";
-                document.getElementById('isiCatatan').value = "";
-                if (role === "musyrif") renderUser();
-            } else {
-                alert("❌ Storage penuh! Gunakan menu HAPUS DATA LAMA atau BACKUP.");
-            }
-            
-            btn.disabled = false;
-            btn.innerHTML = "📤 KIRIM ABSENSI";
-        });
-    };
-    reader.readAsDataURL(fileFoto);
-}
-
-function lihatFoto(src) {
-    document.getElementById('modalImg').src = src;
-    document.getElementById('modalFoto').style.display = 'block';
-}
-
-// ==================== INISIALISASI ====================
-// Buat data contoh jika kosong
-const existingData = getLocalData();
-if (existingData.length === 0) {
-    const sampleData = [{
-        Timestamp: new Date().toISOString(),
-        Nama: "Ali Mashuri",
-        Asrama: "Asrama Al Hakim",
-        Kamar: "Khondak",
-        Kegiatan: "Membangunkan Santri",
-        Foto: "",
-        Catatan: "Contoh data awal"
-    }];
-    saveLocalData(sampleData);
-}
-
-console.log("✅ Aplikasi siap! PIN Admin: 1234");
-updateStorageInfo();
-</script>
-</body>
-</html>
+        for (let n in DATA_MUSYRIF[a].pass)
