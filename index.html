@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Absensi Musyrif - Ringan & Cepat</title>
+    <title>Absensi Musyrif - Versi Stabil</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -12,7 +12,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #e8f5e9; padding: 12px; }
         .container { max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 30px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px; transition: 0.2s; }
         .btn:active { opacity: 0.7; }
         .btn-green { background: #2e7d32; color: white; }
         .btn-red { background: #d32f2f; color: white; }
@@ -49,8 +49,8 @@
         .stat-box .value { font-size: 20px; font-weight: bold; color: #2e7d32; }
         .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
         .schedule-item { padding: 8px; background: #f9f9f9; border-radius: 10px; border-left: 3px solid #2e7d32; font-size: 12px; }
-        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 10px; }
-        .spinner { width: 35px; height: 35px; border: 3px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; color: white; flex-direction: column; gap: 10px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid white; border-top-color: #2e7d32; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .report-section, .individual-report-section { display: none; background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         .report-header { text-align: center; border-bottom: 2px solid #2e7d32; padding-bottom: 12px; margin-bottom: 15px; }
@@ -63,11 +63,12 @@
         .assessment-table th { background: #2e7d32; color: white; }
         @media (max-width: 550px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .btn-group { flex-direction: column; } .schedule-grid { grid-template-columns: 1fr; } }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 30px; font-size: 12px; z-index: 1500; display: none; white-space: nowrap; }
+        .debug-info { font-size: 10px; color: #999; text-align: center; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading"><div class="spinner"></div><div>Memuat...</div></div>
+<div id="loading" class="loading"><div class="spinner"></div><div>Memuat data...</div></div>
 <div id="toast" class="toast"></div>
 
 <!-- LOGIN SECTION -->
@@ -76,8 +77,8 @@
         <h3 style="text-align:center">📋 ABSENSI MUSYRIF</h3>
         <div id="loginError" class="error"></div>
         <div>
-            <span class="tab active" id="tabMusyrifBtn" onclick="pilihTab('musyrif')">MUSYRIF</span>
-            <span class="tab" id="tabAdminBtn" onclick="pilihTab('admin')">ADMIN</span>
+            <span class="tab active" id="tabMusyrifBtn" onclick="pilihTab('musyrif')">👤 MUSYRIF</span>
+            <span class="tab" id="tabAdminBtn" onclick="pilihTab('admin')">🛡️ ADMIN</span>
         </div>
         
         <form id="formMusyrif">
@@ -92,6 +93,7 @@
             </select>
             <input type="password" id="inputPassword" placeholder="Password">
             <button type="submit" class="btn btn-green">🔐 MASUK</button>
+            <div class="debug-info">Versi Stabil | Data tersimpan permanen</div>
         </form>
         
         <form id="formAdmin" class="hidden">
@@ -140,9 +142,9 @@
             </div>
             
             <div class="card">
-                <h4>📜 SEMUA DATA</h4>
+                <h4>📜 SEMUA DATA ABSENSI</h4>
                 <div style="overflow-x:auto">
-                    <table id="tabelData">
+                    <table>
                         <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kegiatan</th><th>Foto</th><th></th></tr></thead>
                         <tbody id="adminTableBody"><tr><td colspan="6">Memuat...</td></tr></tbody>
                     </table>
@@ -153,7 +155,7 @@
         <!-- MUSYRIF PANEL -->
         <div id="userArea" class="hidden">
             <div class="card">
-                <h4>📊 KEHADIRAN ANDA</h4>
+                <h4>📊 GRAFIK KEHADIRAN ANDA</h4>
                 <div class="chart-container"><canvas id="myChart"></canvas></div>
                 <div class="stats-summary">
                     <div class="stat-box"><div class="value" id="userHarian">0%</div><div>HARIAN</div></div>
@@ -182,13 +184,13 @@
                 </select>
                 <input type="file" id="pilihFoto" accept="image/*" capture="user">
                 <textarea id="isiCatatan" rows="2" placeholder="Catatan (opsional)..."></textarea>
-                <button class="btn btn-green" onclick="simpanAbsen()" id="btnSimpan">📤 KIRIM</button>
+                <button class="btn btn-green" onclick="simpanAbsen()" id="btnSimpan">📤 KIRIM ABSENSI</button>
             </div>
             
             <div class="card">
-                <h4>📜 RIWAYAT SAYA</h4>
+                <h4>📜 RIWAYAT ABSENSI SAYA</h4>
                 <div style="overflow-x:auto">
-                    <table id="riwayatTable">
+                    <table>
                         <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
                         <tbody id="riwayatBody"><tr><td colspan="3">Memuat...</td></tr></tbody>
                     </table>
@@ -216,7 +218,10 @@
 
 <script>
 // ==================== KONFIGURASI ====================
-const API_URL = "https://script.google.com/macros/s/AKfycbw5CE9L4Ax7FYWLnW8j4G81us5af-yMbdICrpV4PlxUUgeuUD8GCUe2LoU-55isMH8j/exec";
+// !!! WAJIB GANTI DENGAN URL WEB APP ANDA YANG SUDAH DI DEPLOY !!!
+// BUKA Google Apps Script -> Deploy -> New deployment -> Web app -> Anyone
+const API_URL = "https://script.google.com/macros/s/AKfycbzqxdUO_DRmlyDfiT_ceVuW6U4Pqh6Cw8guD7A9ZPoNQ93WYNrwQvnHfFgAfmJkFWVV/exec";
+
 const PIN_ADMIN = "1234";
 
 const DATA_MUSYRIF = {
@@ -230,9 +235,6 @@ const JADWAL = ["Membangunkan Santri", "Pengajian Subuh", "Menggobraki Sekolah",
 let role = "", userLogin = "", asramaLogin = "", semuaData = [];
 let myChart = null, adminChart = null;
 let isLoading = false;
-let dataCache = null;
-let cacheTime = 0;
-const CACHE_DURATION = 30000; // 30 detik cache
 
 // ==================== UTILITY ====================
 function showToast(msg) {
@@ -246,53 +248,81 @@ function showLoading(show) {
     document.getElementById('loading').style.display = show ? 'flex' : 'none';
 }
 
-// ==================== API DENGAN CACHE ====================
-async function loadFromServer(force = false) {
-    if (isLoading) return;
-    
-    // Gunakan cache jika masih fresh
-    if (!force && dataCache && (Date.now() - cacheTime) < CACHE_DURATION) {
-        semuaData = dataCache;
-        return;
-    }
-    
+// ==================== API HANDLER ====================
+async function fetchData() {
+    if (isLoading) return null;
     isLoading = true;
-    showLoading(true);
     
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-        const response = await fetch(API_URL, { signal: controller.signal });
-        clearTimeout(timeoutId);
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
         
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        semuaData = Array.isArray(data) ? data : (data && !data.error ? data : []);
-        dataCache = semuaData;
-        cacheTime = Date.now();
+        return Array.isArray(data) ? data : [];
     } catch(e) {
-        console.error("Gagal load:", e);
-        semuaData = [];
+        console.error("Fetch error:", e);
+        return null;
+    } finally {
+        isLoading = false;
     }
-    
-    isLoading = false;
-    showLoading(false);
 }
 
-async function saveToServer(data) {
+async function postData(data) {
     try {
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        // Invalidate cache setelah save
-        dataCache = null;
-        cacheTime = 0;
-        return true;
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = await response.json();
+        return result;
     } catch(e) {
-        return false;
+        console.error("Post error:", e);
+        return null;
     }
+}
+
+// ==================== LOAD DATA DENGAN CACHE ====================
+let dataCache = null;
+let lastLoadTime = 0;
+const CACHE_DURATION = 30000;
+
+async function loadData(force = false) {
+    if (!force && dataCache && (Date.now() - lastLoadTime) < CACHE_DURATION) {
+        semuaData = dataCache;
+        return true;
+    }
+    
+    showLoading(true);
+    const result = await fetchData();
+    showLoading(false);
+    
+    if (result !== null) {
+        semuaData = result;
+        dataCache = result;
+        lastLoadTime = Date.now();
+        return true;
+    }
+    return false;
+}
+
+async function saveData(data) {
+    showLoading(true);
+    const result = await postData(data);
+    showLoading(false);
+    
+    if (result && result.success !== false) {
+        // Invalidate cache
+        dataCache = null;
+        lastLoadTime = 0;
+        return true;
+    }
+    return false;
 }
 
 // ==================== LOGIN ====================
@@ -338,11 +368,13 @@ document.getElementById('formMusyrif').onsubmit = async function(e) {
     const nm = document.getElementById('inputNama').value;
     const ps = document.getElementById('inputPassword').value;
     
-    if (DATA_MUSYRIF[as] && DATA_MUSYRIF[as].pass[nm] === ps) {
+    if (as && nm && DATA_MUSYRIF[as] && DATA_MUSYRIF[as].pass[nm] === ps) {
         role = "musyrif";
         userLogin = nm;
         asramaLogin = as;
-        await startApp();
+        
+        await loadData(true);
+        startApp();
     } else {
         const err = document.getElementById('loginError');
         err.innerHTML = "❌ Password salah!";
@@ -356,7 +388,8 @@ document.getElementById('formAdmin').onsubmit = async function(e) {
     const pin = document.getElementById('inputPin').value;
     if (pin === PIN_ADMIN) {
         role = "admin";
-        await startApp();
+        await loadData(true);
+        startApp();
     } else {
         const err = document.getElementById('loginError');
         err.innerHTML = "❌ PIN salah! PIN = 1234";
@@ -365,17 +398,13 @@ document.getElementById('formAdmin').onsubmit = async function(e) {
     }
 };
 
-async function startApp() {
-    showLoading(true);
-    await loadFromServer(true);
-    showLoading(false);
-    
+function startApp() {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('appSection').style.display = 'block';
     
     if (role === "admin") {
         document.getElementById('titleApp').innerHTML = "🛡️ ADMIN DASHBOARD";
-        document.getElementById('infoUser').innerHTML = "Administrator";
+        document.getElementById('infoUser').innerHTML = "Administrator | Data online";
         document.getElementById('adminArea').style.display = 'block';
         document.getElementById('userArea').classList.add('hidden');
         renderAdmin();
@@ -476,19 +505,21 @@ function renderAdmin() {
 
 async function hapusData(timestamp) {
     if (confirm("Hapus data ini?")) {
-        await saveToServer({ action: 'delete', timestamp: timestamp });
-        await loadFromServer(true);
-        renderAdmin();
-        showToast("✅ Data dihapus");
+        const result = await saveData({ action: 'delete', timestamp: timestamp });
+        if (result !== false) {
+            await loadData(true);
+            renderAdmin();
+            showToast("✅ Data dihapus");
+        } else {
+            showToast("❌ Gagal hapus data");
+        }
     }
 }
 
 async function refreshData() {
-    showLoading(true);
-    await loadFromServer(true);
+    await loadData(true);
     if (role === "admin") renderAdmin();
     else renderUser();
-    showLoading(false);
     showToast("✅ Data diperbarui");
 }
 
@@ -496,10 +527,9 @@ function waReminder() {
     window.open("https://wa.me/?text=Assalamualaikum%20Musyrif,%20jangan%20lupa%20isi%20absensi%20hari%20ini.");
 }
 
-// ==================== PDF PER ASRAMA ====================
+// ==================== PDF ====================
 async function pdfPerAsrama() {
-    showLoading(true);
-    await loadFromServer();
+    await loadData();
     const weekAgo = new Date(Date.now() - 7*86400000);
     let totalAbsen = 0;
     let htmlContent = "";
@@ -547,18 +577,15 @@ async function pdfPerAsrama() {
         pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
         pdf.save(`Laporan_Kinerja_${new Date().toISOString().slice(0,10)}.pdf`);
         document.getElementById('reportSection').style.display = 'none';
-        showLoading(false);
         showToast("✅ PDF selesai");
     }, 500);
 }
 
-// ==================== PDF PER INDIVIDU ====================
 async function pdfPerIndividu() {
     const namaMusyrif = prompt("Masukkan nama musyrif:", "Ali Mashuri");
     if (!namaMusyrif) return;
     
-    showLoading(true);
-    await loadFromServer();
+    await loadData();
     
     let asramaNama = "", kamarNama = "";
     for (let a in DATA_MUSYRIF) {
@@ -571,14 +598,13 @@ async function pdfPerIndividu() {
     
     if (!asramaNama) {
         alert("Nama tidak ditemukan!");
-        showLoading(false);
         return;
     }
     
     const myData = semuaData.filter(d => d.Nama === namaMusyrif);
     const weekAgo = new Date(Date.now() - 7*86400000);
-    const monthlyCount = myData.filter(d => new Date(d.Timestamp) >= weekAgo).length;
-    const persenMinggu = Math.min(100, Math.round(monthlyCount/7*100));
+    const weeklyCount = myData.filter(d => new Date(d.Timestamp) >= weekAgo).length;
+    const persenMinggu = Math.min(100, Math.round(weeklyCount/7*100));
     const assessment = getAssessment(persenMinggu);
     
     let html = `<div class="report-header"><div class="report-title">LAPORAN ${namaMusyrif}</div></div>
@@ -591,7 +617,7 @@ async function pdfPerIndividu() {
     <h4>📊 RINGKASAN</h4>
     <table class="assessment-table">
         <thead><th>Periode</th><th>Absen</th><th>Persen</th><th>Status</th></thead>
-        <tbody><tr><td>Mingguan</td><td>${monthlyCount} kali</td><td>${persenMinggu}%</td><td>${assessment.status}</td></tr></tbody>
+        <tbody><tr><td>Mingguan</th><td>${weeklyCount} kali</td><td>${persenMinggu}%</td><td>${assessment.status}</td></tr></tbody>
     追赶
     <h4>📜 RIWAYAT</h4>
     <table class="assessment-table"><thead><th>No</th><th>Tanggal</th><th>Kegiatan</th></thead><tbody>`;
@@ -615,7 +641,6 @@ async function pdfPerIndividu() {
         pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
         pdf.save(`Laporan_${namaMusyrif}_${new Date().toISOString().slice(0,10)}.pdf`);
         document.getElementById('individualReportSection').style.display = 'none';
-        showLoading(false);
         showToast("✅ PDF selesai");
     }, 500);
 }
@@ -659,7 +684,7 @@ function renderUser() {
     });
     
     if (myData.length === 0) {
-        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3">Belum ada data</tr>';
+        document.getElementById('riwayatBody').innerHTML = '<tr><td colspan="3">Belum ada data</td></tr>';
         return;
     }
     let html = "";
@@ -685,11 +710,10 @@ async function simpanAbsen() {
     const btn = document.getElementById('btnSimpan');
     btn.disabled = true;
     btn.innerHTML = "⏳ Menyimpan...";
-    showLoading(true);
     
     try {
         const fotoBase64 = await bacaFile(fileFoto);
-        await saveToServer({
+        const result = await saveData({
             action: 'save',
             timestamp: new Date().toISOString(),
             nama: userLogin,
@@ -700,19 +724,22 @@ async function simpanAbsen() {
             catatan: catatan
         });
         
-        await loadFromServer(true);
-        renderUser();
-        showToast("✅ Absensi tersimpan!");
-        document.getElementById('pilihKegiatan').value = "";
-        document.getElementById('pilihFoto').value = "";
-        document.getElementById('isiCatatan').value = "";
-        
+        if (result !== false) {
+            await loadData(true);
+            renderUser();
+            if (role === "admin") renderAdmin();
+            showToast("✅ Absensi tersimpan!");
+            document.getElementById('pilihKegiatan').value = "";
+            document.getElementById('pilihFoto').value = "";
+            document.getElementById('isiCatatan').value = "";
+        } else {
+            showToast("❌ Gagal menyimpan data");
+        }
     } catch(err) {
-        showToast("❌ Gagal: " + err.message);
+        showToast("❌ Error: " + err.message);
     } finally {
         btn.disabled = false;
-        btn.innerHTML = "📤 KIRIM";
-        showLoading(false);
+        btn.innerHTML = "📤 KIRIM ABSENSI";
     }
 }
 
@@ -730,7 +757,7 @@ function lihatFoto(src) {
     document.getElementById('modalFoto').style.display = 'block';
 }
 
-console.log("✅ Aplikasi siap dan ringan!");
+console.log("✅ Aplikasi siap!");
 </script>
 </body>
 </html>
