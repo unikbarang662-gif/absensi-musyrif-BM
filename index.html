@@ -182,8 +182,9 @@
                 <div style="overflow-x:auto; max-height: 300px; overflow-y: auto;">
                     <table style="width:100%">
                         <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                        <tbody id="riwayatBody"><tr><td colspan="3" style="text-align:center">Belum ada data</td></tr></tbody>
-                    </table>
+                        <tbody id="riwayatBody"><tr><td colspan="3" style="text-align:center">Belum ada data</td></tr>
+                    </tbody>
+                </table>
                 </div>
             </div>
         </div>
@@ -206,10 +207,9 @@
 
 <script>
 // ==================== SUPABASE CONFIG ====================
-const SUPABASE_URL = "https://kwhsxqekuydurhygpxvk.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_D55E372eEF8EifpT7KsaZw_I3xdH2Yz";
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseUrl = "https://kwhsxqekuydurhygpxvk.supabase.co";
+const supabaseKey = "sb_publishable_D55E372eEF8EifpT7KsaZw_I3xdH2Yz";
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const PIN_ADMIN = "1234";
 
@@ -499,7 +499,7 @@ async function generatePDFPerAsrama() {
             let assessment = getAssessment(persen);
             table += `<tr><td>${no++}</td><td>${n}</td><td>${asrama.kamar[n]}</td><td>${cnt}</td><td>${persen}%</td><td>${assessment.status}</td></tr>`;
         }
-        table += `</tbody></table></div>`;
+        table += `</tbody>赶</div>`;
         html += table;
     }
     document.getElementById('reportContent').innerHTML = html;
@@ -530,7 +530,7 @@ async function generatePDFPerIndividu() {
     let html = `<div class="report-header"><div class="report-title">LAPORAN INDIVIDU</div></div><div class="report-meta"><div><strong>Nama:</strong> ${nama}</div><div><strong>Asrama:</strong> ${asramaNama}</div><div><strong>Kamar:</strong> ${kamarNama}</div><div><strong>Tanggal:</strong> ${new Date().toLocaleString()}</div></div><h4>RINGKASAN</h4><table class="assessment-table"><thead><th>Periode</th><th>Jumlah</th><th>Persentase</th><th>Status</th></thead><tbody><tr><td>Mingguan</td><td>${weeklyCount} dari 7</td><td>${persen}%</td><td>${assessment.status}</td></tr></tbody></table><h4>RIWAYAT</h4><table class="assessment-table"><thead><th>No</th><th>Tanggal</th><th>Kegiatan</th></thead><tbody>`;
     let no = 1;
     for (let d of myData) html += `<tr><td>${no++}</td><td>${new Date(d.timestamp).toLocaleString()}</td><td>${d.kegiatan}</td></tr>`;
-    html += `</tbody></table>`;
+    html += `</tbody>赶</div>`;
     document.getElementById('individualReportContent').innerHTML = html;
     document.getElementById('individualReportSection').style.display = 'block';
     setTimeout(async () => {
