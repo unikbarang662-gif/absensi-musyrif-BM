@@ -86,13 +86,15 @@
     .live-clock { font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 20px; display: inline-block; margin-top: 4px; }
     .current-time { background: var(--info); color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; margin-left: 10px; }
     .readonly-badge { background: #ff9800; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+    .info-banner { background: #e3f2fd; border-left: 4px solid var(--info); padding: 10px; margin-bottom: 15px; border-radius: 8px; font-size: 0.85rem; }
+    .info-banner i { margin-right: 8px; }
     @media print { .no-print, #login-screen, header .logout-btn, .btn-group, .admin-section { display: none !important; } .report-section { display: block !important; } body { background: white; padding: 0; } .card { box-shadow: none; border: 1px solid #ddd; } }
     @media (max-width: 600px) { .schedule-grid { grid-template-columns: 1fr; } .btn-group { flex-direction: column; } .stats-summary { grid-template-columns: 1fr; } .chart-container { height: 200px; } .grade-legend { grid-template-columns: repeat(2, 1fr); } .report-meta { grid-template-columns: 1fr; } }
     .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .act-msg-active { color: var(--success); font-weight: 500; }
-    .act-msg-inactive { color: var(--warning); font-weight: 500; }
+    .act-msg-info { color: var(--info); font-weight: 500; }
   </style>
 </head>
 <body>
@@ -202,6 +204,9 @@
       </div>
     </div>
     <div id="musyrif-view">
+      <div class="info-banner">
+        <i>ℹ️</i> <strong>Informasi Absensi:</strong> Anda dapat mengisi absensi KAPAN PUN tanpa batasan waktu. Semua kegiatan tersedia dan bisa dipilih langsung.
+      </div>
       <div class="stats-panel" id="stats-panel" style="display:none;">
         <h3>📊 Grafik Kehadiran Anda <span class="readonly-badge">Read-Only</span></h3>
         <div class="chart-container"><canvas id="attendanceChart"></canvas></div>
@@ -211,32 +216,32 @@
           <div class="stat-box"><div class="label">Bulanan</div><div class="value" id="ms-m">0%</div><div class="bar"><div id="mb-m" class="fill" style="width:0%"></div></div></div>
         </div>
       </div>
-      <div class="card"><h2>📅 Jadwal & Kegiatan Hari Ini</h2><div class="schedule-grid" id="sched-grid"></div></div>
+      <div class="card"><h2>📅 Jadwal & Kegiatan (Informasi Only)</h2><div class="schedule-grid" id="sched-grid"></div></div>
       <div class="card">
-        <h2>📝 Input Absensi</h2>
+        <h2>📝 Input Absensi <span style="font-size:0.7rem;background:var(--success);padding:2px 8px;border-radius:20px;margin-left:8px;">Bisa Kapan Saja</span></h2>
         <form id="absen-form">
           <div class="form-group">
-            <label>Kegiatan <span id="active-badge" style="font-size:0.7rem;"></span></label>
-            <select id="act-select" required onchange="onActivitySelect()">
+            <label>📌 Pilih Kegiatan</label>
+            <select id="act-select" required>
               <option value="">-- Pilih Kegiatan --</option>
             </select>
-            <small id="act-msg" style="display: block; margin-top: 5px;"></small>
+            <small id="act-msg" style="display: block; margin-top: 5px;">✅ Semua kegiatan tersedia, pilih sesuai tugas Anda</small>
           </div>
           <div class="form-group">
             <label>📷 Foto Bukti Kegiatan</label>
             <input type="file" id="photo-in" accept="image/*" capture="user" required>
-            <small>Gunakan kamera depan untuk selfie/foto kegiatan</small>
+            <small>Gunakan kamera depan untuk selfie/foto kegiatan sebagai bukti</small>
           </div>
           <div class="form-group">
             <label>📝 Catatan (opsional)</label>
-            <textarea id="notes" rows="2" placeholder="Contoh: Kegiatan berjalan lancar..."></textarea>
+            <textarea id="notes" rows="2" placeholder="Contoh: Kegiatan berjalan lancar, diikuti oleh ... santri"></textarea>
           </div>
           <button type="submit" class="btn btn-primary" id="sub-btn">✅ Kirim Absensi</button>
         </form>
       </div>
       <div class="card">
         <h2>📜 Riwayat Absensi Saya <span class="readonly-badge">Tidak Dapat Dihapus</span></h2>
-        <div style="overflow-x:auto;"><table class="history-table"><thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th> </tr></thead><tbody id="my-tbody"><tr><td colspan="3" style="text-align:center;padding:15px;color:var(--text-light);">Memuat riwayat...</td></tr></tbody></table></div>
+        <div style="overflow-x:auto;"><table class="history-table"><thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead><tbody id="my-tbody"><tr><td colspan="3" style="text-align:center;padding:15px;color:var(--text-light);">Memuat riwayat...</td></tr></tbody></table></div>
       </div>
     </div>
   </div>
@@ -336,7 +341,7 @@
       
       startClock();
       renderSched();
-      updJobs();
+      loadAllActivities(); // Load semua kegiatan tanpa batasan waktu
       
       setTimeout(() => loadData(false), 50);
     }
@@ -374,7 +379,6 @@
 
     function renderSched() {
       const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
       const day = now.getDay();
       
       document.getElementById('sched-grid').innerHTML = JOBS.filter(j => j.days.includes(day)).map(j => {
@@ -399,95 +403,34 @@
           ${statusBadge}
         </div>`;
       }).join('');
-      
-      // Update juga status badge di header form
-      const activeJobs = JOBS.filter(j => j.days.includes(day) && getTimeStatus(j.tf || j.t, j.e).status === 'active');
-      const badgeEl = document.getElementById('active-badge');
-      if (badgeEl) {
-        if (activeJobs.length > 0) {
-          badgeEl.innerHTML = `🎯 ${activeJobs.length} kegiatan aktif`;
-          badgeEl.style.color = 'var(--success)';
-        } else {
-          badgeEl.innerHTML = `⏸️ Tidak ada kegiatan aktif`;
-          badgeEl.style.color = 'var(--warning)';
-        }
-      }
     }
     
-    function onActivitySelect() {
-      const selected = document.getElementById('act-select').value;
-      const msg = document.getElementById('act-msg');
-      if (!selected) return;
-      
-      const day = new Date().getDay();
-      const job = JOBS.find(j => j.n === selected && j.days.includes(day));
-      if (job) {
-        const startTime = job.tf || job.t;
-        const timeStatus = getTimeStatus(startTime, job.e);
-        if (timeStatus.status === 'active') {
-          msg.innerHTML = `✅ Kegiatan sedang berlangsung. ${timeStatus.remaining}`;
-          msg.className = 'act-msg-active';
-        } else if (timeStatus.status === 'waiting') {
-          msg.innerHTML = `⏳ ${timeStatus.text}. ${timeStatus.remaining}`;
-          msg.className = 'act-msg-inactive';
-        } else {
-          msg.innerHTML = `❌ Kegiatan sudah selesai untuk hari ini.`;
-          msg.className = 'act-msg-inactive';
-        }
-      }
-    }
-    
-    function updJobs() {
-      const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const day = now.getDay();
+    // FUNGSI BARU: Load semua kegiatan TANPA batasan waktu
+    function loadAllActivities() {
       const sel = document.getElementById('act-select');
-      const msg = document.getElementById('act-msg');
-      
       if (!sel) return;
       
       sel.innerHTML = '<option value="">-- Pilih Kegiatan --</option>';
-      let hasActive = false;
-      let activeJobName = '';
       
-      JOBS.filter(j => j.days.includes(day)).forEach(j => {
-        const startTime = j.tf ? j.tf : j.t;
-        const timeStatus = getTimeStatus(startTime, j.e);
-        const o = document.createElement('option');
-        o.value = j.n;
-        o.textContent = `${j.n} (${startTime} - ${j.e})`;
-        
-        if (timeStatus.status === 'active') {
-          o.selected = true;
-          hasActive = true;
-          activeJobName = j.n;
-          o.style.backgroundColor = '#e8f5e9';
-          o.style.fontWeight = 'bold';
-          o.textContent += ' 🔴 SEDANG BERLANGSUNG';
-        } else if (timeStatus.status === 'waiting') {
-          o.disabled = true;
-          o.textContent += ' ⏳ Belum waktunya';
-        } else {
-          o.disabled = true;
-          o.textContent += ' ✓ Selesai';
-        }
-        sel.appendChild(o);
+      // Urutkan berdasarkan hari (Senin-Sabtu) dan waktu
+      const allJobs = [...JOBS];
+      
+      allJobs.forEach(job => {
+        const option = document.createElement('option');
+        option.value = job.n;
+        const daysText = job.days.map(d => {
+          const daysMap = {0:'Min',1:'Sen',2:'Sel',3:'Rab',4:'Kam',5:'Jum',6:'Sab'};
+          return daysMap[d];
+        }).join(', ');
+        const startTime = job.tf || job.t;
+        option.textContent = `${job.n} (${startTime} - ${job.e}) - ${daysText}`;
+        sel.appendChild(option);
       });
       
-      if (hasActive) {
-        msg.innerHTML = `🎯 Waktu yang tepat untuk absen! Kegiatan "${activeJobName}" sedang berlangsung.`;
-        msg.className = 'act-msg-active';
-      } else {
-        const nextJob = JOBS.filter(j => j.days.includes(day)).find(j => getTimeStatus(j.tf || j.t, j.e).status === 'waiting');
-        if (nextJob) {
-          const startTime = nextJob.tf || nextJob.t;
-          const timeStatus = getTimeStatus(startTime, nextJob.e);
-          msg.innerHTML = `⏰ ${timeStatus.text}. ${timeStatus.remaining}. Silakan tunggu jadwal berikutnya.`;
-          msg.className = 'act-msg-inactive';
-        } else {
-          msg.innerHTML = `📅 Semua kegiatan hari ini sudah selesai. Silakan absen besok lagi.`;
-          msg.className = 'act-msg-inactive';
-        }
+      const msg = document.getElementById('act-msg');
+      if (msg) {
+        msg.innerHTML = '✅ Semua kegiatan tersedia untuk diisi kapan saja. Pilih kegiatan sesuai tugas Anda.';
+        msg.className = 'act-msg-info';
       }
     }
 
@@ -628,6 +571,7 @@
     
     function viewImg(s) { const w=window.open(); w.document.write(`<img src="${s}" style="max-width:100%;margin-top:20px;">`); }
 
+    // FORM ABSENSI - TANPA BATASAN WAKTU
     document.getElementById('absen-form').onsubmit = async e => {
       e.preventDefault();
       const act = document.getElementById('act-select').value;
@@ -635,7 +579,6 @@
       
       if (!act) { 
         alert('⚠️ Pilih kegiatan terlebih dahulu!'); 
-        updJobs();
         return; 
       }
       if (!photo) { 
@@ -643,28 +586,7 @@
         return; 
       }
       
-      // Validasi waktu absensi
-      const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const day = now.getDay();
-      const job = JOBS.find(x => x.n === act && x.days.includes(day));
-      
-      if(job) {
-        const startTime = job.tf ? job.tf : job.t;
-        const [sh, sm] = startTime.split(':').map(Number);
-        const [eh, em] = job.e.split(':').map(Number);
-        const startMinutes = sh * 60 + sm;
-        const endMinutes = eh * 60 + em;
-        
-        if(currentMinutes < startMinutes) {
-          alert(`❌ Absensi untuk "${act}" belum bisa dilakukan!\nWaktu mulai: ${startTime}\nSilakan tunggu hingga jadwal dimulai.`);
-          return;
-        }
-        if(currentMinutes > endMinutes) {
-          alert(`❌ Absensi untuk "${act}" sudah melewati batas waktu!\nBatas akhir: ${job.e}\nHarap absen sesuai jadwal.`);
-          return;
-        }
-      }
+      // TIDAK ADA VALIDASI WAKTU - Bisa kapan saja
       
       const btn = document.getElementById('sub-btn'); 
       btn.disabled = true; 
@@ -688,7 +610,6 @@
           document.getElementById('notes').value = '';
           await loadData(true); 
           renderSched();
-          updJobs();
         } else {
           throw new Error(out.message || 'Gagal mengirim');
         }
@@ -788,14 +709,13 @@
         });
       });
       if(!miss.length) return alert('✅ Semua sudah absen hari ini!');
-      window.open(`https://wa.me/?text=${encodeURIComponent(`*REMINDER ABSENSI*\n\nYth. Musyrif yang belum absen:\n${miss.join('\n')}\n\nHarap segera melakukan absensi sesuai jadwal masing-masing.\n\nTerima kasih.`)}`);
+      window.open(`https://wa.me/?text=${encodeURIComponent(`*REMINDER ABSENSI*\n\nYth. Musyrif yang belum absen:\n${miss.join('\n')}\n\nHarap segera melakukan absensi.\n\nTerima kasih.`)}`);
     }
 
-    // Auto refresh setiap 30 detik untuk jadwal dan kegiatan
+    // Auto refresh jadwal setiap 30 detik (hanya untuk tampilan)
     setInterval(() => {
       if(role) {
         renderSched();
-        updJobs();
       }
     }, 30000);
   </script>
