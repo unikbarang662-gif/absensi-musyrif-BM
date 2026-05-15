@@ -4,554 +4,852 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tam-taman | Validasi Syarat Keikutsertaan Ujian</title>
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Chart.js -->
+    <!-- Google Fonts + Font Awesome + Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- html2pdf.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background: #eef5e8;
-            height: 100vh;
-            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a2e1f 0%, #1a4d2e 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* ---------- LOGIN PAGE ---------- */
-        .login-container {
+        /* ========== LOGIN PAGE ========== */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a3d24, #0a2e1f);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #1e3c2c, #2b5e3b);
+            z-index: 1000;
+            transition: all 0.5s ease;
         }
+
         .login-card {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(2px);
-            padding: 40px 35px;
-            border-radius: 32px;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-            width: 380px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 48px;
+            padding: 50px 45px;
+            width: 460px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeInUp 0.6s ease;
         }
-        .login-card h2 {
-            color: #1e562e;
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-logo {
+            font-size: 55px;
+            background: linear-gradient(135deg, #1e8e3e, #0b5e2e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .login-card h1 {
+            font-size: 32px;
             font-weight: 700;
+            color: #1a5c3a;
             margin-bottom: 8px;
-            font-size: 28px;
         }
+
         .login-card p {
-            color: #4a6a3b;
-            margin-bottom: 30px;
-            font-weight: 500;
+            color: #6b8c7a;
+            margin-bottom: 35px;
+            font-size: 14px;
         }
-        .input-group {
-            margin-bottom: 20px;
+
+        .input-field {
+            margin-bottom: 22px;
             text-align: left;
         }
-        .input-group label {
-            font-weight: 600;
-            color: #2c5e2e;
+
+        .input-field label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c5a3e;
+            font-size: 14px;
         }
-        .input-group input {
+
+        .input-field input {
             width: 100%;
-            padding: 12px 16px;
-            border-radius: 28px;
-            border: 1px solid #c8e0c0;
-            background: #f9fff7;
+            padding: 14px 18px;
+            border: 2px solid #e0ebe4;
+            border-radius: 30px;
             font-size: 15px;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .input-field input:focus {
             outline: none;
-            transition: 0.2s;
+            border-color: #2ecc71;
+            box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
         }
-        .input-group input:focus {
-            border-color: #2e7d32;
-            box-shadow: 0 0 0 3px rgba(46,125,50,0.2);
-        }
+
         .login-btn {
-            background: #2b6e3c;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #27ae60, #1e8449);
             color: white;
             border: none;
-            width: 100%;
-            padding: 12px;
             border-radius: 40px;
-            font-weight: bold;
             font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.3s;
             margin-top: 10px;
         }
+
         .login-btn:hover {
-            background: #1e562e;
-            transform: scale(1.02);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
         }
-        /* ---------- MAIN APP (hidden by default) ---------- */
-        .app-wrapper {
+
+        /* ========== MAIN APP ========== */
+        .app-container {
             display: none;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
         }
-        /* sidebar + main layout */
-        .dashboard-layout {
-            display: flex;
-            height: 100%;
-        }
-        /* sidebar stylish */
+
+        /* Sidebar */
         .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
             width: 280px;
-            background: #1f3f2c;
-            color: #f0f7ea;
-            display: flex;
-            flex-direction: column;
-            padding: 25px 0 20px 0;
-            box-shadow: 4px 0 12px rgba(0,0,0,0.1);
-            overflow-y: auto;
+            height: 100%;
+            background: linear-gradient(180deg, #0d331f 0%, #082615 100%);
+            color: white;
+            padding: 30px 0;
+            transition: all 0.3s;
+            z-index: 100;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
         }
-        .logo-area {
-            padding: 0 20px 20px 20px;
-            border-bottom: 1px solid #3c6e47;
-            margin-bottom: 20px;
+
+        .sidebar-header {
+            padding: 0 24px 25px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
         }
-        .logo-area h3 {
+
+        .sidebar-header h2 {
             font-size: 26px;
             font-weight: 700;
-            letter-spacing: 1px;
-            color: #e9f5e3;
-        }
-        .logo-area p {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            margin: 4px 12px;
-            border-radius: 16px;
+            gap: 10px;
+        }
+
+        .sidebar-header p {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .nav-item {
+            padding: 14px 24px;
+            margin: 5px 12px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.3s;
             font-weight: 500;
         }
-        .nav-item i {
-            width: 24px;
-            font-size: 1.2rem;
+
+        .nav-item:hover {
+            background: rgba(46, 204, 113, 0.2);
         }
-        .nav-item.active, .nav-item:hover {
-            background: #2f6b41;
-            color: white;
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
         }
-        /* main content */
+
+        /* Main Content */
         .main-content {
-            flex: 1;
-            overflow-y: auto;
-            background: #f4faf0;
-            padding: 20px 28px;
+            margin-left: 280px;
+            padding: 25px 30px;
+            min-height: 100vh;
         }
-        /* header welcome */
+
+        /* Welcome Card */
         .welcome-card {
             background: white;
             border-radius: 28px;
-            padding: 20px 28px;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.05);
-            margin-bottom: 24px;
+            padding: 28px 32px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }
+
         .datetime {
-            font-size: 1.6rem;
+            font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, #d4e6c3, #b3d9a0);
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 40px;
-            color: #1e4620;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
+
+        /* Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4,1fr);
-            gap: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 22px;
             margin-bottom: 30px;
         }
+
         .stat-card {
-            border-radius: 28px;
-            padding: 20px;
-            text-align: center;
-            color: #1e2f1a;
-            font-weight: bold;
-            box-shadow: 0 8px 12px rgba(0,0,0,0.05);
+            border-radius: 24px;
+            padding: 24px;
+            transition: transform 0.3s;
+            cursor: pointer;
         }
-        .stat-card h3 { font-size: 2rem; margin-bottom: 8px; }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card h3 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        /* Chart */
         .chart-container {
             background: white;
             border-radius: 28px;
-            padding: 18px;
+            padding: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 5px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }
-        canvas { max-height: 260px; width: 100%; }
-        /* kelas section */
-        .kelas-section {
+
+        canvas {
+            max-height: 300px;
+        }
+
+        /* Table Styles */
+        .data-table {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 15px;
+            background: #f0faf4;
+            color: #1a5c3a;
+            font-weight: 700;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eef2ef;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-selesai {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-belum {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Mapel Section */
+        .kelas-container {
             background: white;
             border-radius: 28px;
-            padding: 20px;
-            margin-top: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
         }
+
+        .kelas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eef2ef;
+        }
+
         .kelas-title {
-            font-size: 1.6rem;
+            font-size: 22px;
             font-weight: 700;
-            margin: 20px 0 12px 0;
-            color: #27632e;
+            color: #1a5c3a;
         }
+
         .mapel-grid {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 12px;
-            margin: 15px 0;
-            align-items: center;
+            margin: 20px 0;
         }
+
         .mapel-check {
-            background: #eef5e9;
-            padding: 8px 18px;
-            border-radius: 40px;
+            background: #f8faf8;
+            padding: 10px 16px;
+            border-radius: 30px;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-weight: 500;
-        }
-        .btn-save-kelas {
-            background: #2e6b3c;
-            border: none;
-            color: white;
-            padding: 8px 28px;
-            border-radius: 60px;
             cursor: pointer;
-            margin: 15px 0;
-            font-weight: bold;
+            transition: all 0.2s;
+            border: 1px solid #e0ebe4;
         }
-        .btn-select-all {
-            background: #b3cf9b;
+
+        .mapel-check:hover {
+            background: #e8f3ec;
+            border-color: #27ae60;
+        }
+
+        .mapel-check input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #27ae60;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            color: white;
             border: none;
-            padding: 6px 20px;
+            padding: 10px 24px;
             border-radius: 30px;
-            margin-right: 15px;
-            cursor: pointer;
             font-weight: 600;
-        }
-        .laporan-btn {
-            background: #1f5932;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 60px;
-            font-weight: bold;
             cursor: pointer;
-            margin-bottom: 18px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
+            transition: all 0.3s;
         }
-        footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6c8b6a; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        hr { margin: 16px 0; }
+
+        .btn-secondary {
+            background: #e8f3ec;
+            color: #1a5c3a;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-pdf {
+            background: #dc3545;
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .filter-info {
+            background: #e8f5e9;
+            padding: 12px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar-header h2 span, .sidebar-header p, .nav-item span {
+                display: none;
+            }
+            .main-content {
+                margin-left: 80px;
+            }
+            .nav-item {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
-<div id="loginPage" class="login-container">
+<!-- Login Page -->
+<div id="loginPage" class="login-overlay">
     <div class="login-card">
-        <h2>🌿 Tam-taman</h2>
+        <div class="login-logo">
+            <i class="fas fa-seedling"></i>
+        </div>
+        <h1>Tam-taman</h1>
         <p>Validasi Syarat Keikutsertaan Ujian</p>
-        <div class="input-group">
+        <div class="input-field">
             <label><i class="fas fa-user"></i> Username</label>
-            <input type="text" id="loginUser" placeholder="admin">
+            <input type="text" id="username" placeholder="admin" value="admin">
         </div>
-        <div class="input-group">
+        <div class="input-field">
             <label><i class="fas fa-lock"></i> Password</label>
-            <input type="password" id="loginPass" placeholder="••••••">
+            <input type="password" id="password" placeholder="••••••" value="admin123">
         </div>
-        <button class="login-btn" onclick="doLogin()">Masuk Dashboard <i class="fas fa-arrow-right"></i></button>
+        <button class="login-btn" onclick="login()">
+            <i class="fas fa-arrow-right-to-bracket"></i> Masuk Dashboard
+        </button>
     </div>
 </div>
 
-<!-- MAIN APP -->
-<div id="mainApp" class="app-wrapper">
-    <div class="dashboard-layout">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="logo-area">
-                <h3><i class="fas fa-seedling"></i> Tam-taman</h3>
-                <p>Verifikasi Ujian Santri</p>
-            </div>
-            <div class="nav-item active" data-tab="dashboard">
-                <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-            </div>
-            <div class="nav-item" data-tab="datasantri">
-                <i class="fas fa-users"></i> <span>Data Santri</span>
-            </div>
-            <div class="nav-item" data-tab="mapel">
-                <i class="fas fa-book-open"></i> <span>Mapel per Kelas</span>
-            </div>
-            <div class="nav-item" data-tab="laporan">
-                <i class="fas fa-file-alt"></i> <span>Laporan PDF</span>
-            </div>
+<!-- Main App -->
+<div id="appContainer" class="app-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-seedling"></i> <span>Tam-taman</span></h2>
+            <p><span>Pesantren Digital</span></p>
         </div>
+        <div class="nav-item active" onclick="changeTab('dashboard')">
+            <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="changeTab('santri')">
+            <i class="fas fa-users"></i> <span>Data Santri</span>
+        </div>
+        <div class="nav-item" onclick="changeTab('mapel')">
+            <i class="fas fa-book"></i> <span>Validasi Mapel</span>
+        </div>
+        <div class="nav-item" onclick="changeTab('laporan')">
+            <i class="fas fa-file-pdf"></i> <span>Laporan PDF</span>
+        </div>
+    </div>
 
-        <!-- MAIN DASHBOARD AREA -->
-        <div class="main-content" id="mainContent">
-            <!-- konten dinamis via JS -->
-        </div>
+    <div class="main-content" id="mainContent">
+        <!-- Dynamic Content -->
     </div>
 </div>
 
 <script>
-    // ---------- DATA MOCK SANTRI ----------
-    let totalSantri = 145;
-    let selesaiCount = 0;      // dari validasi centang tersimpan
-    let dalamProses = 0;
-    let belumCount = totalSantri;
-
-    // struktur penyimpanan validasi: key = "Kelas X - mapel" per siswa? Karena syarat keikutsertaan per mapel,
-    // lebih sederhana: tiap santri memiliki array progress, namun pada demo kita simpan persetujuan mapel secara kolektif.
-    // Untuk kebutuhan tampilan total "Selesai" secara otomatis jika semua mapel kelas tertentu dicentang per santri.
-    // Namun agar aplikasi fungsional: kita buat object "kelasValidation" menyimpan status centang tiap mapel di tiap kelas.
-    // lalu hitung jumlah santri yang telah memenuhi semua mapel berdasarkan kelas.
-    // karena data santri punya kelas masing-masing, kita perlu mapping santri dengan kelasnya.
-    let santriList = [
-        { nama: "Ahmad Zaki", kelas: "Kelas 1", status: "Belum" }, { nama: "Fatimah Azzahra", kelas: "Kelas 1", status: "Belum" },
-        { nama: "Yusuf Rahman", kelas: "Kelas 2", status: "Belum" }, { nama: "Maryam Hasanah", kelas: "Kelas 2", status: "Belum" },
-        { nama: "Umar Khair", kelas: "Kelas 3", status: "Belum" }, { nama: "Aisyah Putri", kelas: "Kelas 3", status: "Belum" },
-        { nama: "Hamzah Al-Ghifari", kelas: "Kelas 4A", status: "Belum" },{ nama: "Sofiyah Nur", kelas: "Kelas 4A", status: "Belum" },
-        { nama: "Ibrahim Luthfi", kelas: "Kelas 4B", status: "Belum" },{ nama: "Hafshah", kelas: "Kelas 4B", status: "Belum" },
-        { nama: "Zaid bin Tsabit", kelas: "Kelas 5A", status: "Belum" },{ nama: "Ruqayyah", kelas: "Kelas 5A", status: "Belum" },
-        { nama: "Sa'ad bin Abi", kelas: "Kelas 5B", status: "Belum" },{ nama: "Khadijah", kelas: "Kelas 5B", status: "Belum" },
-        { nama: "Bilal bin Rabbah", kelas: "Kelas 6A", status: "Belum" },{ nama: "Sumayyah", kelas: "Kelas 6A", status: "Belum" },
-        { nama: "Abu Bakar", kelas: "Kelas 6B", status: "Belum" },{ nama: "Ummu Kultsum", kelas: "Kelas 6B", status: "Belum" }
+    // Data Santri
+    let santriData = [
+        { id: 1, nama: "Ahmad Faiz bin Abdullah", kelas: "Kelas 1", status: "Belum" },
+        { id: 2, nama: "Fatimah Zahra binti Yusuf", kelas: "Kelas 1", status: "Belum" },
+        { id: 3, nama: "Muhammad Rizki al-Ghifari", kelas: "Kelas 2", status: "Belum" },
+        { id: 4, nama: "Aisyah Nurul Hidayah", kelas: "Kelas 2", status: "Belum" },
+        { id: 5, nama: "Umar Faruq bin Hasan", kelas: "Kelas 3", status: "Belum" },
+        { id: 6, nama: "Khadijah binti Umar", kelas: "Kelas 3", status: "Belum" },
+        { id: 7, nama: "Zaid bin Tsabit", kelas: "Kelas 4A", status: "Belum" },
+        { id: 8, nama: "Ruqayyah binti Malik", kelas: "Kelas 4A", status: "Belum" },
+        { id: 9, nama: "Bilal bin Rabbah", kelas: "Kelas 4B", status: "Belum" },
+        { id: 10, nama: "Sumayyah binti Khayyat", kelas: "Kelas 4B", status: "Belum" },
+        { id: 11, nama: "Abdurrahman bin Auf", kelas: "Kelas 5A", status: "Belum" },
+        { id: 12, nama: "Hafshah binti Umar", kelas: "Kelas 5A", status: "Belum" },
+        { id: 13, nama: "Sa'ad bin Abi Waqqas", kelas: "Kelas 5B", status: "Belum" },
+        { id: 14, nama: "Ummu Kultsum binti Muhammad", kelas: "Kelas 5B", status: "Belum" },
+        { id: 15, nama: "Abu Ubaidah bin Jarrah", kelas: "Kelas 6A", status: "Belum" },
+        { id: 16, nama: "Maryam binti Imran", kelas: "Kelas 6A", status: "Belum" },
+        { id: 17, nama: "Khalid bin Walid", kelas: "Kelas 6B", status: "Belum" },
+        { id: 18, nama: "Nusaybah binti Ka'ab", kelas: "Kelas 6B", status: "Belum" }
     ];
-    // untuk demo 18 santri total, totalSantri=18, selesaiCount diupdate
-    
-    // data master mapel tiap kelas sesuai permintaan
-    const masterMapel = {
-        "Kelas 1": ["Akhlak","B. Arab","Fikih","Hadits","Nahwu","Shorof","Tajwid","Tauhid"],
-        "Kelas 2": ["Akhlak","B. Arab","Fikih","Hadits","Nahwu","Shorof","Siroh","Tauhid"],
-        "Kelas 3": ["Akhlak","B. Arab","Fikih","Hadits","Nahwu","Shorof","Siroh","Tauhid"],
-        "Kelas 4A": ["B. Arab","Balaghoh","Fikih","Mustholah H","Nahwu","Qowaid F","Ushul F"],
-        "Kelas 4B": ["Akhlak","B. Arab","Fikih","Hadits","Nahwu","Siroh","Tauhid"],
-        "Kelas 5A": ["B. Arab","Balaghoh","Faroid","Fikih","Mustholah H","Nahwu","Qowaid F","Ushul F"],
-        "Kelas 5B": ["Akhlak","B. Arab","Faroid","Fikih","Hadits","Mustholah H","Nahwu","Qowaid F","Siroh","Tafsir","Ushul Fikih"],
-        "Kelas 6A": ["B. Arab","Balaghoh","Faroid","Fikih","Hadits","Mustholah H","Nahwu","Qowaid F","Tafsir","Ushul F"],
-        "Kelas 6B": ["Akhlak","B. Arab","Balaghoh","Faroid","Fikih","Hadits","Mustholah H","Qowaid F","Tafsir","Ushul F","Nahwu"]
+
+    // Mapel per Kelas
+    const mapelPerKelas = {
+        "Kelas 1": ["Akhlak", "B. Arab", "Fikih", "Hadits", "Nahwu", "Shorof", "Tajwid", "Tauhid"],
+        "Kelas 2": ["Akhlak", "B. Arab", "Fikih", "Hadits", "Nahwu", "Shorof", "Siroh", "Tauhid"],
+        "Kelas 3": ["Akhlak", "B. Arab", "Fikih", "Hadits", "Nahwu", "Shorof", "Siroh", "Tauhid"],
+        "Kelas 4A": ["B. Arab", "Balaghoh", "Fikih", "Mustholah H", "Nahwu", "Qowaid F", "Ushul F"],
+        "Kelas 4B": ["Akhlak", "B. Arab", "Fikih", "Hadits", "Nahwu", "Siroh", "Tauhid"],
+        "Kelas 5A": ["B. Arab", "Balaghoh", "Faroid", "Fikih", "Mustholah H", "Nahwu", "Qowaid F", "Ushul F"],
+        "Kelas 5B": ["Akhlak", "B. Arab", "Faroid", "Fikih", "Hadits", "Mustholah H", "Nahwu", "Qowaid F", "Siroh", "Tafsir", "Ushul Fikih"],
+        "Kelas 6A": ["B. Arab", "Balaghoh", "Faroid", "Fikih", "Hadits", "Mustholah H", "Nahwu", "Qowaid F", "Tafsir", "Ushul F"],
+        "Kelas 6B": ["Akhlak", "B. Arab", "Balaghoh", "Faroid", "Fikih", "Hadits", "Mustholah H", "Qowaid F", "Tafsir", "Ushul F", "Nahwu"]
     };
-    
-    // object status centang per kelas & mapel: { "Kelas 1": { "Akhlak": true, ... } }
-    let validationStatus = {};
-    // inisialisasi semua false
-    function initValidation() {
-        for (let kelas in masterMapel) {
-            if (!validationStatus[kelas]) validationStatus[kelas] = {};
-            masterMapel[kelas].forEach(mapel => {
-                if (validationStatus[kelas][mapel] === undefined) validationStatus[kelas][mapel] = false;
+
+    // Status Validasi Mapel { kelas: { mapel: boolean } }
+    let validasiStatus = {};
+
+    // Inisialisasi validasi
+    function initValidasi() {
+        for (let kelas in mapelPerKelas) {
+            if (!validasiStatus[kelas]) validasiStatus[kelas] = {};
+            mapelPerKelas[kelas].forEach(mapel => {
+                validasiStatus[kelas][mapel] = validasiStatus[kelas][mapel] || false;
             });
         }
     }
-    initValidation();
-    
-    // hitung ulang selesai, proses, belum berdasarkan santri dan status kelulusan seluruh mapel per kelas
-    function recalcProgress() {
-        // syarat selesai: semua mapel di kelasnya sudah dicentang true
-        let finished = 0;
-        santriList.forEach(s => {
-            const kelas = s.kelas;
-            const requiredMapels = masterMapel[kelas];
-            if (!requiredMapels) return;
-            const allChecked = requiredMapels.every(mapel => validationStatus[kelas]?.[mapel] === true);
-            if (allChecked) {
-                s.status = "Selesai";
-                finished++;
-            } else {
-                s.status = "Belum";
+    initValidasi();
+
+    // Update status santri berdasarkan validasi
+    function updateStatusSantri() {
+        let selesai = 0;
+        santriData.forEach(santri => {
+            const mapels = mapelPerKelas[santri.kelas];
+            if (mapels) {
+                const allComplete = mapels.every(mapel => validasiStatus[santri.kelas][mapel] === true);
+                santri.status = allComplete ? "Selesai" : "Belum";
+                if (allComplete) selesai++;
             }
         });
-        selesaiCount = finished;
-        belumCount = santriList.length - selesaiCount;
-        dalamProses = 0; // sederhana: tidak ada intermediate, bisa dimasukkan 0
-        // update UI jika dashboard aktif
-        updateDashboardStats();
-        updateChart();
+        return selesai;
     }
-    
-    // Fungsi simpan centang (per kelas) update status & recalc
-    function saveValidationForClass(kelas) {
-        // validationStatus sudah terikat dengan checkbox event
-        recalcProgress();
-        alert(`✅ Validasi untuk ${kelas} disimpan. Status kelulusan diperbarui.`);
-        renderMapelPage(); // refresh tampilan mapel
-        if (document.querySelector('.nav-item.active')?.dataset.tab === 'dashboard') renderDashboard();
-    }
-    
-    function setAllMapelInClass(kelas, checked) {
-        const mapels = masterMapel[kelas];
-        mapels.forEach(m => { validationStatus[kelas][m] = checked; });
-        // re-render kelas yang bersangkutan
-        renderMapelPage();
-    }
-    
-    // ---------- RENDER FUNCTIONS ----------
+
+    // Render Dashboard
     function renderDashboard() {
-        const container = document.getElementById('mainContent');
         const now = new Date();
         const hari = now.toLocaleDateString('id-ID', { weekday: 'long' });
         const tanggal = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-        const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second:'2-digit' });
-        container.innerHTML = `
+        const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        const selesai = updateStatusSantri();
+        const total = santriData.length;
+        const belum = total - selesai;
+        const persenSelesai = total > 0 ? ((selesai / total) * 100).toFixed(1) : 0;
+        
+        const html = `
             <div class="welcome-card">
-                <div class="flex-between"><span class="datetime"><i class="far fa-calendar-alt"></i> ${hari}, ${tanggal} | 🕒 ${jam}</span></div>
-                <h2 style="margin-top: 15px; color:#2b5938;">🌱 Selamat datang, Admin Tam-taman</h2>
-                <p>Validasi kelulusan syarat ujian santri</p>
+                <div class="datetime">
+                    <i class="far fa-calendar-alt"></i> ${hari}, ${tanggal} | <i class="far fa-clock"></i> ${jam}
+                </div>
+                <h2 style="margin-top: 20px; color: #1a5c3a;">Selamat datang di Tam-taman</h2>
+                <p style="color: #6b8c7a;">Sistem Validasi Syarat Keikutsertaan Ujian Pondok Pesantren</p>
             </div>
-            <div class="stats-grid" id="statsGrid"></div>
+            
+            <div class="stats-grid">
+                <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div class="icon"><i class="fas fa-user-graduate"></i></div>
+                    <h3>${total}</h3>
+                    <p>Total Santri</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <div class="icon"><i class="fas fa-check-circle"></i></div>
+                    <h3>${selesai}</h3>
+                    <p>Selesai</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                    <div class="icon"><i class="fas fa-spinner"></i></div>
+                    <h3>${total - selesai - 0}</h3>
+                    <p>Dalam Proses</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
+                    <div class="icon"><i class="fas fa-hourglass"></i></div>
+                    <h3>${belum}</h3>
+                    <p>Belum</p>
+                </div>
+            </div>
+            
             <div class="chart-container">
-                <h3><i class="fas fa-chart-pie"></i> Persentase Kelulusan Syarat Ujian</h3>
-                <canvas id="progressChart" width="400" height="200"></canvas>
+                <h3 style="margin-bottom: 20px;"><i class="fas fa-chart-pie"></i> Grafik Pencapaian Kelulusan</h3>
+                <canvas id="statusChart"></canvas>
+                <div style="text-align: center; margin-top: 15px;">
+                    <p style="font-weight: 600;">Persentase Selesai: ${persenSelesai}%</p>
+                </div>
             </div>
         `;
-        updateDashboardStats();
-        initChart();
-    }
-    
-    function updateDashboardStats() {
-        const grid = document.getElementById('statsGrid');
-        if(!grid) return;
-        grid.innerHTML = `
-            <div class="stat-card" style="background:#c8e6d9;"><i class="fas fa-users fa-2x"></i><h3>${totalSantri}</h3><p>Total Santri</p></div>
-            <div class="stat-card" style="background:#b9f6ca;"><i class="fas fa-check-circle"></i><h3>${selesaiCount}</h3><p>Selesai ✅</p></div>
-            <div class="stat-card" style="background:#ffe0b5;"><i class="fas fa-spinner"></i><h3>${dalamProses}</h3><p>Dalam Proses</p></div>
-            <div class="stat-card" style="background:#ffcdd2;"><i class="fas fa-hourglass-half"></i><h3>${belumCount}</h3><p>Belum</p></div>
-        `;
-    }
-    
-    let chartInstance;
-    function initChart() {
-        const ctx = document.getElementById('progressChart')?.getContext('2d');
-        if(!ctx) return;
-        if(chartInstance) chartInstance.destroy();
-        const persenSelesai = ((selesaiCount/totalSantri)*100).toFixed(1);
-        const persenBelum = ((belumCount/totalSantri)*100).toFixed(1);
-        chartInstance = new Chart(ctx, {
+        
+        document.getElementById('mainContent').innerHTML = html;
+        
+        // Buat chart
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
             type: 'doughnut',
-            data: { labels: [`Selesai (${persenSelesai}%)`, `Belum (${persenBelum}%)`], datasets: [{ data: [selesaiCount, belumCount], backgroundColor: ['#4caf50','#ff8a65'], borderWidth: 0 }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            data: {
+                labels: ['Selesai', 'Belum'],
+                datasets: [{
+                    data: [selesai, belum],
+                    backgroundColor: ['#27ae60', '#e74c3c'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 14, family: 'Poppins' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw} santri (${((context.raw/total)*100).toFixed(1)}%)`;
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
-    function updateChart() { if(chartInstance){ chartInstance.data.datasets[0].data = [selesaiCount, belumCount]; chartInstance.update();} else initChart();}
-    
+
+    // Render Data Santri
     function renderDataSantri() {
-        const container = document.getElementById('mainContent');
-        container.innerHTML = `<div class="kelas-section"><h2><i class="fas fa-users"></i> Data Santri & Status Kelulusan</h2><table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#dcedbc;"><th>Nama</th><th>Kelas</th><th>Status</th></tr></thead><tbody>
-            ${santriList.map(s => `<tr><td>${s.nama}</td><td>${s.kelas}</td><td style="color:${s.status==='Selesai'?'green':'orange'}"><b>${s.status}</b></td></tr>`).join('')}
-        </tbody></table><hr><p><i class="fas fa-info-circle"></i> Status "Selesai" otomatis jika semua mapel di kelasnya telah dicentang & disimpan.</p></div>`;
+        updateStatusSantri();
+        let html = `
+            <div class="data-table">
+                <h2 style="margin-bottom: 20px;"><i class="fas fa-users"></i> Data Seluruh Santri</h2>
+                <div class="filter-info">
+                    <i class="fas fa-info-circle"></i> Total Santri: ${santriData.length} | Selesai: ${santriData.filter(s => s.status === 'Selesai').length} | Belum: ${santriData.filter(s => s.status === 'Belum').length}
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>No</th><th>Nama Santri</th><th>Kelas</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        santriData.forEach((santri, index) => {
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><i class="fas fa-user-circle"></i> ${santri.nama}</td>
+                    <td>${santri.kelas}</td>
+                    <td><span class="status-badge ${santri.status === 'Selesai' ? 'status-selesai' : 'status-belum'}">${santri.status}</span></td>
+                </tr>
+            `;
+        });
+        
+        html += `</tbody></table></div>`;
+        document.getElementById('mainContent').innerHTML = html;
     }
-    
-    function renderMapelPage() {
-        let html = `<div class="kelas-section"><h2><i class="fas fa-chalkboard-teacher"></i> Validasi Syarat Ujian per Kelas</h2><p>Centang mapel yang telah tuntas, lalu klik SIMPAN per kelas.</p>`;
-        for (let kelas in masterMapel) {
-            const mapels = masterMapel[kelas];
-            html += `<div style="margin-bottom: 28px; border-bottom:1px solid #cde0cd; padding-bottom:18px;">
-                        <h3 class="kelas-title">📘 ${kelas}</h3>
-                        <div class="mapel-grid" id="grid-${kelas.replace(/\s/g,'')}">`;
+
+    // Render Validasi Mapel
+    function renderValidasiMapel() {
+        let html = `<h2 style="margin-bottom: 20px;"><i class="fas fa-check-double"></i> Validasi Syarat Ujian Per Kelas</h2>`;
+        
+        for (let kelas in mapelPerKelas) {
+            const mapels = mapelPerKelas[kelas];
+            html += `
+                <div class="kelas-container" id="kelas-${kelas.replace(/\s/g, '')}">
+                    <div class="kelas-header">
+                        <div class="kelas-title"><i class="fas fa-chalkboard"></i> ${kelas}</div>
+                        <div class="btn-group">
+                            <button class="btn-secondary" onclick="selectAllMapel('${kelas}', true)"><i class="fas fa-check-double"></i> Centang Semua</button>
+                            <button class="btn-secondary" onclick="selectAllMapel('${kelas}', false)"><i class="fas fa-times"></i> Hapus Semua</button>
+                        </div>
+                    </div>
+                    <div class="mapel-grid" id="grid-${kelas.replace(/\s/g, '')}">
+            `;
+            
             mapels.forEach(mapel => {
-                const isChecked = validationStatus[kelas]?.[mapel] || false;
-                html += `<label class="mapel-check"><input type="checkbox" data-kelas="${kelas}" data-mapel="${mapel}" ${isChecked ? 'checked' : ''}> ${mapel}</label>`;
+                const isChecked = validasiStatus[kelas][mapel] || false;
+                html += `
+                    <label class="mapel-check">
+                        <input type="checkbox" data-kelas="${kelas}" data-mapel="${mapel}" ${isChecked ? 'checked' : ''}>
+                        <span>${mapel}</span>
+                    </label>
+                `;
             });
-            html += `</div><div><button class="btn-select-all" onclick="setAllMapelInClass('${kelas}', true)">✅ Centang Semua</button>
-                     <button class="btn-select-all" style="background:#e0cfb1;" onclick="setAllMapelInClass('${kelas}', false)">⬜ Hapus Semua</button>
-                     <button class="btn-save-kelas" onclick="saveValidationForClass('${kelas}')"><i class="fas fa-save"></i> Simpan ${kelas}</button></div></div>`;
+            
+            html += `
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="simpanValidasi('${kelas}')"><i class="fas fa-save"></i> Simpan Validasi ${kelas}</button>
+                    </div>
+                </div>
+            `;
         }
-        html += `</div>`;
-        container.innerHTML = html;
-        // attach event listeners untuk checkbox individu
-        document.querySelectorAll('.mapel-check input').forEach(chk => {
-            chk.addEventListener('change', (e) => {
-                const kelas = e.target.dataset.kelas;
-                const mapel = e.target.dataset.mapel;
-                validationStatus[kelas][mapel] = e.target.checked;
-                // tidak langsung recalc sampai simpan
+        
+        document.getElementById('mainContent').innerHTML = html;
+        
+        // Attach event listeners
+        document.querySelectorAll('.mapel-check input').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const kelas = this.dataset.kelas;
+                const mapel = this.dataset.mapel;
+                validasiStatus[kelas][mapel] = this.checked;
             });
         });
     }
-    
-    function generateLaporanHTML() {
-        let rows = '';
-        santriList.forEach(s => {
-            let semuaCentang = masterMapel[s.kelas]?.every(m => validationStatus[s.kelas]?.[m] === true);
-            rows += `<tr><td>${s.nama}</td><td>${s.kelas}</td><td>${semuaCentang ? '✅ SELESAI' : '❌ BELUM'}</td></tr>`;
+
+    // Fungsi global untuk select all
+    window.selectAllMapel = function(kelas, checked) {
+        const mapels = mapelPerKelas[kelas];
+        mapels.forEach(mapel => {
+            validasiStatus[kelas][mapel] = checked;
         });
-        const dateNow = new Date().toLocaleString('id-ID');
-        return `
-        <html><head><meta charset="UTF-8"><title>Laporan Tam-taman</title><style>body{font-family:Inter, sans-serif; padding:30px} h2{color:#2b6e3c} table{border-collapse:collapse; width:100%} th,td{border:1px solid #aaa; padding:8px; text-align:left} th{background:#c8e6d9}</style></head>
-        <body><h2>🌿 Tam-taman - Laporan Validasi Syarat Ujian</h2><p>Tanggal Cetak: ${dateNow}</p><p>Total Santri: ${totalSantri} | Selesai: ${selesaiCount} | Belum: ${belumCount}</p>
-        <table><thead><tr><th>Nama Santri</th><th>Kelas</th><th>Status Kelulusan Syarat</th></tr></thead><tbody>${rows}</tbody></table>
-        <p><i>*Selesai = semua mapel di kelasnya telah divalidasi centang semua dan disimpan.</i></p></body></html>`;
-    }
-    
-    function renderLaporanPage() {
-        const container = document.getElementById('mainContent');
-        container.innerHTML = `<div class="kelas-section"><h2><i class="fas fa-download"></i> Cetak Laporan PDF</h2>
-        <button class="laporan-btn" id="downloadPdfBtn"><i class="fas fa-file-pdf"></i> Unduh Laporan PDF Lengkap</button>
-        <div id="pdfPreview" style="background:#fef9e6; border-radius:24px; padding:16px; margin-top:20px; max-height:400px; overflow:auto;">
-        ${generateLaporanHTML()}
-        </div></div>`;
-        document.getElementById('downloadPdfBtn')?.addEventListener('click', () => {
-            const element = document.getElementById('pdfPreview');
-            const opt = { margin: [0.5,0.5,0.5,0.5], filename: `Laporan_Tam_taman_${new Date().toISOString().slice(0,19)}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
-            html2pdf().set(opt).from(element).save();
+        
+        // Update UI checkboxes
+        const container = document.getElementById(`grid-${kelas.replace(/\s/g, '')}`);
+        if (container) {
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = checked;
+            });
+        }
+    };
+
+    // Simpan validasi
+    window.simpanValidasi = function(kelas) {
+        updateStatusSantri();
+        const selesaiCount = santriData.filter(s => s.status === 'Selesai').length;
+        alert(`✅ Validasi ${kelas} berhasil disimpan!\n\nStatus terbaru:\nTotal Santri: ${santriData.length}\nSelesai: ${selesaiCount}\nBelum: ${santriData.length - selesaiCount}`);
+        renderDashboard();
+    };
+
+    // Render Laporan PDF
+    function renderLaporan() {
+        updateStatusSantri();
+        const selesai = santriData.filter(s => s.status === 'Selesai').length;
+        const belum = santriData.length - selesai;
+        const tanggal = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        
+        let html = `
+            <div class="data-table">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="btn-pdf" onclick="downloadPDF()"><i class="fas fa-file-pdf"></i> Unduh Laporan PDF</button>
+                </div>
+                <div id="laporanContent">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1a5c3a;"><i class="fas fa-seedling"></i> Tam-taman</h1>
+                        <h3>LAPORAN VALIDASI SYARAT KEIKUTSERTAAN UJIAN</h3>
+                        <p>Tanggal Cetak: ${tanggal}</p>
+                    </div>
+                    
+                    <div style="background: #f0faf4; padding: 20px; border-radius: 16px; margin-bottom: 25px;">
+                        <h3>Ringkasan Data</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr><td style="padding: 8px;"><strong>Total Santri</strong></td><td>: ${santriData.length} orang</td></tr>
+                            <tr><td style="padding: 8px;"><strong>Selesai (Memenuhi Syarat)</strong></td><td style="color: green;">: ${selesai} orang (${((selesai/santriData.length)*100).toFixed(1)}%)</td></tr>
+                            <tr><td style="padding: 8px;"><strong>Belum Memenuhi Syarat</strong></td><td style="color: red;">: ${belum} orang (${((belum/santriData.length)*100).toFixed(1)}%)</td></tr>
+                        </table>
+                    </div>
+                    
+                    <h3>Detail Data Santri</h3>
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+                        <thead>
+                            <tr style="background: #27ae60; color: white;">
+                                <th style="padding: 10px; border: 1px solid #ddd;">No</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Nama Santri</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Kelas</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+        
+        santriData.forEach((santri, index) => {
+            html += `
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${santri.nama}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${santri.kelas}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${santri.status}</td>
+                </tr>
+            `;
         });
+        
+        html += `
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #999;">
+                        <p>Dicetak melalui Sistem Tam-taman | Validasi Syarat Keikutsertaan Ujian</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('mainContent').innerHTML = html;
     }
-    
-    // navigation
-    function switchTab(tabId) {
-        if(tabId === 'dashboard') renderDashboard();
-        else if(tabId === 'datasantri') renderDataSantri();
-        else if(tabId === 'mapel') renderMapelPage();
-        else if(tabId === 'laporan') renderLaporanPage();
-    }
-    
-    // login logic
-    function doLogin() {
-        const user = document.getElementById('loginUser').value;
-        const pass = document.getElementById('loginPass').value;
-        if(user && pass) { // sederhana, apapun bisa login
+
+    // Download PDF
+    window.downloadPDF = function() {
+        const element = document.getElementById('laporanContent');
+        const opt = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `Laporan_Tam-taman_${new Date().toISOString().slice(0,19)}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, letterRendering: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+        html2pdf().set(opt).from(element).save();
+    };
+
+    // Change Tab
+    window.changeTab = function(tab) {
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        
+        switch(tab) {
+            case 'dashboard':
+                renderDashboard();
+                break;
+            case 'santri':
+                renderDataSantri();
+                break;
+            case 'mapel':
+                renderValidasiMapel();
+                break;
+            case 'laporan':
+                renderLaporan();
+                break;
+        }
+    };
+
+    // Login Function
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        if (username && password) {
             document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'block';
             renderDashboard();
-            attachNavEvents();
-            recalcProgress();
-        } else alert("Masukkan username & password");
+        } else {
+            alert('Masukkan username dan password!');
+        }
     }
-    
-    function attachNavEvents() {
-        document.querySelectorAll('.nav-item').forEach(nav => {
-            nav.addEventListener('click', (e) => {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                nav.classList.add('active');
-                const tab = nav.dataset.tab;
-                switchTab(tab);
-            });
-        });
-    }
-    // inisialisasi recalc
-    window.setAllMapelInClass = setAllMapelInClass;
-    window.saveValidationForClass = saveValidationForClass;
-    recalcProgress();
+
+    // Set default login demo
+    document.getElementById('username').value = 'admin';
+    document.getElementById('password').value = 'admin123';
 </script>
 </body>
 </html>
