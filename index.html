@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tam-taman | Validasi Syarat Keikutsertaan Ujian</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Tam-taman | Validasi Syarat Ujian - Madrasah Diniyah</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -35,13 +35,15 @@
             align-items: center;
             z-index: 1000;
             transition: all 0.5s ease;
+            padding: 20px;
         }
 
         .login-card {
             background: rgba(255, 255, 255, 0.98);
             border-radius: 48px;
-            padding: 50px 45px;
-            width: 460px;
+            padding: 40px 35px;
+            width: 100%;
+            max-width: 460px;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
             animation: fadeInUp 0.6s ease;
@@ -52,7 +54,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .login-logo { font-size: 55px; background: linear-gradient(135deg, #1e8e3e, #0b5e2e); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 15px; }
+        .login-logo { font-size: 55px; color: #1e8e3e; margin-bottom: 15px; }
         .login-card h1 { font-size: 32px; font-weight: 800; color: #1a5c3a; margin-bottom: 8px; }
         .login-card p { color: #6b8c7a; margin-bottom: 35px; font-size: 14px; }
         .input-field { margin-bottom: 22px; text-align: left; }
@@ -60,81 +62,130 @@
         .input-field input { width: 100%; padding: 14px 18px; border: 2px solid #e0ebe4; border-radius: 30px; font-size: 15px; transition: all 0.3s; font-family: 'Inter', sans-serif; }
         .input-field input:focus { outline: none; border-color: #2ecc71; box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1); }
         .login-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #27ae60, #1e8449); color: white; border: none; border-radius: 40px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3); }
 
         /* MAIN APP */
         .app-container { display: none; min-height: 100vh; }
 
-        /* SIDEBAR */
+        /* SIDEBAR - Responsive */
         .sidebar {
             position: fixed;
             left: 0;
             top: 0;
-            width: 280px;
+            width: 260px;
             height: 100%;
             background: linear-gradient(180deg, #0d331f 0%, #082615 100%);
             color: white;
-            padding: 30px 0;
+            padding: 25px 0;
             transition: all 0.3s;
             z-index: 100;
             box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            transform: translateX(0);
         }
-        .sidebar-header { padding: 0 24px 25px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px; }
-        .sidebar-header h2 { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-        .sidebar-header p { font-size: 11px; opacity: 0.7; margin-top: 5px; }
-        .nav-item { padding: 14px 24px; margin: 5px 12px; border-radius: 14px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all 0.3s; font-weight: 500; }
+
+        .sidebar-header { padding: 0 20px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-header h2 { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .sidebar-header p { font-size: 10px; opacity: 0.7; margin-top: 5px; }
+        .nav-item { padding: 12px 20px; margin: 3px 12px; border-radius: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s; font-weight: 500; }
         .nav-item:hover { background: rgba(46, 204, 113, 0.2); }
-        .nav-item.active { background: linear-gradient(135deg, #27ae60, #1e8449); box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); }
+        .nav-item.active { background: linear-gradient(135deg, #27ae60, #1e8449); }
+
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 101;
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 20px;
+        }
 
         /* MAIN CONTENT */
-        .main-content { margin-left: 280px; padding: 25px 30px; min-height: 100vh; }
-        .welcome-card { background: white; border-radius: 28px; padding: 28px 32px; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-        .datetime { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #27ae60, #2ecc71); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-bottom: 30px; }
-        .stat-card { border-radius: 24px; padding: 24px; transition: transform 0.3s; cursor: pointer; }
-        .stat-card:hover { transform: translateY(-5px); }
-        .stat-card .icon { font-size: 40px; margin-bottom: 15px; }
-        .stat-card h3 { font-size: 32px; font-weight: 800; margin-bottom: 5px; }
-        .stat-card p { font-size: 14px; font-weight: 500; opacity: 0.8; }
-        .chart-container { background: white; border-radius: 28px; padding: 25px; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-        canvas { max-height: 300px; width: 100%; }
-        
-        /* TABLE & FORM */
-        .data-card { background: white; border-radius: 28px; padding: 25px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #1a5c3a; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid #e0ebe4; border-radius: 16px; font-family: 'Inter', sans-serif; }
-        .btn-primary { background: linear-gradient(135deg, #27ae60, #1e8449); color: white; border: none; padding: 12px 24px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .btn-danger { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
-        .btn-warning { background: #f39c12; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
-        .btn-secondary { background: #95a5a6; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
-        .search-box { margin-bottom: 20px; display: flex; gap: 10px; }
-        .search-box input { flex: 1; padding: 12px 16px; border: 2px solid #e0ebe4; border-radius: 30px; }
-        
+        .main-content {
+            margin-left: 260px;
+            padding: 20px 25px;
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+
+        /* Cards & Components */
+        .welcome-card { background: white; border-radius: 24px; padding: 20px 25px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .datetime { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, #27ae60, #2ecc71); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 25px; }
+        .stat-card { border-radius: 20px; padding: 20px; transition: transform 0.3s; cursor: pointer; color: white; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card .icon { font-size: 32px; margin-bottom: 10px; }
+        .stat-card h3 { font-size: 28px; font-weight: 800; }
+        .chart-container { background: white; border-radius: 24px; padding: 20px; margin-bottom: 25px; }
+        canvas { max-height: 260px; width: 100%; }
+
+        /* Data Cards */
+        .data-card { background: white; border-radius: 24px; padding: 20px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .btn-primary { background: linear-gradient(135deg, #27ae60, #1e8449); color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-danger { background: #e74c3c; color: white; border: none; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+        .btn-warning { background: #f39c12; color: white; border: none; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+        .btn-secondary { background: #95a5a6; color: white; border: none; padding: 6px 14px; border-radius: 20px; cursor: pointer; }
+
         .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; background: #f0faf4; color: #1a5c3a; font-weight: 700; }
-        td { padding: 12px 15px; border-bottom: 1px solid #eef2ef; }
-        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th { text-align: left; padding: 12px; background: #f0faf4; color: #1a5c3a; font-weight: 700; }
+        td { padding: 10px 12px; border-bottom: 1px solid #eef2ef; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
         .status-selesai { background: #d4edda; color: #155724; }
         .status-belum { background: #f8d7da; color: #721c24; }
-        
-        .kelas-container { background: white; border-radius: 28px; padding: 25px; margin-bottom: 25px; }
-        .kelas-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        .mapel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin: 20px 0; }
-        .mapel-check { background: #f8faf8; padding: 10px 16px; border-radius: 30px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: 1px solid #e0ebe4; }
-        .mapel-check input { width: 18px; height: 18px; cursor: pointer; accent-color: #27ae60; }
-        .btn-pdf { background: #dc3545; color: white; padding: 12px 28px; border: none; border-radius: 30px; font-weight: 700; cursor: pointer; margin-bottom: 20px; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; border-radius: 28px; padding: 30px; width: 500px; max-width: 90%; }
-        
-        @media (max-width: 1024px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .sidebar { width: 80px; }
-            .sidebar-header h2 span, .sidebar-header p, .nav-item span { display: none; }
-            .main-content { margin-left: 80px; }
-            .nav-item { justify-content: center; }
+
+        /* Kelas Container */
+        .kelas-container { background: white; border-radius: 24px; padding: 20px; margin-bottom: 20px; }
+        .kelas-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .kelas-title { font-size: 18px; font-weight: 700; color: #1a5c3a; }
+        .mapel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin: 15px 0; }
+        .mapel-check { background: #f8faf8; padding: 8px 12px; border-radius: 25px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid #e0ebe4; font-size: 13px; }
+        .mapel-check input { width: 16px; height: 16px; cursor: pointer; accent-color: #27ae60; }
+
+        /* Santri list clickable */
+        .santri-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .santri-item:hover { background: #e8f5e9; }
+        .santri-name { font-weight: 500; }
+        .search-input { width: 100%; max-width: 300px; padding: 10px 16px; border: 2px solid #e0ebe4; border-radius: 30px; margin-bottom: 15px; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; border-radius: 28px; padding: 25px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #1a5c3a; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 2px solid #e0ebe4; border-radius: 16px; font-family: 'Inter', sans-serif; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { transform: translateX(-100%); width: 260px; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 60px 15px 20px 15px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .stat-card { padding: 15px; }
+            .stat-card h3 { font-size: 22px; }
+            .datetime { font-size: 16px; }
+            .welcome-card { padding: 15px; }
+            .kelas-header { flex-direction: column; align-items: flex-start; }
+            .mapel-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .btn-primary, .btn-secondary { padding: 8px 16px; font-size: 12px; }
         }
     </style>
 </head>
@@ -143,9 +194,9 @@
 <!-- LOGIN -->
 <div id="loginPage" class="login-overlay">
     <div class="login-card">
-        <div class="login-logo"><i class="fas fa-seedling"></i></div>
+        <div class="login-logo"><i class="fas fa-book-quran"></i></div>
         <h1>Tam-taman</h1>
-        <p>Validasi Syarat Keikutsertaan Ujian</p>
+        <p>Validasi Syarat Keikutsertaan Ujian<br>Madrasah Diniyah</p>
         <div class="input-field"><label><i class="fas fa-user"></i> Username</label><input type="text" id="username" value="admin"></div>
         <div class="input-field"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="password" value="admin123"></div>
         <button class="login-btn" onclick="login()"><i class="fas fa-arrow-right-to-bracket"></i> Masuk Dashboard</button>
@@ -154,8 +205,9 @@
 
 <!-- MAIN APP -->
 <div id="appContainer" class="app-container">
-    <div class="sidebar">
-        <div class="sidebar-header"><h2><i class="fas fa-seedling"></i> <span>Tam-taman</span></h2><p><span>Pesantren Digital</span></p></div>
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header"><h2><i class="fas fa-book-quran"></i> <span>Tam-taman</span></h2><p><span>Madrasah Diniyah</span></p></div>
         <div class="nav-item active" onclick="changeTab('dashboard')"><i class="fas fa-chart-line"></i> <span>Dashboard</span></div>
         <div class="nav-item" onclick="changeTab('santri')"><i class="fas fa-users"></i> <span>Data Santri</span></div>
         <div class="nav-item" onclick="changeTab('validasi')"><i class="fas fa-check-double"></i> <span>Validasi Mapel</span></div>
@@ -168,17 +220,33 @@
 <div id="modalSantri" class="modal">
     <div class="modal-content">
         <h3 style="margin-bottom: 20px;"><i class="fas fa-plus-circle"></i> Tambah Santri Masal</h3>
-        <div class="form-group"><label>Pilih Kelas</label><select id="modalKelas" style="width:100%;padding:10px;border-radius:12px;"></select></div>
-        <div class="form-group"><label>Nama Santri (pisahkan dengan koma)</label><textarea id="modalNama" rows="4" placeholder="Contoh: Ahmad Faiz, Fatimah Zahra, Muhammad Rizki"></textarea></div>
-        <div class="form-group" style="display:flex;gap:10px;justify-content:flex-end;">
+        <div class="form-group">
+            <label>Format Input (Nama | Kelas)</label>
+            <textarea id="modalNamaKelas" rows="6" placeholder="Contoh:&#10;Ahmad Faiz | Kelas 1&#10;Fatimah Zahra | Kelas 1&#10;Muhammad Rizki | Kelas 2&#10;&#10;Kelas yang tersedia:&#10;Kelas 1, Kelas 2, Kelas 3, Kelas 4A, Kelas 4B, Kelas 5A, Kelas 5B, Kelas 6A, Kelas 6B"></textarea>
+            <small style="color: #666;">Format: Nama | Kelas (gunakan tanda pipe |)</small>
+        </div>
+        <div class="form-group" style="display:flex; gap:10px; justify-content:flex-end;">
             <button class="btn-secondary" onclick="closeModal()">Batal</button>
-            <button class="btn-primary" onclick="tambahSantriMasal()">Simpan</button>
+            <button class="btn-primary" onclick="tambahSantriMasal()">Simpan & Kelompokkan</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL VALIDASI SANTRI -->
+<div id="modalValidasiSantri" class="modal">
+    <div class="modal-content" style="max-width: 550px;">
+        <h3 id="validasiSantriNama" style="margin-bottom: 15px;"><i class="fas fa-user-graduate"></i> Validasi Mapel</h3>
+        <p id="validasiSantriKelas" style="margin-bottom: 15px; color: #666;"></p>
+        <div id="validasiMapelList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; margin-bottom: 20px;"></div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button class="btn-secondary" onclick="closeModalValidasi()">Tutup</button>
+            <button class="btn-primary" onclick="simpanValidasiSantri()">Simpan Validasi</button>
         </div>
     </div>
 </div>
 
 <script>
-    // DATA SANTRI AWAL
+    // DATA SANTRI
     let santriData = [
         { id: 1, nama: "Ahmad Faiz bin Abdullah", kelas: "Kelas 1", status: "Belum" },
         { id: 2, nama: "Fatimah Zahra binti Yusuf", kelas: "Kelas 1", status: "Belum" },
@@ -213,7 +281,6 @@
         "Kelas 6B": ["Akhlak","B. Arab","Balaghoh","Faroid","Fikih","Hadits","Mustholah H","Qowaid F","Tafsir","Ushul F","Nahwu"]
     };
 
-    // VALIDASI STATUS MAPEL
     let validasiStatus = {};
     function initValidasi() {
         for (let kelas in mapelPerKelas) {
@@ -223,24 +290,23 @@
     }
     initValidasi();
 
+    let currentValidasiSantriId = null;
     let chartInstance = null;
 
     function updateStatusSantri() {
-        let selesai = 0;
         santriData.forEach(santri => {
             const mapels = mapelPerKelas[santri.kelas];
             if (mapels) {
                 const allComplete = mapels.every(mapel => validasiStatus[santri.kelas]?.[mapel] === true);
                 santri.status = allComplete ? "Selesai" : "Belum";
-                if (allComplete) selesai++;
             }
         });
-        return selesai;
     }
 
     function getStats() {
+        updateStatusSantri();
         const total = santriData.length;
-        const selesai = updateStatusSantri();
+        const selesai = santriData.filter(s => s.status === "Selesai").length;
         const belum = total - selesai;
         return { total, selesai, belum, persenSelesai: total > 0 ? ((selesai / total) * 100).toFixed(1) : 0 };
     }
@@ -255,20 +321,20 @@
         const html = `
             <div class="welcome-card">
                 <div class="datetime"><i class="far fa-calendar-alt"></i> ${hari}, ${tanggal} | <i class="far fa-clock"></i> ${jam}</div>
-                <h2 style="margin-top: 20px; color: #1a5c3a;">🌿 Selamat datang di Tam-taman</h2>
-                <p style="color: #6b8c7a;">Sistem Validasi Syarat Keikutsertaan Ujian Pondok Pesantren</p>
+                <h2 style="margin-top: 15px; color: #1a5c3a;">📖 Selamat datang di Tam-taman</h2>
+                <p style="color: #6b8c7a;">Validasi Syarat Keikutsertaan Ujian - Madrasah Diniyah</p>
             </div>
             <div class="stats-grid">
-                <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;"><div class="icon"><i class="fas fa-user-graduate"></i></div><h3>${total}</h3><p>Total Santri</p></div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white;"><div class="icon"><i class="fas fa-check-circle"></i></div><h3>${selesai}</h3><p>Selesai</p></div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white;"><div class="icon"><i class="fas fa-spinner"></i></div><h3>0</h3><p>Dalam Proses</p></div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;"><div class="icon"><i class="fas fa-hourglass"></i></div><h3>${belum}</h3><p>Belum</p></div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><div class="icon"><i class="fas fa-user-graduate"></i></div><h3>${total}</h3><p>Total Santri</p></div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);"><div class="icon"><i class="fas fa-check-circle"></i></div><h3>${selesai}</h3><p>Selesai</p></div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);"><div class="icon"><i class="fas fa-spinner"></i></div><h3>0</h3><p>Dalam Proses</p></div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);"><div class="icon"><i class="fas fa-hourglass"></i></div><h3>${belum}</h3><p>Belum</p></div>
             </div>
             <div class="chart-container">
-                <h3 style="margin-bottom: 20px;"><i class="fas fa-chart-pie"></i> Grafik Persentasi Kelulusan</h3>
+                <h3 style="margin-bottom: 15px;"><i class="fas fa-chart-pie"></i> Grafik Persentasi Kelulusan</h3>
                 <canvas id="statusChart"></canvas>
                 <div style="text-align: center; margin-top: 20px;">
-                    <div style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #27ae60, #1e8449); border-radius: 50px; color: white;">
+                    <div style="display: inline-block; padding: 12px 25px; background: linear-gradient(135deg, #27ae60, #1e8449); border-radius: 40px; color: white;">
                         <strong>📊 Persentase Selesai: ${persenSelesai}%</strong>
                     </div>
                 </div>
@@ -276,24 +342,24 @@
         `;
         document.getElementById('mainContent').innerHTML = html;
         
-        const ctx = document.getElementById('statusChart').getContext('2d');
-        if (chartInstance) chartInstance.destroy();
-        chartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels: ['Selesai', 'Belum'], datasets: [{ data: [selesai, belum], backgroundColor: ['#27ae60', '#e74c3c'], borderWidth: 0, hoverOffset: 10 }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 14 } } }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw} santri (${((ctx.raw/total)*100).toFixed(1)}%)` } } } }
-        });
+        const ctx = document.getElementById('statusChart')?.getContext('2d');
+        if (ctx) {
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: ['Selesai', 'Belum'], datasets: [{ data: [selesai, belum], backgroundColor: ['#27ae60', '#e74c3c'], borderWidth: 0 }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw} santri (${((ctx.raw/total)*100).toFixed(1)}%)` } } } }
+            });
+        }
     }
 
     function renderDataSantri() {
         updateStatusSantri();
         const html = `
             <div class="data-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                     <h2><i class="fas fa-users"></i> Data Santri</h2>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" onclick="openModalTambah()"><i class="fas fa-plus"></i> Tambah Masal</button>
-                    </div>
+                    <button class="btn-primary" onclick="openModalTambah()"><i class="fas fa-plus"></i> Tambah Masal</button>
                 </div>
                 <div class="table-responsive">
                     <table>
@@ -316,30 +382,34 @@
         document.getElementById('mainContent').innerHTML = html;
     }
 
-    function openModalTambah() {
-        const kelasSelect = document.getElementById('modalKelas');
-        if (kelasSelect) {
-            kelasSelect.innerHTML = Object.keys(mapelPerKelas).map(k => `<option value="${k}">${k}</option>`).join('');
-        }
-        document.getElementById('modalSantri').style.display = 'flex';
-    }
-
-    function closeModal() { document.getElementById('modalSantri').style.display = 'none'; }
+    function openModalTambah() { document.getElementById('modalSantri').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modalSantri').style.display = 'none'; document.getElementById('modalNamaKelas').value = ''; }
 
     function tambahSantriMasal() {
-        const kelas = document.getElementById('modalKelas').value;
-        const namaText = document.getElementById('modalNama').value;
-        const namaList = namaText.split(',').map(n => n.trim()).filter(n => n);
+        const text = document.getElementById('modalNamaKelas').value;
+        const lines = text.split('\n').filter(l => l.trim() && l.includes('|'));
+        let added = 0;
         let maxId = Math.max(...santriData.map(s => s.id), 0);
-        namaList.forEach(nama => {
-            maxId++;
-            santriData.push({ id: maxId, nama: nama, kelas: kelas, status: "Belum" });
+        
+        lines.forEach(line => {
+            const parts = line.split('|').map(p => p.trim());
+            if (parts.length >= 2) {
+                const nama = parts[0];
+                let kelas = parts[1];
+                if (mapelPerKelas[kelas]) {
+                    maxId++;
+                    santriData.push({ id: maxId, nama: nama, kelas: kelas, status: "Belum" });
+                    added++;
+                }
+            }
         });
+        
         closeModal();
-        document.getElementById('modalNama').value = '';
-        renderDataSantri();
-        if (document.querySelector('.nav-item.active')?.innerText.includes('Dashboard')) renderDashboard();
-        else alert(`✅ Berhasil menambahkan ${namaList.length} santri ke ${kelas}`);
+        if (added > 0) {
+            alert(`✅ Berhasil menambahkan ${added} santri dan terkelompokkan berdasarkan kelas!`);
+            renderDataSantri();
+            if (document.querySelector('.nav-item.active')?.innerText.includes('Dashboard')) renderDashboard();
+        } else { alert("Format salah! Gunakan: Nama | Kelas"); }
     }
 
     function editSantri(id) {
@@ -352,23 +422,57 @@
         if (confirm("Yakin hapus santri ini?")) { santriData = santriData.filter(s => s.id !== id); renderDataSantri(); if (document.querySelector('.nav-item.active')?.innerText.includes('Dashboard')) renderDashboard(); }
     }
 
-    let searchTimeout = null;
+    function openValidasiSantri(santriId) {
+        currentValidasiSantriId = santriId;
+        const santri = santriData.find(s => s.id === santriId);
+        document.getElementById('validasiSantriNama').innerHTML = `<i class="fas fa-user-graduate"></i> ${santri.nama}`;
+        document.getElementById('validasiSantriKelas').innerHTML = `Kelas: ${santri.kelas}`;
+        
+        const mapels = mapelPerKelas[santri.kelas];
+        const container = document.getElementById('validasiMapelList');
+        container.innerHTML = mapels.map(mapel => `
+            <label class="mapel-check" style="background: ${validasiStatus[santri.kelas][mapel] ? '#d4edda' : '#f8faf8'}">
+                <input type="checkbox" data-mapel="${mapel}" ${validasiStatus[santri.kelas][mapel] ? 'checked' : ''}> ${mapel}
+            </label>
+        `).join('');
+        
+        document.getElementById('modalValidasiSantri').style.display = 'flex';
+    }
+
+    function closeModalValidasi() { document.getElementById('modalValidasiSantri').style.display = 'none'; currentValidasiSantriId = null; }
+
+    function simpanValidasiSantri() {
+        if (!currentValidasiSantriId) return;
+        const santri = santriData.find(s => s.id === currentValidasiSantriId);
+        const checkboxes = document.querySelectorAll('#validasiMapelList input[type="checkbox"]');
+        const mapels = mapelPerKelas[santri.kelas];
+        checkboxes.forEach((cb, idx) => { validasiStatus[santri.kelas][mapels[idx]] = cb.checked; });
+        
+        updateStatusSantri();
+        closeModalValidasi();
+        alert(`✅ Validasi mapel untuk ${santri.nama} telah disimpan!\nStatus: ${santri.status}`);
+        renderValidasiMapel();
+        if (document.querySelector('.nav-item.active')?.innerText.includes('Dashboard')) renderDashboard();
+    }
+
     function renderValidasiMapel() {
-        let html = `<div class="kelas-container"><h2><i class="fas fa-check-double"></i> Validasi Syarat Ujian</h2>`;
+        updateStatusSantri();
+        let html = `<div class="kelas-container"><h2><i class="fas fa-check-double"></i> Validasi Syarat Ujian</h2><p style="margin-bottom:15px;">Klik nama santri untuk memvalidasi mapel secara individu</p>`;
+        
         for (let kelas in mapelPerKelas) {
             const santriKelas = santriData.filter(s => s.kelas === kelas);
             html += `
-                <div style="margin-top: 30px; border-top: 2px solid #eef2ef; padding-top: 20px;">
+                <div style="margin-top: 25px; border-top: 2px solid #eef2ef; padding-top: 20px;">
                     <div class="kelas-header">
                         <div class="kelas-title"><i class="fas fa-chalkboard"></i> ${kelas} (${santriKelas.length} santri)</div>
-                        <div><button class="btn-secondary" onclick="selectAllMapelKelas('${kelas}', true)">Centang Semua Mapel</button> <button class="btn-secondary" onclick="selectAllMapelKelas('${kelas}', false)">Hapus Semua</button></div>
+                        <div><button class="btn-secondary" onclick="selectAllMapelKelas('${kelas}', true)">✓ Centang Semua Mapel</button> <button class="btn-secondary" onclick="selectAllMapelKelas('${kelas}', false)">✗ Hapus Semua</button></div>
                     </div>
                     <div class="mapel-grid" id="grid-${kelas.replace(/\s/g, '')}">
                         ${mapelPerKelas[kelas].map(mapel => `<label class="mapel-check"><input type="checkbox" data-kelas="${kelas}" data-mapel="${mapel}" ${validasiStatus[kelas][mapel] ? 'checked' : ''}> ${mapel}</label>`).join('')}
                     </div>
-                    <div style="margin: 15px 0;"><input type="text" id="search-${kelas.replace(/\s/g, '')}" placeholder="🔍 Cari nama santri..." style="width: 300px; padding: 10px 16px; border-radius: 30px; border: 2px solid #e0ebe4;"></div>
+                    <input type="text" id="search-${kelas.replace(/\s/g, '')}" class="search-input" placeholder="🔍 Cari nama santri...">
                     <div id="santri-list-${kelas.replace(/\s/g, '')}">
-                        ${santriKelas.map(s => `<div style="padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;"><span><i class="fas fa-user"></i> ${s.nama}</span><span class="status-badge ${s.status === 'Selesai' ? 'status-selesai' : 'status-belum'}">${s.status}</span></div>`).join('')}
+                        ${santriKelas.map(s => `<div class="santri-item" onclick="openValidasiSantri(${s.id})"><span class="santri-name"><i class="fas fa-user"></i> ${s.nama}</span><span class="status-badge ${s.status === 'Selesai' ? 'status-selesai' : 'status-belum'}">${s.status}</span></div>`).join('')}
                     </div>
                     <button class="btn-primary" style="margin-top: 15px;" onclick="simpanValidasiKelas('${kelas}')"><i class="fas fa-save"></i> Simpan Validasi ${kelas}</button>
                 </div>
@@ -385,16 +489,14 @@
                     const santriFilter = santriData.filter(s => s.kelas === kelas && s.nama.toLowerCase().includes(keyword));
                     const container = document.getElementById(`santri-list-${kelas.replace(/\s/g, '')}`);
                     if (container) {
-                        container.innerHTML = santriFilter.map(s => `<div style="padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;"><span><i class="fas fa-user"></i> ${s.nama}</span><span class="status-badge ${s.status === 'Selesai' ? 'status-selesai' : 'status-belum'}">${s.status}</span></div>`).join('') || '<div style="padding: 10px; color: gray;">Tidak ditemukan</div>';
+                        container.innerHTML = santriFilter.map(s => `<div class="santri-item" onclick="openValidasiSantri(${s.id})"><span class="santri-name"><i class="fas fa-user"></i> ${s.nama}</span><span class="status-badge ${s.status === 'Selesai' ? 'status-selesai' : 'status-belum'}">${s.status}</span></div>`).join('') || '<div style="padding: 10px; color: gray;">Tidak ditemukan</div>';
                     }
                 });
             }
         }
         
         document.querySelectorAll('.mapel-check input').forEach(cb => {
-            cb.addEventListener('change', function() {
-                validasiStatus[this.dataset.kelas][this.dataset.mapel] = this.checked;
-            });
+            cb.addEventListener('change', function() { validasiStatus[this.dataset.kelas][this.dataset.mapel] = this.checked; });
         });
     }
 
@@ -418,14 +520,13 @@
         const tanggal = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         const html = `
             <div class="data-card">
-                <div style="text-align: center; margin-bottom: 20px;"><button class="btn-pdf" onclick="downloadPDF()"><i class="fas fa-file-pdf"></i> Unduh Laporan PDF Lengkap</button></div>
+                <div style="text-align: center; margin-bottom: 20px;"><button class="btn-primary" onclick="downloadPDF()" style="background:#dc3545;"><i class="fas fa-file-pdf"></i> Unduh Laporan PDF Lengkap</button></div>
                 <div id="laporanContent">
-                    <div style="text-align: center; margin-bottom: 30px;"><h1 style="color:#1a5c3a;"><i class="fas fa-seedling"></i> Tam-taman</h1><h3>LAPORAN VALIDASI SYARAT KEIKUTSERTAAN UJIAN</h3><p>Tanggal Cetak: ${tanggal}</p></div>
+                    <div style="text-align: center; margin-bottom: 30px;"><h1 style="color:#1a5c3a;"><i class="fas fa-book-quran"></i> Tam-taman</h1><h3>LAPORAN VALIDASI SYARAT UJIAN</h3><p>Madrasah Diniyah</p><p>Tanggal Cetak: ${tanggal}</p></div>
                     <div style="background:#f0faf4; padding:20px; border-radius:16px; margin-bottom:25px;"><h3>Ringkasan Data</h3><table style="width:100%"><tr><td><strong>Total Santri</strong></td><td>: ${total} orang</td></tr><tr><td><strong>Selesai</strong></td><td style="color:green;">: ${selesai} orang (${persenSelesai}%)</td></tr><tr><td><strong>Belum</strong></td><td style="color:red;">: ${belum} orang (${(100-persenSelesai).toFixed(1)}%)</td></tr></table></div>
                     <h3>Detail Data Santri</h3><table style="width:100%; border-collapse:collapse; border:1px solid #ddd;"><thead><tr style="background:#27ae60; color:white;"><th>No</th><th>Nama Santri</th><th>Kelas</th><th>Status</th></tr></thead><tbody>
                         ${santriData.map((s,i) => `<tr><td style="border:1px solid #ddd; padding:8px;">${i+1}</td><td style="border:1px solid #ddd; padding:8px;">${s.nama}</td><td style="border:1px solid #ddd; padding:8px;">${s.kelas}</td><td style="border:1px solid #ddd; padding:8px;">${s.status}</td></tr>`).join('')}
                     </tbody></table>
-                    <div style="margin-top:30px; text-align:center; font-size:12px;"><p>Dicetak melalui Sistem Tam-taman | Validasi Syarat Keikutsertaan Ujian</p></div>
                 </div>
             </div>
         `;
@@ -440,11 +541,14 @@
     window.changeTab = function(tab) {
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         event.currentTarget.classList.add('active');
+        if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
         if (tab === 'dashboard') renderDashboard();
         else if (tab === 'santri') renderDataSantri();
         else if (tab === 'validasi') renderValidasiMapel();
         else if (tab === 'laporan') renderLaporan();
     };
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
     function login() {
         if (document.getElementById('username').value && document.getElementById('password').value) {
@@ -453,12 +557,16 @@
             renderDashboard();
         } else alert('Masukkan username & password');
     }
-    
+
     window.openModalTambah = openModalTambah;
     window.closeModal = closeModal;
     window.tambahSantriMasal = tambahSantriMasal;
     window.editSantri = editSantri;
     window.hapusSantri = hapusSantri;
+    window.openValidasiSantri = openValidasiSantri;
+    window.closeModalValidasi = closeModalValidasi;
+    window.simpanValidasiSantri = simpanValidasiSantri;
+    window.toggleSidebar = toggleSidebar;
 </script>
 </body>
 </html>
