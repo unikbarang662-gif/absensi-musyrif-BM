@@ -69,6 +69,10 @@
         .mapel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
         .mapel-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: white; border-radius: 10px; border: 1px solid #e5e7eb; }
         .dark-mode .mapel-item { background: #16213e; border-color: #2c3e66; }
+        .dashboard-card { transition: transform 0.2s; }
+        .dashboard-card:hover { transform: translateY(-5px); }
+        .stat-card-hafalan { background: linear-gradient(135deg, #2563eb, #1e40af); }
+        .stat-card-mapel { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
     </style>
 </head>
 <body class="bg-gray-100" id="appBody">
@@ -135,15 +139,46 @@
                 </div>
                 <h2 class="text-xl font-bold mb-4" id="welcomeText">Selamat Datang</h2>
                 <div id="notificationArea" class="mb-4"></div>
+                
+                <!-- Statistik Hafalan -->
+                <h3 class="text-lg font-semibold mb-3 text-blue-700"><i class="fas fa-book-open mr-2"></i>📖 Presentasi Hafalan Santri</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    <div class="bg-blue-500 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalSantri">0</div><div>Total Santri</div></div>
-                    <div class="bg-green-500 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalSelesai">0</div><div>Selesai</div></div>
-                    <div class="bg-yellow-500 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalProses">0</div><div>Proses</div></div>
-                    <div class="bg-red-500 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalBelum">0</div><div>Belum</div></div>
+                    <div class="dashboard-card bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalSantriHafalan">0</div><div>Total Santri</div></div>
+                    <div class="dashboard-card bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalLulus">0</div><div>Lulus Hafalan</div></div>
+                    <div class="dashboard-card bg-gradient-to-br from-yellow-500 to-yellow-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalProsesHafalan">0</div><div>Proses Hafalan</div></div>
+                    <div class="dashboard-card bg-gradient-to-br from-red-500 to-red-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalBelumHafalan">0</div><div>Belum Hafalan</div></div>
                 </div>
+                
+                <!-- Statistik Tam-taman (Mapel) -->
+                <h3 class="text-lg font-semibold mb-3 text-purple-700"><i class="fas fa-check-double mr-2"></i>📚 Presentasi Tam-taman (Validasi Mapel)</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                    <div class="dashboard-card bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalSantriMapel">0</div><div>Total Santri</div></div>
+                    <div class="dashboard-card bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalSelesai">0</div><div>Selesai Mapel</div></div>
+                    <div class="dashboard-card bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalProsesMapel">0</div><div>Proses Mapel</div></div>
+                    <div class="dashboard-card bg-gradient-to-br from-orange-500 to-orange-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalBelumMapel">0</div><div>Belum Mapel</div></div>
+                </div>
+                
+                <!-- Grafik dan Diagram -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-xl p-4 shadow">
+                        <h3 class="font-semibold text-center mb-3 text-blue-600">📊 Grafik Status Hafalan</h3>
+                        <canvas id="statusChartHafalan" height="200"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow">
+                        <h3 class="font-semibold text-center mb-3 text-purple-600">📊 Grafik Status Tam-taman (Mapel)</h3>
+                        <canvas id="statusChartMapel" height="200"></canvas>
+                    </div>
+                </div>
+                
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-xl p-4 shadow"><canvas id="statusChart" height="200"></canvas></div>
-                    <div class="bg-white rounded-xl p-4 shadow"><canvas id="nilaiChart" height="200"></canvas></div>
+                    <div class="bg-white rounded-xl p-4 shadow">
+                        <h3 class="font-semibold text-center mb-3 text-blue-600">📈 Diagram Nilai Hafalan</h3>
+                        <canvas id="nilaiChart" height="200"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow">
+                        <h3 class="font-semibold text-center mb-3 text-purple-600">📈 Diagram Progress Mapel</h3>
+                        <canvas id="progressMapelChart" height="200"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -221,12 +256,12 @@
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                         <div class="bg-blue-50 rounded-xl p-4 text-center border"><div class="text-2xl font-bold text-blue-600" id="laporanTotalSantri">0</div><div class="text-sm">Total Santri</div></div>
-                        <div class="bg-green-50 rounded-xl p-4 text-center border"><div class="text-2xl font-bold text-green-600" id="laporanTotalSelesai">0</div><div class="text-sm">Selesai</div></div>
+                        <div class="bg-green-50 rounded-xl p-4 text-center border"><div class="text-2xl font-bold text-green-600" id="laporanTotalLulus">0</div><div class="text-sm">Lulus Hafalan</div></div>
+                        <div class="bg-purple-50 rounded-xl p-4 text-center border"><div class="text-2xl font-bold text-purple-600" id="laporanTotalSelesai">0</div><div class="text-sm">Selesai Mapel</div></div>
                         <div class="bg-yellow-50 rounded-xl p-4 text-center border"><div class="text-2xl font-bold text-yellow-600" id="laporanTotalProses">0</div><div class="text-sm">Proses</div></div>
-                        <div class="bg-red-50 rounded-xl p-4 text-center border"><div class="text-2xl font-bold text-red-600" id="laporanTotalBelum">0</div><div class="text-sm">Belum</div></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div class="border rounded-xl p-4"><h3 class="font-semibold text-center mb-3">Grafik Status Kelulusan</h3><canvas id="laporanStatusChart" height="200"></canvas></div>
+                        <div class="border rounded-xl p-4"><h3 class="font-semibold text-center mb-3">Grafik Status Hafalan</h3><canvas id="laporanStatusChart" height="200"></canvas></div>
                         <div class="border rounded-xl p-4"><h3 class="font-semibold text-center mb-3">Diagram Nilai Hafalan</h3><canvas id="laporanNilaiChart" height="200"></canvas></div>
                     </div>
                     <div class="border rounded-xl overflow-hidden">
@@ -237,14 +272,14 @@
                                     <tr><th class="p-2">No</th><th>Nama</th><th>Kelas</th><th>Nilai Hafalan</th><th>Status Hafalan</th><th>Status Mapel</th></tr>
                                 </thead>
                                 <tbody id="laporanTableFull"></tbody>
-                            <table>
+                            </table>
                         </div>
                     </div>
                     <div class="text-center text-xs text-gray-400 mt-6 pt-4 border-t">Dicetak: <span id="laporanFooterTanggal"></span></div>
                 </div>
             </div>
 
-            <!-- Profil Pondok -->
+            <!-- Profil Pondok - LENGKAP -->
             <div id="pageProfil" class="page hidden">
                 <h2 class="text-xl font-bold mb-4">Profil Pondok Pesantren</h2>
                 <div class="bg-white rounded-xl shadow p-6 max-w-lg">
@@ -260,16 +295,28 @@
                         </div>
                     </div>
                     <div class="space-y-4">
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama Pesantren</label><input type="text" id="profilNama" class="w-full p-3 border rounded-lg" value="Pondok Pesantren Bahrul Maghfiroh"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama Pengasuh</label><input type="text" id="profilPengasuh" class="w-full p-3 border rounded-lg" placeholder="KH. Nama Pengasuh"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama Kepala Pondok</label><input type="text" id="profilKapondok" class="w-full p-3 border rounded-lg" placeholder="Nama Kepala Pondok"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label><textarea id="profilAlamat" rows="3" class="w-full p-3 border rounded-lg" placeholder="Alamat lengkap pesantren"></textarea></div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pesantren</label>
+                            <input type="text" id="profilNama" class="w-full p-3 border rounded-lg" value="Pondok Pesantren Bahrul Maghfiroh">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pengasuh</label>
+                            <input type="text" id="profilPengasuh" class="w-full p-3 border rounded-lg" placeholder="KH. Nama Pengasuh">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kepala Pondok</label>
+                            <input type="text" id="profilKapondok" class="w-full p-3 border rounded-lg" placeholder="Nama Kepala Pondok">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+                            <textarea id="profilAlamat" rows="3" class="w-full p-3 border rounded-lg" placeholder="Alamat lengkap pesantren"></textarea>
+                        </div>
                         <button onclick="saveProfil()" class="btn-primary w-full py-3 rounded-lg"><i class="fas fa-save"></i> Simpan Profil</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Pengaturan -->
+            <!-- Pengaturan - LENGKAP -->
             <div id="pagePengaturan" class="page hidden">
                 <h2 class="text-xl font-bold mb-4">Pengaturan Aplikasi</h2>
                 <div class="bg-white rounded-xl shadow p-6 max-w-lg">
@@ -282,7 +329,7 @@
                     </div>
                     <div class="mb-6 pb-4 border-b">
                         <h3 class="font-semibold mb-3"><i class="fas fa-bell mr-2"></i> Notifikasi</h3>
-                        <p class="text-sm text-gray-500 mb-2">Notifikasi akan muncul ketika santri mencapai kelulusan</p>
+                        <p class="text-sm text-gray-500 mb-2">Notifikasi akan muncul ketika santri mencapai 90% progress</p>
                         <div id="notifikasiList" class="text-sm bg-gray-50 p-3 rounded-lg max-h-40 overflow-y-auto"></div>
                     </div>
                     <div class="mb-6 pb-4 border-b">
@@ -293,6 +340,11 @@
                             <button onclick="restoreData()" class="btn-outline flex-1 py-2 rounded-lg"><i class="fas fa-upload"></i> Restore Data</button>
                         </div>
                         <p class="text-xs text-gray-400 mt-2">File backup berisi semua data: Santri, Hafalan, Mapel, Profil, Logo</p>
+                    </div>
+                    <div class="pt-2">
+                        <h3 class="font-semibold mb-3"><i class="fas fa-info-circle mr-2"></i> Tentang Aplikasi</h3>
+                        <p class="text-sm text-gray-500">Mutqin BM - Sistem Manajemen Kelulusan & Validasi Mapel</p>
+                        <p class="text-sm text-gray-500">Versi 3.0 | Pondok Pesantren Bahrul Maghfiroh</p>
                     </div>
                 </div>
             </div>
@@ -364,12 +416,6 @@ const mapelByKelas = {
 const daftarJuz = ['An-Naba','An-Nazi\'at','Abasa','At-Takwir','Al-Infitar','Al-Mutaffifin','Al-Insyiqaq','Al-Buruj','At-Tariq','Al-A\'la','Al-Ghasyiyah','Al-Fajr','Al-Balad','Asy-Syams','Al-Lail','Ad-Duha','Asy-Syarh','At-Tin','Al-Alaq','Al-Qadr','Al-Bayyinah','Az-Zalzalah','Al-Adiyat','Al-Qari\'ah','At-Takasur','Al-Asr','Al-Humazah','Al-Fil','Quraisy','Al-Ma\'un','Al-Kausar','Al-Kafirun','An-Nasr','Al-Lahab','Al-Ikhlas','Al-Falaq','An-Nas'];
 
 // ==================== FUNGSI HITUNG PROGRESS ====================
-function getTotalItemByKelas(kelas) {
-    let angkaKelas = parseInt(kelas.match(/\d+/)?.[0] || 6);
-    if (angkaKelas <= 3) return 53;
-    return 54;
-}
-
 function hitungProgressMapel(s, kelas) {
     let mapelList = mapelByKelas[kelas] || [];
     if (!s.mapelStatus) s.mapelStatus = {};
@@ -389,7 +435,7 @@ function getStatusMapel(s, kelas) {
 }
 
 function hitungProgressHafalan(s) {
-    let total = getTotalItemByKelas(s.kelas);
+    let total = 54;
     let done = 0;
     if (s.yasin === true) done++;
     if (s.waqiah === true) done++;
@@ -426,14 +472,6 @@ function getStatusHafalan(s) {
     return 'Belum'; 
 }
 
-function getStatusKeseluruhan(s) {
-    let statusHafalan = getStatusHafalan(s);
-    let statusMapel = getStatusMapel(s, s.kelas);
-    if (statusHafalan === 'Lulus' && statusMapel === 'Selesai') return 'Selesai';
-    if (statusHafalan === 'Lulus' || statusMapel === 'Selesai') return 'Proses';
-    return 'Belum';
-}
-
 function getNewSantri() { 
     return { 
         id: Date.now(), nama: '', kelas: '', 
@@ -456,7 +494,7 @@ function backupData() {
             profil: profilData,
             logo: logoBase64,
             backupDate: new Date().toISOString(),
-            version: '2.0'
+            version: '3.0'
         };
         const jsonStr = JSON.stringify(dataToBackup, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -547,7 +585,6 @@ function loadData() {
         updateLogoDisplay(logoBase64); 
     }
     
-    // Inisialisasi mapelStatus untuk santri yang belum punya
     for (let s of santri) {
         if (!s.mapelStatus) s.mapelStatus = {};
     }
@@ -708,7 +745,7 @@ function checkNotifications() {
 }
 
 function exportToExcel() { 
-    let data=santri.map((s,i)=>({ No:i+1, Nama:s.nama, Kelas:s.kelas, Nilai_Hafalan:s.nilaiSurat, Status_Hafalan:getStatusHafalan(s), Status_Mapel:getStatusMapel(s, s.kelas), Status_Keseluruhan:getStatusKeseluruhan(s) })); 
+    let data=santri.map((s,i)=>({ No:i+1, Nama:s.nama, Kelas:s.kelas, Nilai_Hafalan:s.nilaiSurat, Status_Hafalan:getStatusHafalan(s), Status_Mapel:getStatusMapel(s, s.kelas) })); 
     let ws=XLSX.utils.json_to_sheet(data); let wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Data Santri'); 
     XLSX.writeFile(wb,`mutqin_data_${new Date().toISOString().slice(0,10)}.xlsx`); showToast('Export Excel berhasil'); 
 }
@@ -717,142 +754,140 @@ function exportLaporanToExcel(){
     let data=[]; 
     let filtered=santri; 
     filtered.forEach((s,i)=>{ 
-        data.push({ No:i+1, Nama:s.nama, Kelas:s.kelas, Nilai_Hafalan:s.nilaiSurat, Status_Hafalan:getStatusHafalan(s), Status_Mapel:getStatusMapel(s, s.kelas), Status_Keseluruhan:getStatusKeseluruhan(s) }); 
+        data.push({ No:i+1, Nama:s.nama, Kelas:s.kelas, Nilai_Hafalan:s.nilaiSurat, Status_Hafalan:getStatusHafalan(s), Status_Mapel:getStatusMapel(s, s.kelas) }); 
     }); 
     let ws=XLSX.utils.json_to_sheet(data); let wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Laporan Lengkap'); 
     XLSX.writeFile(wb,`laporan_mutqin_${new Date().toISOString().slice(0,10)}.xlsx`); showToast('Export laporan berhasil'); 
 }
 
-let currentSertifikatSantri = null;
-function loadSertifikatUntukEdit(){ 
-    let id=document.getElementById('selectSertifikat').value; 
-    if(!id){ document.getElementById('sertifikatEditor').classList.add('hidden'); document.getElementById('sertifikatPreview').innerHTML=''; return; } 
-    currentSertifikatSantri=santri.find(x=>x.id==parseInt(id)); 
-    if(!currentSertifikatSantri||getStatusKeseluruhan(currentSertifikatSantri)!=='Selesai'){ showToast('Pilih santri yang SELESAI (Lulus Hafalan & Selesai Mapel)','error'); return; } 
-    document.getElementById('editNamaSertifikat').value=currentSertifikatSantri.nama; 
-    document.getElementById('editTanggalSertifikat').value=new Date().toLocaleDateString('id-ID'); 
-    document.getElementById('editTextSertifikat').value=''; 
-    document.getElementById('sertifikatEditor').classList.remove('hidden'); 
-    generateSertifikatWithEdit(); 
+function updateSelectSertifikat(){ 
+    let select=document.getElementById('selectSertifikat'); 
+    if(select){ let lulusan=santri.filter(s=>getStatusHafalan(s)==='Lulus' && getStatusMapel(s, s.kelas)==='Selesai'); select.innerHTML='<option value="">-- Pilih Santri Selesai --</option>'+lulusan.map(s=>`<option value="${s.id}">${s.nama} (${s.kelas})</option>`).join(''); } 
 }
-
-function generateSertifikatWithEdit(){ 
-    if(!currentSertifikatSantri) return; 
-    let today=document.getElementById('editTanggalSertifikat').value || new Date().toLocaleDateString('id-ID'); 
-    let nama=document.getElementById('editNamaSertifikat').value || currentSertifikatSantri.nama; 
-    let extraText=document.getElementById('editTextSertifikat').value; 
-    let logoHtml = (logoBase64 && logoBase64 !== 'null' && logoBase64 !== 'undefined') 
-        ? `<img src="${logoBase64}" class="w-16 h-16 mx-auto mb-2 rounded-full object-cover border-2 border-emerald-500">` 
-        : '<i class="fas fa-graduation-cap text-emerald-600 text-5xl mb-2"></i>';
-    let namaPesantren = (profilData.nama && profilData.nama !== 'null' && profilData.nama !== 'undefined') 
-        ? profilData.nama 
-        : 'Pondok Pesantren Bahrul Maghfiroh';
-    
-    document.getElementById('sertifikatPreview').innerHTML = `
-        <div class="text-center">
-            <div id="sertifikatBox" class="certificate-box inline-block text-left w-full max-w-md mx-auto">
-                <div class="text-center">
-                    ${logoHtml}
-                    <h2 class="text-xl font-bold text-emerald-800">${namaPesantren}</h2>
-                </div>
-                <div class="border-b-2 border-emerald-600 w-24 mx-auto my-3"></div>
-                <p class="text-center text-gray-500 text-sm">SERTIFIKAT KELULUSAN & KOMPETENSI</p>
-                <p class="text-center text-sm text-gray-500 mt-4">Diberikan kepada:</p>
-                <h3 class="text-center text-2xl font-bold text-emerald-700 my-3">${nama}</h3>
-                <p class="text-center text-sm">Telah menyelesaikan seluruh program pembelajaran<br>Hafalan & Validasi Mapel dengan baik</p>
-                <p class="text-center font-semibold text-emerald-700 mt-2">${namaPesantren}</p>
-                ${extraText ? `<p class="text-center text-sm mt-2">${extraText}</p>` : ''}
-                <div class="text-center bg-emerald-100 px-6 py-2 rounded-full inline-block w-full my-4">
-                    <span class="font-bold text-emerald-800">SELESAI</span>
-                </div>
-                <p class="text-center text-xs text-gray-500">Malang, ${today}</p>
-                <div class="grid grid-cols-2 gap-4 mt-4 pt-3 border-t">
-                    <div>
-                        <div class="border-t border-gray-400 pt-1 text-xs text-center">Pengasuh Pondok</div>
-                        <div class="text-xs text-center mt-1 font-medium">${profilData.pengasuh || '_________________'}</div>
-                    </div>
-                    <div>
-                        <div class="border-t border-gray-400 pt-1 text-xs text-center">Kepala Pondok</div>
-                        <div class="text-xs text-center mt-1 font-medium">${profilData.kapondok || '_________________'}</div>
-                    </div>
-                </div>
-            </div>
-            <button onclick="downloadSertifikat()" class="btn-primary px-4 py-2 rounded-lg mt-4">Download Sertifikat (PNG)</button>
-        </div>
-    `; 
-}
-
-function updateSertifikat(){ generateSertifikatWithEdit(); showToast('Sertifikat diperbarui'); }
-function downloadSertifikat(){ let node=document.getElementById('sertifikatBox'); html2canvas(node,{scale:2}).then(c=>{let a=document.createElement('a');a.download='sertifikat.png';a.href=c.toDataURL();a.click();showToast('Sertifikat terunduh');}).catch(()=>showToast('Gagal download','error')); }
 
 function refreshAll() { 
     updateDashboard(); renderSantri(); renderHafalanList(); renderMapelList();
-    updateSelectSertifikat(); updateLaporanContent(); updateFilterKelas(); checkNotifications(); 
-}
-
-function updateFilterKelas() { 
-    let select=document.getElementById('filterKelas'); 
-    if(select){ let kelasSet=new Set(santri.map(s=>s.kelas)); select.innerHTML='<option value="">Semua Kelas</option>'+Array.from(kelasSet).sort().map(k=>`<option value="${k}">${k}</option>`).join(''); } 
+    updateSelectSertifikat(); updateLaporanContent(); checkNotifications(); 
 }
 
 function updateDashboard() { 
-    let selesai = 0, proses = 0, belum = 0, mumtaz = 0, jayyidJ = 0, jayyid = 0; 
+    // Statistik Hafalan
+    let lulus = 0, prosesH = 0, belumH = 0, mumtaz = 0, jayyidJ = 0, jayyid = 0;
+    // Statistik Mapel
+    let selesai = 0, prosesM = 0, belumM = 0;
+    
     santri.forEach(s => { 
-        let st = getStatusKeseluruhan(s); 
-        if (st === 'Selesai') selesai++; 
-        else if (st === 'Proses') proses++; 
-        else belum++; 
-        if(s.nilaiSurat === 'Mumtaz') mumtaz++; 
-        else if(s.nilaiSurat === 'Jayyid Jiddan') jayyidJ++; 
-        else if(s.nilaiSurat === 'Jayyid') jayyid++; 
-    }); 
-    document.getElementById('totalSantri').innerText = santri.length; 
-    document.getElementById('totalSelesai').innerText = selesai; 
-    document.getElementById('totalProses').innerText = proses; 
-    document.getElementById('totalBelum').innerText = belum; 
+        let stH = getStatusHafalan(s);
+        if (stH === 'Lulus') lulus++;
+        else if (stH === 'Proses') prosesH++;
+        else belumH++;
+        
+        let stM = getStatusMapel(s, s.kelas);
+        if (stM === 'Selesai') selesai++;
+        else if (stM === 'Proses') prosesM++;
+        else belumM++;
+        
+        if(s.nilaiSurat === 'Mumtaz') mumtaz++;
+        else if(s.nilaiSurat === 'Jayyid Jiddan') jayyidJ++;
+        else if(s.nilaiSurat === 'Jayyid') jayyid++;
+    });
+    
+    document.getElementById('totalSantriHafalan').innerText = santri.length;
+    document.getElementById('totalLulus').innerText = lulus;
+    document.getElementById('totalProsesHafalan').innerText = prosesH;
+    document.getElementById('totalBelumHafalan').innerText = belumH;
+    
+    document.getElementById('totalSantriMapel').innerText = santri.length;
+    document.getElementById('totalSelesai').innerText = selesai;
+    document.getElementById('totalProsesMapel').innerText = prosesM;
+    document.getElementById('totalBelumMapel').innerText = belumM;
+    
     let roleLabel = currentUserRole === 'admin' ? 'Administrator' : 'Guru';
-    document.getElementById('welcomeText').innerHTML = `Selamat Datang, ${roleLabel}`; 
-    if(chartInstances.statusChart) chartInstances.statusChart.destroy(); 
-    let ctx1 = document.getElementById('statusChart')?.getContext('2d'); 
-    if(ctx1) chartInstances.statusChart = new Chart(ctx1, { type: 'doughnut', data: { labels: ['Selesai', 'Proses', 'Belum'], datasets: [{ data: [selesai, proses, belum], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] } }); 
-    if(chartInstances.nilaiChart) chartInstances.nilaiChart.destroy(); 
-    let ctx2 = document.getElementById('nilaiChart')?.getContext('2d'); 
-    if(ctx2) chartInstances.nilaiChart = new Chart(ctx2, { type: 'bar', data: { labels: ['Mumtaz', 'Jayyid Jiddan', 'Jayyid'], datasets: [{ label: 'Jumlah Santri', data: [mumtaz, jayyidJ, jayyid], backgroundColor: '#10b981' }] } }); 
+    document.getElementById('welcomeText').innerHTML = `Selamat Datang, ${roleLabel}`;
+    
+    // Chart Hafalan
+    if(chartInstances.statusChartHafalan) chartInstances.statusChartHafalan.destroy();
+    let ctx1 = document.getElementById('statusChartHafalan')?.getContext('2d');
+    if(ctx1) chartInstances.statusChartHafalan = new Chart(ctx1, { 
+        type: 'doughnut', 
+        data: { labels: ['Lulus', 'Proses', 'Belum'], datasets: [{ data: [lulus, prosesH, belumH], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+    });
+    
+    // Chart Mapel
+    if(chartInstances.statusChartMapel) chartInstances.statusChartMapel.destroy();
+    let ctx2 = document.getElementById('statusChartMapel')?.getContext('2d');
+    if(ctx2) chartInstances.statusChartMapel = new Chart(ctx2, { 
+        type: 'doughnut', 
+        data: { labels: ['Selesai', 'Proses', 'Belum'], datasets: [{ data: [selesai, prosesM, belumM], backgroundColor: ['#8b5cf6', '#f59e0b', '#ef4444'] }] },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+    });
+    
+    // Diagram Nilai Hafalan
+    if(chartInstances.nilaiChart) chartInstances.nilaiChart.destroy();
+    let ctx3 = document.getElementById('nilaiChart')?.getContext('2d');
+    if(ctx3) chartInstances.nilaiChart = new Chart(ctx3, { 
+        type: 'bar', 
+        data: { labels: ['Mumtaz', 'Jayyid Jiddan', 'Jayyid'], datasets: [{ label: 'Jumlah Santri', data: [mumtaz, jayyidJ, jayyid], backgroundColor: '#10b981' }] },
+        options: { responsive: true, maintainAspectRatio: true }
+    });
+    
+    // Diagram Progress Mapel (rata-rata progress semua santri)
+    let totalProgress = 0;
+    santri.forEach(s => { totalProgress += hitungProgressMapel(s, s.kelas).persen; });
+    let avgProgress = santri.length > 0 ? Math.round(totalProgress / santri.length) : 0;
+    
+    if(chartInstances.progressMapelChart) chartInstances.progressMapelChart.destroy();
+    let ctx4 = document.getElementById('progressMapelChart')?.getContext('2d');
+    if(ctx4) chartInstances.progressMapelChart = new Chart(ctx4, { 
+        type: 'bar', 
+        data: { labels: ['Rata-rata Progress Mapel'], datasets: [{ label: 'Progress %', data: [avgProgress], backgroundColor: '#8b5cf6' }] },
+        options: { responsive: true, maintainAspectRatio: true, scales: { y: { max: 100, min: 0 } } }
+    });
 }
 
 function updateLaporanContent() { 
-    let selesai = 0, proses = 0, belum = 0, mumtaz = 0, jayyidJ = 0, jayyid = 0; 
+    let lulus = 0, prosesH = 0, belumH = 0, selesai = 0, prosesM = 0, belumM = 0, mumtaz = 0, jayyidJ = 0, jayyid = 0;
     santri.forEach(s => { 
-        let st = getStatusKeseluruhan(s); 
-        if (st === 'Selesai') selesai++; 
-        else if (st === 'Proses') proses++; 
-        else belum++; 
-        if(s.nilaiSurat === 'Mumtaz') mumtaz++; 
-        else if(s.nilaiSurat === 'Jayyid Jiddan') jayyidJ++; 
-        else if(s.nilaiSurat === 'Jayyid') jayyid++; 
-    }); 
-    let tanggal = new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}); 
-    document.getElementById('laporanTanggal').innerHTML = `Tanggal: ${tanggal}`; 
-    document.getElementById('laporanFooterTanggal').innerHTML = tanggal; 
-    document.getElementById('laporanTotalSantri').innerText = santri.length; 
-    document.getElementById('laporanTotalSelesai').innerText = selesai; 
-    document.getElementById('laporanTotalProses').innerText = proses; 
-    document.getElementById('laporanTotalBelum').innerText = belum; 
-    if(chartInstances.laporanStatusChart) chartInstances.laporanStatusChart.destroy(); 
-    let ctx1 = document.getElementById('laporanStatusChart')?.getContext('2d'); 
-    if(ctx1) chartInstances.laporanStatusChart = new Chart(ctx1, { type: 'doughnut', data: { labels: ['Selesai', 'Proses', 'Belum'], datasets: [{ data: [selesai, proses, belum], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] } }); 
-    if(chartInstances.laporanNilaiChart) chartInstances.laporanNilaiChart.destroy(); 
-    let ctx2 = document.getElementById('laporanNilaiChart')?.getContext('2d'); 
-    if(ctx2) chartInstances.laporanNilaiChart = new Chart(ctx2, { type: 'bar', data: { labels: ['Mumtaz', 'Jayyid Jiddan', 'Jayyid'], datasets: [{ label: 'Jumlah Santri', data: [mumtaz, jayyidJ, jayyid], backgroundColor: '#10b981' }] } }); 
-    let tbody = document.getElementById('laporanTableFull'); 
+        let stH = getStatusHafalan(s);
+        if (stH === 'Lulus') lulus++;
+        else if (stH === 'Proses') prosesH++;
+        else belumH++;
+        
+        let stM = getStatusMapel(s, s.kelas);
+        if (stM === 'Selesai') selesai++;
+        else if (stM === 'Proses') prosesM++;
+        else belumM++;
+        
+        if(s.nilaiSurat === 'Mumtaz') mumtaz++;
+        else if(s.nilaiSurat === 'Jayyid Jiddan') jayyidJ++;
+        else if(s.nilaiSurat === 'Jayyid') jayyid++;
+    });
+    
+    let tanggal = new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+    document.getElementById('laporanTanggal').innerHTML = `Tanggal: ${tanggal}`;
+    document.getElementById('laporanFooterTanggal').innerHTML = tanggal;
+    document.getElementById('laporanTotalSantri').innerText = santri.length;
+    document.getElementById('laporanTotalLulus').innerText = lulus;
+    document.getElementById('laporanTotalSelesai').innerText = selesai;
+    document.getElementById('laporanTotalProses').innerText = prosesH + prosesM;
+    
+    if(chartInstances.laporanStatusChart) chartInstances.laporanStatusChart.destroy();
+    let ctx1 = document.getElementById('laporanStatusChart')?.getContext('2d');
+    if(ctx1) chartInstances.laporanStatusChart = new Chart(ctx1, { type: 'doughnut', data: { labels: ['Lulus Hafalan', 'Proses Hafalan', 'Belum Hafalan'], datasets: [{ data: [lulus, prosesH, belumH], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] } });
+    
+    if(chartInstances.laporanNilaiChart) chartInstances.laporanNilaiChart.destroy();
+    let ctx2 = document.getElementById('laporanNilaiChart')?.getContext('2d');
+    if(ctx2) chartInstances.laporanNilaiChart = new Chart(ctx2, { type: 'bar', data: { labels: ['Mumtaz', 'Jayyid Jiddan', 'Jayyid'], datasets: [{ label: 'Jumlah Santri', data: [mumtaz, jayyidJ, jayyid], backgroundColor: '#10b981' }] } });
+    
+    let tbody = document.getElementById('laporanTableFull');
     if(tbody) tbody.innerHTML = santri.map((s, i) => { 
         let stH = getStatusHafalan(s);
         let stM = getStatusMapel(s, s.kelas);
-        let stK = getStatusKeseluruhan(s);
         let bcH = stH === 'Lulus' ? 'badge-success' : (stH === 'Proses' ? 'badge-warning' : 'badge-danger');
         let bcM = stM === 'Selesai' ? 'badge-success' : (stM === 'Proses' ? 'badge-warning' : 'badge-danger');
-        return `<tr class="border-b"><td class="p-2">${i+1}</td><td class="p-2 font-medium">${s.nama}</td><td class="p-2">${s.kelas}</td><td class="p-2"><span class="${bcH}">${stH}</span></td><td class="p-2"><span class="${bcM}">${stM}</span></td><td class="p-2"><span class="${bcH === 'badge-success' && bcM === 'badge-success' ? 'badge-success' : (stK === 'Proses' ? 'badge-warning' : 'badge-danger')}">${stK}</span></td></tr>`; 
-    }).join(''); 
+        return `<tr class="border-b"><td class="p-2">${i+1}</td><td class="p-2 font-medium">${s.nama}</td><td class="p-2">${s.kelas}</td><td class="p-2">${s.nilaiSurat||'-'}</td><td class="p-2"><span class="${bcH}">${stH}</span></td><td class="p-2"><span class="${bcM}">${stM}</span></td></tr>`;
+    }).join('');
 }
 
 function printFullLaporan() { 
@@ -880,7 +915,7 @@ function renderSantri() {
     let html=''; 
     for(let kelas of sortedKelas){ 
         html+=`<div class="border-b"><div class="bg-emerald-50 p-3 font-semibold">📚 Kelas ${kelas} <span class="text-sm ml-2 text-gray-500">(${groups[kelas].length} santri)</span></div>`; 
-        groups[kelas].forEach((s,i)=>{ let st=getStatusKeseluruhan(s), bc=st==='Selesai'?'badge-success':(st==='Proses'?'badge-warning':'badge-danger'); 
+        groups[kelas].forEach((s,i)=>{ let st=getStatusHafalan(s), bc=st==='Lulus'?'badge-success':(st==='Proses'?'badge-warning':'badge-danger'); 
         html+=`<div class="p-3 border-b flex justify-between items-center flex-wrap gap-2"><div class="flex items-center gap-3"><span class="w-6 text-gray-400">${i+1}.</span><span class="font-medium">${s.nama}</span></div><div class="flex gap-2"><span class="${bc}">${st}</span>`;
         if(currentUserRole === 'admin') { html+=`<button onclick="editSantri(${s.id})" class="text-blue-500"><i class="fas fa-edit"></i></button><button onclick="hapusSantri(${s.id})" class="text-red-500"><i class="fas fa-trash"></i></button>`; }
         html+=`</div></div>`; }); 
@@ -969,11 +1004,6 @@ function filterHafalanList() { renderHafalanList(); }
 function filterMapelList() { renderMapelList(); }
 function clearSearchHafalan() { document.getElementById('searchSantriHafalan').value = ''; renderHafalanList(); }
 function clearSearchMapel() { document.getElementById('searchSantriMapel').value = ''; renderMapelList(); }
-
-function updateSelectSertifikat(){ 
-    let select=document.getElementById('selectSertifikat'); 
-    if(select){ let lulusan=santri.filter(s=>getStatusKeseluruhan(s)==='Selesai'); select.innerHTML='<option value="">-- Pilih Santri Selesai --</option>'+lulusan.map(s=>`<option value="${s.id}">${s.nama} (${s.kelas})</option>`).join(''); } 
-}
 
 function tambahSantri(){ 
     if(currentUserRole !== 'admin') { showToast('Hanya admin yang dapat menambah santri', 'error'); return; }
