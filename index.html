@@ -52,6 +52,8 @@
         .stats-card{background:white;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
         .stats-number{font-size:32px;font-weight:bold;color:#10b981;}
         .stats-label{font-size:14px;color:#666;margin-top:5px;}
+        .dashboard-card{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:20px;padding:20px;color:white;}
+        .fullcolor-card{background:linear-gradient(135deg,#11998e 0%,#38ef7d 100%);border-radius:20px;padding:20px;color:white;}
     </style>
 </head>
 <body class="bg-gray-100" id="appBody">
@@ -68,13 +70,13 @@
         </div>
         <div id="loginError" class="hidden bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-center text-sm"></div>
         <div class="flex gap-3 mb-4">
-            <button onclick="setRole('admin')" id="btnRoleAdmin" class="flex-1 py-2 rounded-lg border-2 border-emerald-500 text-emerald-600 font-semibold">Admin</button>
-            <button onclick="setRole('guru')" id="btnRoleGuru" class="flex-1 py-2 rounded-lg border-2 border-gray-300 text-gray-500 font-semibold">Guru</button>
+            <button onclick="setRole('admin')" id="btnRoleAdmin" class="flex-1 py-2 rounded-lg border-2 border-gray-300 text-gray-500 font-semibold">Admin</button>
+            <button onclick="setRole('guru')" id="btnRoleGuru" class="flex-1 py-2 rounded-lg border-2 border-emerald-500 text-emerald-600 font-semibold">Guru</button>
         </div>
         <input type="text" id="loginUser" class="w-full p-3 border rounded-lg mb-3" placeholder="Username">
         <input type="password" id="loginPass" class="w-full p-3 border rounded-lg mb-4" placeholder="Password">
         <button onclick="doLogin()" class="btn-primary w-full py-3 rounded-lg">Login</button>
-        <div class="text-center text-xs text-gray-400 mt-4">Guru: guru / guru123 | Admin: admin / admin123</div>
+        <div class="text-center text-xs text-gray-400 mt-4">Guru: guru / guru123</div>
     </div>
 </div>
 
@@ -82,8 +84,10 @@
 <div id="mainApp" class="hidden">
     <div class="bg-white shadow-sm border-b sticky top-0 z-20">
         <div class="px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <i class="fas fa-graduation-cap text-emerald-600 text-xl"></i>
+            <div class="flex items-center gap-3">
+                <div id="headerLogoArea" class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center overflow-hidden">
+                    <i class="fas fa-graduation-cap text-emerald-600 text-sm"></i>
+                </div>
                 <span id="headerNamaPesantren" class="font-bold">Mutqin BM</span>
             </div>
             <div class="flex items-center gap-3">
@@ -101,9 +105,18 @@
         <div class="flex-1 p-4 md:p-6">
             <div id="pageDashboard" class="page">
                 <div class="datetime-card"><div class="flex justify-between"><div id="fullDate"></div><div id="currentTimeLarge" class="font-mono text-xl"></div></div></div>
-                <div id="dashboardProfileCard" class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-md p-5 mb-6 text-white">
-                    <h2 class="text-2xl font-bold">Selamat Datang di Mutqin</h2>
-                    <p class="text-emerald-100 mt-1">Sistem Hafalan & Penilaian Madin Terintegrasi</p>
+                <div id="dashboardProfileCard" class="dashboard-card shadow-md p-5 mb-6">
+                    <div class="flex items-center gap-4">
+                        <div id="dashLogoArea" class="w-16 h-16 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                            <i class="fas fa-graduation-cap text-emerald-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold">Selamat Datang di Mutqin</h2>
+                            <p class="text-emerald-100 mt-1">Sistem Hafalan & Penilaian Madin Terintegrasi</p>
+                            <p class="text-white text-sm mt-1" id="dashPengasuh"></p>
+                            <p class="text-white text-sm" id="dashKetua"></p>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Statistik Cards -->
@@ -114,33 +127,51 @@
                     <div class="stats-card"><div class="stats-number" id="persenKelulusan">0%</div><div class="stats-label">Persentase Kelulusan</div></div>
                 </div>
                 
-                <!-- Grafik -->
+                <!-- Grafik Full Color -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-xl p-4 shadow">
-                        <h3 class="font-bold mb-3">📊 Presentase Hafalan Santri</h3>
+                    <div class="fullcolor-card p-5">
+                        <h3 class="font-bold text-xl mb-4 text-center">📖 PRESENTASE HAFALAN SANTRI</h3>
                         <canvas id="chartHafalanDashboard" height="200"></canvas>
                     </div>
-                    <div class="bg-white rounded-xl p-4 shadow">
-                        <h3 class="font-bold mb-3">📚 Presentase Tam-taman Santri</h3>
+                    <div class="fullcolor-card p-5">
+                        <h3 class="font-bold text-xl mb-4 text-center">📚 PRESENTASE TAM-TAMAN (VALIDASI MAPEL)</h3>
                         <canvas id="chartMapelDashboard" height="200"></canvas>
                     </div>
                 </div>
                 
                 <!-- Progress Bars -->
                 <div class="bg-white rounded-xl p-5 shadow">
-                    <h3 class="font-bold mb-4">📈 Ringkasan Kelulusan</h3>
-                    <div class="space-y-3">
-                        <div><div class="flex justify-between text-sm"><span>Hafalan Lulus</span><span id="lulusPersenText">0%</span></div><div class="progress-bar-big"><div class="progress-fill-big bg-green-500" id="lulusProgressBar" style="width:0%"></div></div></div>
-                        <div><div class="flex justify-between text-sm"><span>Tam-taman Selesai</span><span id="mapelPersenText">0%</span></div><div class="progress-bar-big"><div class="progress-fill-big bg-purple-500" id="mapelProgressBar" style="width:0%"></div></div></div>
+                    <h3 class="font-bold mb-4 text-gray-700">📈 RINGKASAN KELULUSAN</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1"><span class="font-semibold">Hafalan Santri</span><span id="lulusPersenText" class="font-bold text-green-600">0%</span></div>
+                            <div class="progress-bar-big h-3 rounded-full overflow-hidden"><div class="progress-fill-big bg-gradient-to-r from-green-400 to-green-600" id="lulusProgressBar" style="width:0%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1"><span class="font-semibold">Tam-taman Santri</span><span id="mapelPersenText" class="font-bold text-purple-600">0%</span></div>
+                            <div class="progress-bar-big h-3 rounded-full overflow-hidden"><div class="progress-fill-big bg-gradient-to-r from-purple-400 to-purple-600" id="mapelProgressBar" style="width:0%"></div></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div id="pageSantri" class="page hidden"><h2 class="text-xl font-bold mb-4">Data Santri</h2><div class="flex gap-2 mb-4 flex-wrap" id="santriButtons"></div><input type="text" id="searchSantri" placeholder="Cari nama atau kelas..." class="w-full p-2 border rounded-lg mb-4" onkeyup="renderSantri()"><div id="santriListContainer" class="bg-white rounded-xl shadow"></div></div>
             <div id="pageHafalan" class="page hidden"><h2 class="text-xl font-bold mb-4">Hafalan & Pendidikan Madin</h2><div class="bg-white rounded-xl shadow"><div class="p-4 border-b flex justify-between items-center flex-wrap gap-2"><input type="text" id="searchSantriHafalan" placeholder="Cari santri..." class="flex-1 p-2 border rounded-lg" onkeyup="filterHafalanList()"><button onclick="checkAllHafalan()" class="btn-outline text-sm"><i class="fas fa-check-double"></i> Centang Semua</button><button onclick="uncheckAllHafalan()" class="btn-outline text-sm"><i class="fas fa-times"></i> Hapus Semua</button></div><div id="santriListHafalan" class="santri-list-group"></div><div id="formHafalan" class="hidden p-4"></div></div></div>
             <div id="pageMapel" class="page hidden"><h2 class="text-xl font-bold mb-4">Tam-taman (Penilaian Mapel)</h2><div class="bg-white rounded-xl shadow"><div class="p-4 border-b flex justify-between items-center flex-wrap gap-2"><input type="text" id="searchSantriMapel" placeholder="Cari santri..." class="flex-1 p-2 border rounded-lg" onkeyup="filterMapelList()"><button onclick="checkAllMapel()" class="btn-outline text-sm"><i class="fas fa-check-double"></i> Centang Semua</button><button onclick="uncheckAllMapel()" class="btn-outline text-sm"><i class="fas fa-times"></i> Hapus Semua</button></div><div id="santriListMapel" class="santri-list-group"></div><div id="formMapel" class="hidden p-4"></div></div></div>
-            <div id="pageSertifikat" class="page hidden"><h2 class="text-xl font-bold mb-4">Sertifikat Kelulusan</h2><div class="bg-white rounded-xl shadow p-4"><select id="selectSertifikat" class="w-full p-2 border rounded-lg mb-4" onchange="loadSertifikat()"><option value="">-- Pilih Santri Lulus --</option></select><div id="sertifikatPreview"></div></div></div>
+            <div id="pageSertifikat" class="page hidden"><h2 class="text-xl font-bold mb-4">Sertifikat Kelulusan Hafalan</h2><div class="bg-white rounded-xl shadow p-4"><select id="selectSertifikat" class="w-full p-2 border rounded-lg mb-4" onchange="loadSertifikat()"><option value="">-- Pilih Santri Lulus Hafalan --</option></select><div id="sertifikatPreview"></div></div></div>
             <div id="pageLaporan" class="page hidden"><h2 class="text-xl font-bold mb-4">Laporan Lengkap</h2><div class="bg-white rounded-xl shadow p-6" id="laporanContent"></div></div>
-            <div id="pagePengaturan" class="page hidden"><h2 class="text-xl font-bold mb-4">Pengaturan</h2><div class="bg-white rounded-xl shadow p-6 max-w-2xl"><div class="mb-6 pb-4 border-b"><h3 class="font-semibold mb-3"><i class="fas fa-image mr-2"></i> Logo Pesantren</h3><div class="grid gap-3"><div><label class="block text-sm font-medium">URL Logo (Gambar)</label><input type="text" id="settingLogoUrl" class="w-full p-2 border rounded-lg" placeholder="https://..."><button onclick="simpanProfil()" class="btn-primary mt-2 px-4 py-2">Simpan Logo</button></div><div id="logoPreview" class="mt-3 p-3 bg-gray-50 rounded-lg text-center"></div></div></div><div class="mb-6"><h3 class="font-semibold mb-3"><i class="fas fa-cloud-upload-alt mr-2"></i> Google Sheets Cloud</h3><div class="flex gap-3 flex-wrap"><button onclick="syncToCloud()" class="btn-primary flex-1 py-2"><i class="fas fa-cloud-upload-alt"></i> Simpan ke Cloud</button><button onclick="loadFromCloud()" class="btn-outline flex-1 py-2"><i class="fas fa-cloud-download-alt"></i> Load dari Cloud</button><button onclick="exportToExcel()" class="btn-outline flex-1 py-2"><i class="fas fa-file-excel"></i> Export Excel</button></div></div></div></div>
+            <div id="pagePengaturan" class="page hidden"><h2 class="text-xl font-bold mb-4">Pengaturan Profil Pesantren</h2><div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+                <div class="mb-6 pb-4 border-b">
+                    <h3 class="font-semibold mb-4 text-lg"><i class="fas fa-university mr-2 text-emerald-600"></i> Profil Pesantren</h3>
+                    <div class="space-y-4">
+                        <div><label class="block text-sm font-medium mb-1">Nama Pesantren</label><input type="text" id="settingNamaPesantren" class="w-full p-3 border rounded-lg" placeholder="Nama Pesantren"></div>
+                        <div><label class="block text-sm font-medium mb-1">Nama Pengasuh</label><input type="text" id="settingPengasuh" class="w-full p-3 border rounded-lg" placeholder="Nama Pengasuh"></div>
+                        <div><label class="block text-sm font-medium mb-1">Ketua Pondok</label><input type="text" id="settingKetua" class="w-full p-3 border rounded-lg" placeholder="Ketua Pondok"></div>
+                        <div><label class="block text-sm font-medium mb-1">URL Logo (Gambar)</label><input type="text" id="settingLogoUrl" class="w-full p-3 border rounded-lg" placeholder="https://..."><button onclick="simpanProfil()" class="btn-primary mt-3 px-6 py-2 w-full">Simpan Profil</button></div>
+                        <div id="logoPreview" class="mt-3 p-4 bg-gray-50 rounded-lg text-center"><p class="text-gray-400">Preview logo akan tampil disini</p></div>
+                    </div>
+                </div>
+                <div class="mb-6"><h3 class="font-semibold mb-3"><i class="fas fa-cloud-upload-alt mr-2"></i> Google Sheets Cloud</h3><div class="flex gap-3 flex-wrap"><button onclick="syncToCloud()" class="btn-primary flex-1 py-2"><i class="fas fa-cloud-upload-alt"></i> Simpan ke Cloud</button><button onclick="loadFromCloud()" class="btn-outline flex-1 py-2"><i class="fas fa-cloud-download-alt"></i> Load dari Cloud</button><button onclick="exportToExcel()" class="btn-outline flex-1 py-2"><i class="fas fa-file-excel"></i> Export Excel</button></div></div>
+            </div></div>
         </div>
     </div>
 </div>
@@ -159,7 +190,9 @@ let currentMapelSantriId = null;
 let chartInstances = {};
 
 let profil = {
-    namaPesantren: 'Mutqin BM',
+    namaPesantren: 'Pondok Pesantren Bahrul Maghfiroh',
+    pengasuh: 'KH. Ahmad Munif',
+    ketuaPondok: 'Drs. M. Sholeh',
     logoUrl: ''
 };
 
@@ -281,35 +314,45 @@ function showToast(msg, type) { let t = document.createElement('div'); t.classNa
 function loadProfil() {
     let saved = localStorage.getItem('mutqin_profil');
     if(saved) { try { let p = JSON.parse(saved); if(p.namaPesantren) profil = p; } catch(e){} }
+    document.getElementById('settingNamaPesantren').value = profil.namaPesantren;
+    document.getElementById('settingPengasuh').value = profil.pengasuh;
+    document.getElementById('settingKetua').value = profil.ketuaPondok;
+    document.getElementById('settingLogoUrl').value = profil.logoUrl || '';
     updateProfilDisplay();
 }
 function simpanProfil() {
+    profil.namaPesantren = document.getElementById('settingNamaPesantren').value || profil.namaPesantren;
+    profil.pengasuh = document.getElementById('settingPengasuh').value || profil.pengasuh;
+    profil.ketuaPondok = document.getElementById('settingKetua').value || profil.ketuaPondok;
     profil.logoUrl = document.getElementById('settingLogoUrl').value || '';
     localStorage.setItem('mutqin_profil', JSON.stringify(profil));
     updateProfilDisplay();
-    showToast('Logo tersimpan', 'success');
+    showToast('Profil tersimpan', 'success');
 }
 function updateProfilDisplay() {
     document.getElementById('loginNamaPesantren').innerText = profil.namaPesantren;
     document.getElementById('headerNamaPesantren').innerText = profil.namaPesantren;
+    document.getElementById('dashPengasuh').innerHTML = `<i class="fas fa-user-tie mr-1"></i> Pengasuh: ${profil.pengasuh}`;
+    document.getElementById('dashKetua').innerHTML = `<i class="fas fa-gavel mr-1"></i> Ketua: ${profil.ketuaPondok}`;
+    
     if(profil.logoUrl && profil.logoUrl.trim() !== '') {
-        let logoHtml = `<img src="${profil.logoUrl}" class="w-full h-full object-cover rounded-2xl">`;
+        let logoHtml = `<img src="${profil.logoUrl}" class="w-full h-full object-cover rounded-full">`;
+        let logoHtmlSmall = `<img src="${profil.logoUrl}" class="w-full h-full object-cover rounded-full">`;
         document.getElementById('loginLogoArea').innerHTML = logoHtml;
-    }
-    let previewHtml = profil.logoUrl ? `<img src="${profil.logoUrl}" class="h-20 mx-auto rounded-lg">` : '<p class="text-gray-400">Belum ada logo</p>';
-    document.getElementById('logoPreview').innerHTML = previewHtml;
-    updateSertifikatLogo();
-}
-function updateSertifikatLogo() {
-    let logoArea = document.getElementById('sertifikatPreview');
-    if(logoArea && profil.logoUrl) {
-        // akan diupdate saat load sertifikat
+        document.getElementById('headerLogoArea').innerHTML = logoHtmlSmall;
+        document.getElementById('dashLogoArea').innerHTML = logoHtml;
+        document.getElementById('logoPreview').innerHTML = `<img src="${profil.logoUrl}" class="h-24 mx-auto rounded-lg shadow">`;
+    } else {
+        document.getElementById('loginLogoArea').innerHTML = '<i class="fas fa-graduation-cap text-emerald-600 text-5xl"></i>';
+        document.getElementById('headerLogoArea').innerHTML = '<i class="fas fa-graduation-cap text-emerald-600 text-sm"></i>';
+        document.getElementById('dashLogoArea').innerHTML = '<i class="fas fa-graduation-cap text-emerald-600 text-2xl"></i>';
+        document.getElementById('logoPreview').innerHTML = '<p class="text-gray-400">Belum ada logo</p>';
     }
 }
 
 // ==================== RENDER & UI ====================
 function refreshAll() { updateDashboard(); renderSantri(); renderHafalanList(); renderMapelList(); updateSelectSertifikat(); updateLaporanContent(); }
-function updateDateTime() { let now=new Date(); document.getElementById('fullDate').innerHTML=now.toLocaleDateString('id-ID'); document.getElementById('currentTimeLarge').innerHTML=now.toLocaleTimeString('id-ID'); }
+function updateDateTime() { let now=new Date(); document.getElementById('fullDate').innerHTML=now.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }); document.getElementById('currentTimeLarge').innerHTML=now.toLocaleTimeString('id-ID'); }
 setInterval(updateDateTime,1000); updateDateTime();
 function toggleDarkMode() { document.getElementById('appBody').classList.toggle('dark-mode'); }
 
@@ -333,10 +376,10 @@ function updateDashboard() {
     
     if(chartInstances.ch1) chartInstances.ch1.destroy();
     let ctx1 = document.getElementById('chartHafalanDashboard')?.getContext('2d');
-    if(ctx1) chartInstances.ch1 = new Chart(ctx1, { type: 'doughnut', data: { labels: ['Lulus', 'Proses', 'Belum'], datasets: [{ data: [lulus, prosesH, belumH], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] }, options: { responsive: true } });
+    if(ctx1) chartInstances.ch1 = new Chart(ctx1, { type: 'doughnut', data: { labels: ['Lulus', 'Proses', 'Belum'], datasets: [{ data: [lulus, prosesH, belumH], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'white', font: { weight: 'bold' } } } } } });
     if(chartInstances.ch2) chartInstances.ch2.destroy();
     let ctx2 = document.getElementById('chartMapelDashboard')?.getContext('2d');
-    if(ctx2) chartInstances.ch2 = new Chart(ctx2, { type: 'doughnut', data: { labels: ['Selesai', 'Proses', 'Belum'], datasets: [{ data: [selesai, prosesM, belumM], backgroundColor: ['#8b5cf6', '#f59e0b', '#ef4444'] }] }, options: { responsive: true } });
+    if(ctx2) chartInstances.ch2 = new Chart(ctx2, { type: 'doughnut', data: { labels: ['Selesai', 'Proses', 'Belum'], datasets: [{ data: [selesai, prosesM, belumM], backgroundColor: ['#a855f7', '#f59e0b', '#ef4444'], borderWidth: 0 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: 'white', font: { weight: 'bold' } } } } } });
 }
 
 function renderSantri() {
@@ -536,18 +579,16 @@ function simpanMapel(){ let idx=santri.findIndex(x=>x.id===currentMapelSantriId)
 function updateSelectSertifikat(){
     let select = document.getElementById('selectSertifikat');
     let lulusan = santri.filter(s => getStatusHafalan(s) === 'Lulus');
-    select.innerHTML = '<option value="">-- Pilih Santri Lulus --</option>' + lulusan.map(s => `<option value="${s.id}">${s.nama} (${s.kelas}) - Hafalan: ${getStatusHafalan(s)} | Tam-taman: ${getStatusMapel(s, s.kelas)}</option>`).join('');
+    select.innerHTML = '<option value="">-- Pilih Santri Lulus Hafalan --</option>' + lulusan.map(s => `<option value="${s.id}">${s.nama} (${s.kelas}) - Lulus Hafalan</option>`).join('');
 }
 function loadSertifikat(){
     let id = document.getElementById('selectSertifikat').value;
-    if(!id){ document.getElementById('sertifikatPreview').innerHTML = '<div class="text-center text-gray-400 p-8">Pilih santri yang lulus terlebih dahulu</div>'; return; }
+    if(!id){ document.getElementById('sertifikatPreview').innerHTML = '<div class="text-center text-gray-400 p-8">Pilih santri yang lulus hafalan terlebih dahulu</div>'; return; }
     let s = santri.find(x=>x.id==parseInt(id));
     if(!s) return;
     let today = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
     let logoHtml = (profil.logoUrl && profil.logoUrl.trim()) ? `<img src="${profil.logoUrl}" style="width:80px;height:80px;object-fit:cover;border-radius:50%;margin:0 auto 15px;">` : `<i class="fas fa-graduation-cap text-emerald-600 text-5xl mb-3"></i>`;
-    let statusMapel = getStatusMapel(s, s.kelas);
-    let mapelText = statusMapel === 'Selesai' ? 'dan TAM-TAMAN' : '(Tam-taman masih dalam proses)';
-    document.getElementById('sertifikatPreview').innerHTML = `<div class="text-center"><div id="sertifikatBox" class="certificate-box">${logoHtml}<h2 class="text-xl font-bold">${profil.namaPesantren}</h2><div class="border-b-2 w-24 mx-auto my-3"></div><p class="text-lg font-semibold">SERTIFIKAT KELULUSAN</p><h3 class="text-2xl font-bold text-emerald-700 my-3">${s.nama}</h3><p>Telah dinyatakan <strong>LULUS</strong> dalam program hafalan ${mapelText}</p><div class="bg-emerald-100 px-6 py-2 rounded-full inline-block my-4"><span class="font-bold text-emerald-800">LULUS HAFALAN</span></div><p class="text-xs text-gray-500 mt-4">Malang, ${today}</p><p class="text-xs text-gray-400 mt-2">Kelas: ${s.kelas} | Progress Hafalan: ${hitungProgressHafalan(s)}%</p></div><button onclick="downloadSertifikat()" class="btn-primary mt-4"><i class="fas fa-download"></i> Download Sertifikat PNG</button></div>`;
+    document.getElementById('sertifikatPreview').innerHTML = `<div class="text-center"><div id="sertifikatBox" class="certificate-box">${logoHtml}<h2 class="text-xl font-bold">${profil.namaPesantren}</h2><p class="text-sm">Pengasuh: ${profil.pengasuh} | Ketua: ${profil.ketuaPondok}</p><div class="border-b-2 w-24 mx-auto my-3"></div><p class="text-lg font-semibold">SERTIFIKAT KELULUSAN HAFALAN</p><h3 class="text-2xl font-bold text-emerald-700 my-3">${s.nama}</h3><p>Telah dinyatakan <strong>LULUS</strong> dalam program hafalan</p><div class="bg-emerald-100 px-6 py-2 rounded-full inline-block my-4"><span class="font-bold text-emerald-800">LULUS HAFALAN</span></div><p class="text-xs text-gray-500 mt-4">Malang, ${today}</p><p class="text-xs text-gray-400 mt-2">Kelas: ${s.kelas} | Progress Hafalan: ${hitungProgressHafalan(s)}%</p></div><button onclick="downloadSertifikat()" class="btn-primary mt-4"><i class="fas fa-download"></i> Download Sertifikat PNG</button></div>`;
 }
 function downloadSertifikat(){ let node=document.getElementById('sertifikatBox'); html2canvas(node,{scale:2}).then(c=>{let a=document.createElement('a');a.download='sertifikat.png';a.href=c.toDataURL();a.click();showToast('Sertifikat terunduh','success');}); }
 
@@ -605,14 +646,14 @@ function openModal(id){ document.getElementById(id).classList.remove('hidden'); 
 function closeModal(e,id){ if(!e||e.target===document.getElementById(id)) document.getElementById(id).classList.add('hidden'); }
 
 function updateLaporanContent(){
-    let html = `<div class="text-center mb-6"><h1 class="text-2xl font-bold">${profil.namaPesantren}</h1><p>Laporan Lengkap Hafalan & Tam-taman</p><p>${new Date().toLocaleDateString('id-ID')}</p></div>
+    let html = `<div class="text-center mb-6"><h1 class="text-2xl font-bold">${profil.namaPesantren}</h1><p>Pengasuh: ${profil.pengasuh} | Ketua: ${profil.ketuaPondok}</p><p>Laporan Lengkap Hafalan & Tam-taman</p><p>${new Date().toLocaleDateString('id-ID')}</p></div>
     <h3 class="font-bold text-lg mt-4 mb-2">📊 Rangkuman Hafalan</h3>
     <table class="w-full text-sm border mb-6"><thead class="bg-emerald-600 text-white"><tr><th class="p-2">No</th><th>Nama</th><th>Kelas</th><th>Status Hafalan</th><th>Progress</th><th>Madin Ula</th><th>Madin Wustho</th></tr></thead><tbody>`;
     santri.forEach((s,i)=>{ 
         html += `<tr class="border-b"><td class="p-2">${i+1}</td><td class="p-2">${s.nama}</td><td class="p-2">${s.kelas}</td><td class="p-2"><span class="badge-${getStatusHafalan(s)==='Lulus'?'success':(getStatusHafalan(s)==='Proses'?'warning':'danger')}">${getStatusHafalan(s)}</span></td><td class="p-2">${hitungProgressHafalan(s)}%</td><td class="p-2">${s.madinUla?'✅':'❌'}</td><td class="p-2">${s.madinWustho?'✅':'❌'}</td></tr>`;
     });
     html += `</tbody></table>
-    <h3 class="font-bold text-lg mt-4 mb-2">📚 Rangkuman Tam-taman</h3>
+    <h3 class="font-bold text-lg mt-4 mb-2">📚 Rangkuman Tam-taman (Validasi Mapel)</h3>
     <table class="w-full text-sm border"><thead class="bg-purple-600 text-white"><tr><th class="p-2">No</th><th>Nama</th><th>Kelas</th><th>Status Tam-taman</th><th>Progress</th></tr></thead><tbody>`;
     santri.forEach((s,i)=>{ 
         let pMapel = hitungProgressMapel(s, s.kelas);
@@ -622,15 +663,29 @@ function updateLaporanContent(){
     document.getElementById('laporanContent').innerHTML = html;
 }
 
-let selectedRole = 'admin';
-function setRole(r){ selectedRole=r; let ba=document.getElementById('btnRoleAdmin'), bg=document.getElementById('btnRoleGuru'); if(r==='admin'){ ba.classList.remove('border-gray-300','text-gray-500'); ba.classList.add('border-emerald-500','text-emerald-600'); bg.classList.remove('border-emerald-500','text-emerald-600'); bg.classList.add('border-gray-300','text-gray-500'); } else { bg.classList.remove('border-gray-300','text-gray-500'); bg.classList.add('border-emerald-500','text-emerald-600'); ba.classList.remove('border-emerald-500','text-emerald-600'); ba.classList.add('border-gray-300','text-gray-500'); } }
+let selectedRole = 'guru';
+function setRole(r){ 
+    selectedRole=r; 
+    let ba=document.getElementById('btnRoleAdmin'), bg=document.getElementById('btnRoleGuru'); 
+    if(r==='admin'){ 
+        ba.classList.remove('border-gray-300','text-gray-500'); 
+        ba.classList.add('border-emerald-500','text-emerald-600'); 
+        bg.classList.remove('border-emerald-500','text-emerald-600'); 
+        bg.classList.add('border-gray-300','text-gray-500'); 
+    } else { 
+        bg.classList.remove('border-gray-300','text-gray-500'); 
+        bg.classList.add('border-emerald-500','text-emerald-600'); 
+        ba.classList.remove('border-emerald-500','text-emerald-600'); 
+        ba.classList.add('border-gray-300','text-gray-500'); 
+    } 
+}
 function doLogin(){
     let u=document.getElementById('loginUser').value, p=document.getElementById('loginPass').value, role=selectedRole;
-    if(role==='admin' && u==='admin' && p==='admin123'){ currentUserRole='admin'; document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden'); updateMenuByRole(); loadProfil(); loadData(); showToast('Selamat datang Admin!','success'); }
-    else if(role==='guru' && u==='guru' && p==='guru123'){ currentUserRole='guru'; document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden'); updateMenuByRole(); loadProfil(); loadData(); showToast('Selamat datang Guru!','success'); }
+    if(role==='guru' && u==='guru' && p==='guru123'){ currentUserRole='guru'; document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden'); updateMenuByRole(); loadProfil(); loadData(); showToast('Selamat datang Guru!','success'); }
+    else if(role==='admin' && u==='admin' && p==='admin123'){ currentUserRole='admin'; document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden'); updateMenuByRole(); loadProfil(); loadData(); showToast('Selamat datang Admin!','success'); }
     else { let err=document.getElementById('loginError'); err.innerText='Username atau password salah!'; err.classList.remove('hidden'); setTimeout(()=>err.classList.add('hidden'),2000); }
 }
-function doLogout(){ document.getElementById('mainApp').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('loginUser').value=''; document.getElementById('loginPass').value=''; setRole('admin'); }
+function doLogout(){ document.getElementById('mainApp').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('loginUser').value=''; document.getElementById('loginPass').value=''; setRole('guru'); }
 
 loadProfil();
 loadData();
