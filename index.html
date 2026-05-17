@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Mutqin BM - Hafalan & Pendidikan Madin</title>
+    <title>Mutqin BM - Sistem Hafalan & Penilaian Madin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -32,7 +32,7 @@
         .modal-content{background:white;border-radius:20px;max-width:550px;width:90%;max-height:80vh;overflow-y:auto;padding:20px;}
         .santri-list-group{max-height:550px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:12px;margin-top:5px;background:white;}
         .kelas-group{border-bottom:1px solid #e5e7eb;}
-        .kelas-title{background:#f0fdf4;padding:12px 16px;font-weight:700;color:#065f46;border-bottom:1px solid #d1fae5;}
+        .kelas-title{background:#f0fdf4;padding:12px 16px;font-weight:700;color:#065f46;border-bottom:1px solid #d1fae5;cursor:pointer;}
         .santri-item{padding:12px 16px;padding-left:35px;border-bottom:1px solid #f3f4f6;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
         .santri-item:hover{background:#d1fae5;}
         .certificate-box{background:white;border:8px double #059669;border-radius:16px;padding:30px;max-width:550px;margin:0 auto;text-align:center;}
@@ -49,6 +49,9 @@
         .progress-bar-big{height:8px;background:#e5e7eb;border-radius:10px;overflow:hidden;width:100%;}
         .progress-fill-big{height:100%;background:#10b981;transition:width 0.3s;}
         .sync-status{position:fixed;bottom:20px;left:20px;background:white;padding:5px 12px;border-radius:20px;font-size:11px;z-index:100;cursor:pointer;}
+        .stats-card{background:white;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+        .stats-number{font-size:32px;font-weight:bold;color:#10b981;}
+        .stats-label{font-size:14px;color:#666;margin-top:5px;}
     </style>
 </head>
 <body class="bg-gray-100" id="appBody">
@@ -60,7 +63,7 @@
             <div id="loginLogoArea" class="w-24 h-24 mx-auto bg-emerald-100 rounded-2xl flex items-center justify-center mb-3 overflow-hidden">
                 <i class="fas fa-graduation-cap text-emerald-600 text-5xl"></i>
             </div>
-            <h1 id="loginNamaPesantren" class="text-2xl font-bold">Pondok Pesantren Bahrul Maghfiroh</h1>
+            <h1 id="loginNamaPesantren" class="text-2xl font-bold">Mutqin BM</h1>
             <p class="text-gray-500 text-sm">Sistem Hafalan & Penilaian Madin</p>
         </div>
         <div id="loginError" class="hidden bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-center text-sm"></div>
@@ -71,7 +74,7 @@
         <input type="text" id="loginUser" class="w-full p-3 border rounded-lg mb-3" placeholder="Username">
         <input type="password" id="loginPass" class="w-full p-3 border rounded-lg mb-4" placeholder="Password">
         <button onclick="doLogin()" class="btn-primary w-full py-3 rounded-lg">Login</button>
-        <div class="text-center text-xs text-gray-400 mt-4">Admin: admin / admin123 | Guru: guru / guru123</div>
+        <div class="text-center text-xs text-gray-400 mt-4">Guru: guru / guru123 | Admin: admin / admin123</div>
     </div>
 </div>
 
@@ -98,24 +101,46 @@
         <div class="flex-1 p-4 md:p-6">
             <div id="pageDashboard" class="page">
                 <div class="datetime-card"><div class="flex justify-between"><div id="fullDate"></div><div id="currentTimeLarge" class="font-mono text-xl"></div></div></div>
-                <div id="dashboardProfileCard" class="bg-white rounded-xl shadow-md p-5 mb-6 flex flex-wrap items-center gap-4 border-l-8 border-emerald-500">
-                    <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center"><i class="fas fa-school text-emerald-600 text-3xl"></i></div>
-                    <div><h2 id="dashNamaPesantren" class="text-xl font-bold">Pondok Pesantren Bahrul Maghfiroh</h2><p id="dashPengasuh" class="text-gray-600">Pengasuh: KH. Ahmad Munif</p><p id="dashKetua" class="text-gray-500 text-sm">Ketua: Drs. M. Sholeh</p></div>
+                <div id="dashboardProfileCard" class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-md p-5 mb-6 text-white">
+                    <h2 class="text-2xl font-bold">Selamat Datang di Mutqin</h2>
+                    <p class="text-emerald-100 mt-1">Sistem Hafalan & Penilaian Madin Terintegrasi</p>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalSantriHafalan">0</div><div>Total Santri</div></div>
-                    <div class="bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalLulus">0</div><div>Lulus Hafalan</div></div>
-                    <div class="bg-gradient-to-br from-yellow-500 to-yellow-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalProsesHafalan">0</div><div>Proses</div></div>
-                    <div class="bg-gradient-to-br from-red-500 to-red-700 text-white rounded-xl p-4"><div class="text-2xl font-bold" id="totalBelumHafalan">0</div><div>Belum</div></div>
+                
+                <!-- Statistik Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="stats-card"><div class="stats-number" id="totalSantriDash">0</div><div class="stats-label">Total Santri</div></div>
+                    <div class="stats-card"><div class="stats-number" id="totalLulusDash">0</div><div class="stats-label">Lulus Hafalan</div></div>
+                    <div class="stats-card"><div class="stats-number" id="totalSelesaiMapelDash">0</div><div class="stats-label">Selesai Tam-taman</div></div>
+                    <div class="stats-card"><div class="stats-number" id="persenKelulusan">0%</div><div class="stats-label">Persentase Kelulusan</div></div>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="bg-white rounded-xl p-4"><canvas id="statusChartHafalan" height="200"></canvas></div><div class="bg-white rounded-xl p-4"><canvas id="statusChartMapel" height="200"></canvas></div></div>
+                
+                <!-- Grafik -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-xl p-4 shadow">
+                        <h3 class="font-bold mb-3">📊 Presentase Hafalan Santri</h3>
+                        <canvas id="chartHafalanDashboard" height="200"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow">
+                        <h3 class="font-bold mb-3">📚 Presentase Tam-taman Santri</h3>
+                        <canvas id="chartMapelDashboard" height="200"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Progress Bars -->
+                <div class="bg-white rounded-xl p-5 shadow">
+                    <h3 class="font-bold mb-4">📈 Ringkasan Kelulusan</h3>
+                    <div class="space-y-3">
+                        <div><div class="flex justify-between text-sm"><span>Hafalan Lulus</span><span id="lulusPersenText">0%</span></div><div class="progress-bar-big"><div class="progress-fill-big bg-green-500" id="lulusProgressBar" style="width:0%"></div></div></div>
+                        <div><div class="flex justify-between text-sm"><span>Tam-taman Selesai</span><span id="mapelPersenText">0%</span></div><div class="progress-bar-big"><div class="progress-fill-big bg-purple-500" id="mapelProgressBar" style="width:0%"></div></div></div>
+                    </div>
+                </div>
             </div>
             <div id="pageSantri" class="page hidden"><h2 class="text-xl font-bold mb-4">Data Santri</h2><div class="flex gap-2 mb-4 flex-wrap" id="santriButtons"></div><input type="text" id="searchSantri" placeholder="Cari nama atau kelas..." class="w-full p-2 border rounded-lg mb-4" onkeyup="renderSantri()"><div id="santriListContainer" class="bg-white rounded-xl shadow"></div></div>
-            <div id="pageHafalan" class="page hidden"><h2 class="text-xl font-bold mb-4">Hafalan & Pendidikan Madin</h2><div class="bg-white rounded-xl shadow"><div class="p-4 border-b"><input type="text" id="searchSantriHafalan" placeholder="Cari santri..." class="w-full p-2 border rounded-lg" onkeyup="filterHafalanList()"></div><div id="santriListHafalan" class="santri-list-group"></div><div id="formHafalan" class="hidden p-4"></div></div></div>
-            <div id="pageMapel" class="page hidden"><h2 class="text-xl font-bold mb-4">Tam-taman</h2><div class="bg-white rounded-xl shadow"><div class="p-4 border-b"><input type="text" id="searchSantriMapel" placeholder="Cari santri..." class="w-full p-2 border rounded-lg" onkeyup="filterMapelList()"></div><div id="santriListMapel" class="santri-list-group"></div><div id="formMapel" class="hidden p-4"></div></div></div>
-            <div id="pageSertifikat" class="page hidden"><h2 class="text-xl font-bold mb-4">Sertifikat</h2><div class="bg-white rounded-xl shadow p-4"><select id="selectSertifikat" class="w-full p-2 border rounded-lg mb-4" onchange="loadSertifikat()"></select><div id="sertifikatPreview"></div></div></div>
-            <div id="pageLaporan" class="page hidden"><h2 class="text-xl font-bold mb-4">Laporan</h2><div class="bg-white rounded-xl shadow p-6" id="laporanContent"></div></div>
-            <div id="pagePengaturan" class="page hidden"><h2 class="text-xl font-bold mb-4">Pengaturan</h2><div class="bg-white rounded-xl shadow p-6 max-w-2xl"><div class="mb-6 pb-4 border-b"><h3 class="font-semibold mb-3"><i class="fas fa-university mr-2"></i> Profil Pesantren</h3><div class="grid gap-3"><div><label class="block text-sm font-medium">Nama Pesantren</label><input type="text" id="settingNamaPesantren" class="w-full p-2 border rounded-lg"></div><div><label class="block text-sm font-medium">Nama Pengasuh</label><input type="text" id="settingPengasuh" class="w-full p-2 border rounded-lg"></div><div><label class="block text-sm font-medium">Ketua Pondok</label><input type="text" id="settingKetua" class="w-full p-2 border rounded-lg"></div><div><label class="block text-sm font-medium">URL Logo (Gambar)</label><input type="text" id="settingLogoUrl" class="w-full p-2 border rounded-lg" placeholder="https://..."><button onclick="simpanProfil()" class="btn-primary mt-2 px-4 py-2">Simpan Profil</button></div></div></div><div class="mb-6"><h3 class="font-semibold mb-3"><i class="fas fa-cloud-upload-alt mr-2"></i> Google Sheets Cloud</h3><div class="flex gap-3"><button onclick="syncToCloud()" class="btn-primary flex-1 py-2"><i class="fas fa-cloud-upload-alt"></i> Simpan ke Cloud</button><button onclick="loadFromCloud()" class="btn-outline flex-1 py-2"><i class="fas fa-cloud-download-alt"></i> Load dari Cloud</button></div></div></div></div>
+            <div id="pageHafalan" class="page hidden"><h2 class="text-xl font-bold mb-4">Hafalan & Pendidikan Madin</h2><div class="bg-white rounded-xl shadow"><div class="p-4 border-b flex justify-between items-center flex-wrap gap-2"><input type="text" id="searchSantriHafalan" placeholder="Cari santri..." class="flex-1 p-2 border rounded-lg" onkeyup="filterHafalanList()"><button onclick="checkAllHafalan()" class="btn-outline text-sm"><i class="fas fa-check-double"></i> Centang Semua</button><button onclick="uncheckAllHafalan()" class="btn-outline text-sm"><i class="fas fa-times"></i> Hapus Semua</button></div><div id="santriListHafalan" class="santri-list-group"></div><div id="formHafalan" class="hidden p-4"></div></div></div>
+            <div id="pageMapel" class="page hidden"><h2 class="text-xl font-bold mb-4">Tam-taman (Penilaian Mapel)</h2><div class="bg-white rounded-xl shadow"><div class="p-4 border-b flex justify-between items-center flex-wrap gap-2"><input type="text" id="searchSantriMapel" placeholder="Cari santri..." class="flex-1 p-2 border rounded-lg" onkeyup="filterMapelList()"><button onclick="checkAllMapel()" class="btn-outline text-sm"><i class="fas fa-check-double"></i> Centang Semua</button><button onclick="uncheckAllMapel()" class="btn-outline text-sm"><i class="fas fa-times"></i> Hapus Semua</button></div><div id="santriListMapel" class="santri-list-group"></div><div id="formMapel" class="hidden p-4"></div></div></div>
+            <div id="pageSertifikat" class="page hidden"><h2 class="text-xl font-bold mb-4">Sertifikat Kelulusan</h2><div class="bg-white rounded-xl shadow p-4"><select id="selectSertifikat" class="w-full p-2 border rounded-lg mb-4" onchange="loadSertifikat()"><option value="">-- Pilih Santri Lulus --</option></select><div id="sertifikatPreview"></div></div></div>
+            <div id="pageLaporan" class="page hidden"><h2 class="text-xl font-bold mb-4">Laporan Lengkap</h2><div class="bg-white rounded-xl shadow p-6" id="laporanContent"></div></div>
+            <div id="pagePengaturan" class="page hidden"><h2 class="text-xl font-bold mb-4">Pengaturan</h2><div class="bg-white rounded-xl shadow p-6 max-w-2xl"><div class="mb-6 pb-4 border-b"><h3 class="font-semibold mb-3"><i class="fas fa-image mr-2"></i> Logo Pesantren</h3><div class="grid gap-3"><div><label class="block text-sm font-medium">URL Logo (Gambar)</label><input type="text" id="settingLogoUrl" class="w-full p-2 border rounded-lg" placeholder="https://..."><button onclick="simpanProfil()" class="btn-primary mt-2 px-4 py-2">Simpan Logo</button></div><div id="logoPreview" class="mt-3 p-3 bg-gray-50 rounded-lg text-center"></div></div></div><div class="mb-6"><h3 class="font-semibold mb-3"><i class="fas fa-cloud-upload-alt mr-2"></i> Google Sheets Cloud</h3><div class="flex gap-3 flex-wrap"><button onclick="syncToCloud()" class="btn-primary flex-1 py-2"><i class="fas fa-cloud-upload-alt"></i> Simpan ke Cloud</button><button onclick="loadFromCloud()" class="btn-outline flex-1 py-2"><i class="fas fa-cloud-download-alt"></i> Load dari Cloud</button><button onclick="exportToExcel()" class="btn-outline flex-1 py-2"><i class="fas fa-file-excel"></i> Export Excel</button></div></div></div></div>
         </div>
     </div>
 </div>
@@ -134,9 +159,7 @@ let currentMapelSantriId = null;
 let chartInstances = {};
 
 let profil = {
-    namaPesantren: 'Pondok Pesantren Bahrul Maghfiroh',
-    pengasuh: 'KH. Ahmad Munif',
-    ketuaPondok: 'Drs. M. Sholeh',
+    namaPesantren: 'Mutqin BM',
     logoUrl: ''
 };
 
@@ -159,22 +182,13 @@ const mapelByKelas = {
     '6B':['Akhlak','B. Arab','Balaghoh','Faroid','Fikih','Hadits','Mustholah H','Qowaid F','Tafsir','Ushul F','Nahwu']
 };
 
-// ========== FUNGSI UTAMA ==========
 function getKelasNum(kelas) { return parseInt(kelas.match(/\d+/)?.[0] || 6); }
 
-// FUNGSI HITUNG PROGRESS - SUDAH DIPERBAIKI
 function hitungProgressHafalan(s) {
     let kelasNum = getKelasNum(s.kelas);
-    
-    // JIKA MADIN DIPILIH (salah satu atau keduanya) -> LANGSUNG 100%
-    if (kelasNum <= 3) {
-        if (s.madinUla === true) return 100;
-    } else {
-        if (s.madinUla === true || s.madinWustho === true) return 100;
-    }
-    
-    let total = 53;
-    let done = 0;
+    if (kelasNum <= 3) { if (s.madinUla === true) return 100; }
+    else { if (s.madinUla === true || s.madinWustho === true) return 100; }
+    let total = 53; let done = 0;
     if(s.yasin) done++; if(s.waqiah) done++; if(s.mulk) done++;
     if(s.wirid) done++; if(s.doaShalat) done++; if(s.tahlilRingkas) done++; if(s.tahlilLengkap) done++; if(s.doaTahlil) done++; if(s.tawasul) done++;
     if(s.juz30) for(let i=0;i<37;i++) if(s.juz30[i]) done++;
@@ -263,34 +277,33 @@ function loadData() {
 function saveData() { localStorage.setItem('mutqin_santri', JSON.stringify(santri)); refreshAll(); showToast('Data tersimpan', 'success'); }
 function showToast(msg, type) { let t = document.createElement('div'); t.className = `toast toast-${type}`; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
 
-// ==================== PROFIL ====================
+// ==================== PROFIL & LOGO ====================
 function loadProfil() {
     let saved = localStorage.getItem('mutqin_profil');
     if(saved) { try { let p = JSON.parse(saved); if(p.namaPesantren) profil = p; } catch(e){} }
     updateProfilDisplay();
 }
 function simpanProfil() {
-    profil.namaPesantren = document.getElementById('settingNamaPesantren').value || profil.namaPesantren;
-    profil.pengasuh = document.getElementById('settingPengasuh').value || profil.pengasuh;
-    profil.ketuaPondok = document.getElementById('settingKetua').value || profil.ketuaPondok;
     profil.logoUrl = document.getElementById('settingLogoUrl').value || '';
     localStorage.setItem('mutqin_profil', JSON.stringify(profil));
     updateProfilDisplay();
-    showToast('Profil tersimpan', 'success');
+    showToast('Logo tersimpan', 'success');
 }
 function updateProfilDisplay() {
     document.getElementById('loginNamaPesantren').innerText = profil.namaPesantren;
     document.getElementById('headerNamaPesantren').innerText = profil.namaPesantren;
-    document.getElementById('dashNamaPesantren').innerText = profil.namaPesantren;
-    document.getElementById('dashPengasuh').innerHTML = `Pengasuh: ${profil.pengasuh}`;
-    document.getElementById('dashKetua').innerHTML = `Ketua: ${profil.ketuaPondok}`;
-    document.getElementById('settingNamaPesantren').value = profil.namaPesantren;
-    document.getElementById('settingPengasuh').value = profil.pengasuh;
-    document.getElementById('settingKetua').value = profil.ketuaPondok;
-    document.getElementById('settingLogoUrl').value = profil.logoUrl || '';
     if(profil.logoUrl && profil.logoUrl.trim() !== '') {
         let logoHtml = `<img src="${profil.logoUrl}" class="w-full h-full object-cover rounded-2xl">`;
         document.getElementById('loginLogoArea').innerHTML = logoHtml;
+    }
+    let previewHtml = profil.logoUrl ? `<img src="${profil.logoUrl}" class="h-20 mx-auto rounded-lg">` : '<p class="text-gray-400">Belum ada logo</p>';
+    document.getElementById('logoPreview').innerHTML = previewHtml;
+    updateSertifikatLogo();
+}
+function updateSertifikatLogo() {
+    let logoArea = document.getElementById('sertifikatPreview');
+    if(logoArea && profil.logoUrl) {
+        // akan diupdate saat load sertifikat
     }
 }
 
@@ -308,16 +321,22 @@ function updateDashboard() {
         let sm = getStatusMapel(s, s.kelas);
         if(sm==='Selesai') selesai++; else if(sm==='Proses') prosesM++; else belumM++;
     });
-    document.getElementById('totalSantriHafalan').innerText = santri.length;
-    document.getElementById('totalLulus').innerText = lulus;
-    document.getElementById('totalProsesHafalan').innerText = prosesH;
-    document.getElementById('totalBelumHafalan').innerText = belumH;
+    document.getElementById('totalSantriDash').innerText = santri.length;
+    document.getElementById('totalLulusDash').innerText = lulus;
+    document.getElementById('totalSelesaiMapelDash').innerText = selesai;
+    let persenKelulusan = santri.length ? Math.round((lulus / santri.length) * 100) : 0;
+    document.getElementById('persenKelulusan').innerText = persenKelulusan + '%';
+    document.getElementById('lulusPersenText').innerText = santri.length ? Math.round((lulus / santri.length) * 100) + '%' : '0%';
+    document.getElementById('mapelPersenText').innerText = santri.length ? Math.round((selesai / santri.length) * 100) + '%' : '0%';
+    document.getElementById('lulusProgressBar').style.width = santri.length ? (lulus / santri.length) * 100 + '%' : '0%';
+    document.getElementById('mapelProgressBar').style.width = santri.length ? (selesai / santri.length) * 100 + '%' : '0%';
+    
     if(chartInstances.ch1) chartInstances.ch1.destroy();
-    let ctx1 = document.getElementById('statusChartHafalan')?.getContext('2d');
-    if(ctx1) chartInstances.ch1 = new Chart(ctx1, { type: 'doughnut', data: { labels: ['Lulus','Proses','Belum'], datasets: [{ data: [lulus,prosesH,belumH], backgroundColor: ['#10b981','#f59e0b','#ef4444'] }] } });
+    let ctx1 = document.getElementById('chartHafalanDashboard')?.getContext('2d');
+    if(ctx1) chartInstances.ch1 = new Chart(ctx1, { type: 'doughnut', data: { labels: ['Lulus', 'Proses', 'Belum'], datasets: [{ data: [lulus, prosesH, belumH], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] }, options: { responsive: true } });
     if(chartInstances.ch2) chartInstances.ch2.destroy();
-    let ctx2 = document.getElementById('statusChartMapel')?.getContext('2d');
-    if(ctx2) chartInstances.ch2 = new Chart(ctx2, { type: 'doughnut', data: { labels: ['Selesai','Proses','Belum'], datasets: [{ data: [selesai,prosesM,belumM], backgroundColor: ['#8b5cf6','#f59e0b','#ef4444'] }] } });
+    let ctx2 = document.getElementById('chartMapelDashboard')?.getContext('2d');
+    if(ctx2) chartInstances.ch2 = new Chart(ctx2, { type: 'doughnut', data: { labels: ['Selesai', 'Proses', 'Belum'], datasets: [{ data: [selesai, prosesM, belumM], backgroundColor: ['#8b5cf6', '#f59e0b', '#ef4444'] }] }, options: { responsive: true } });
 }
 
 function renderSantri() {
@@ -345,12 +364,12 @@ function renderHafalanList() {
     filtered.forEach(s=>{if(!groups[s.kelas]) groups[s.kelas]=[]; groups[s.kelas].push(s);});
     let html = '';
     for(let kelas of Object.keys(groups).sort()) {
-        html += `<div class="kelas-group"><div class="kelas-title">Kelas ${kelas} (${groups[kelas].length})</div>`;
+        html += `<div class="kelas-group"><div class="kelas-title" onclick="toggleKelas('kelas-${kelas}')">📚 Kelas ${kelas} (${groups[kelas].length}) <i class="fas fa-chevron-down float-right"></i></div><div id="kelas-${kelas}" class="kelas-content">`;
         groups[kelas].forEach(s => {
             let p = hitungProgressHafalan(s);
             html += `<div class="santri-item" onclick="selectHafalan(${s.id})"><div><span class="font-medium">${s.nama}</span><div class="progress-small"><div class="progress-fill-small" style="width:${p}%"></div></div></div><div>${p}% <i class="fas fa-chevron-right"></i></div></div>`;
         });
-        html += `</div>`;
+        html += `</div></div>`;
     }
     document.getElementById('santriListHafalan').innerHTML = html || '<div class="p-4 text-center text-gray-400">Tidak ada santri</div>';
 }
@@ -362,20 +381,66 @@ function renderMapelList() {
     filtered.forEach(s=>{if(!groups[s.kelas]) groups[s.kelas]=[]; groups[s.kelas].push(s);});
     let html = '';
     for(let kelas of Object.keys(groups).sort()) {
-        html += `<div class="kelas-group"><div class="kelas-title">Kelas ${kelas} (${groups[kelas].length})</div>`;
+        html += `<div class="kelas-group"><div class="kelas-title" onclick="toggleKelas('mapel-${kelas}')">📚 Kelas ${kelas} (${groups[kelas].length}) <i class="fas fa-chevron-down float-right"></i></div><div id="mapel-${kelas}" class="kelas-content">`;
         groups[kelas].forEach(s => {
             let p = hitungProgressMapel(s, s.kelas).persen;
             html += `<div class="santri-item" onclick="selectMapel(${s.id})"><div><span class="font-medium">${s.nama}</span><div class="progress-small"><div class="progress-fill-small" style="width:${p}%"></div></div></div><div>${p}%</div></div>`;
         });
-        html += `</div>`;
+        html += `</div></div>`;
     }
     document.getElementById('santriListMapel').innerHTML = html;
+}
+
+function toggleKelas(id) {
+    let el = document.getElementById(id);
+    if(el) {
+        if(el.style.display === 'none') el.style.display = 'block';
+        else el.style.display = 'none';
+    }
 }
 
 function filterHafalanList() { renderHafalanList(); }
 function filterMapelList() { renderMapelList(); }
 function selectHafalan(id) { currentSantriId = id; loadFormHafalan(); }
 function selectMapel(id) { currentMapelSantriId = id; loadFormMapel(); }
+
+function checkAllHafalan() {
+    santri.forEach(s => {
+        s.yasin = true; s.waqiah = true; s.mulk = true;
+        s.wirid = true; s.doaShalat = true; s.tahlilRingkas = true; s.tahlilLengkap = true; s.doaTahlil = true; s.tawasul = true;
+        for(let i=0;i<37;i++) s.juz30[i] = true;
+        s.praktikShalat = true; s.praktikJenazah = true; s.praktikKhotib = true;
+        s.sikapJamaah = true; s.sikapMadin = true; s.sikapFormal = true;
+    });
+    saveData(); showToast('Semua hafalan dicentang', 'success');
+}
+
+function uncheckAllHafalan() {
+    santri.forEach(s => {
+        s.yasin = false; s.waqiah = false; s.mulk = false;
+        s.wirid = false; s.doaShalat = false; s.tahlilRingkas = false; s.tahlilLengkap = false; s.doaTahlil = false; s.tawasul = false;
+        for(let i=0;i<37;i++) s.juz30[i] = false;
+        s.praktikShalat = false; s.praktikJenazah = false; s.praktikKhotib = false;
+        s.sikapJamaah = false; s.sikapMadin = false; s.sikapFormal = false;
+    });
+    saveData(); showToast('Semua hafalan dihapus', 'success');
+}
+
+function checkAllMapel() {
+    santri.forEach(s => {
+        let list = mapelByKelas[s.kelas] || [];
+        list.forEach(m => { s.mapelStatus[m] = true; });
+    });
+    saveData(); renderMapelList(); updateDashboard(); showToast('Semua mapel dicentang', 'success');
+}
+
+function uncheckAllMapel() {
+    santri.forEach(s => {
+        let list = mapelByKelas[s.kelas] || [];
+        list.forEach(m => { s.mapelStatus[m] = false; });
+    });
+    saveData(); renderMapelList(); updateDashboard(); showToast('Semua mapel dihapus', 'success');
+}
 
 function loadFormHafalan() {
     let s = santri.find(x=>x.id===currentSantriId);
@@ -387,12 +452,11 @@ function loadFormHafalan() {
     daftarJuz.forEach((nama,i)=>{ juzHtml += `<label class="flex justify-between p-2 bg-white rounded border"><span>${nama}</span><input type="checkbox" id="juz_${i}" class="juz-cb" ${s.juz30[i]?'checked':''}></label>`; });
     juzHtml += `</div>`;
     
-    // TAMPILAN MADIN DENGAN DUA PILIHAN - TIDAK MENGUBAH TAMPILAN LAIN
     let madinHtml = '';
     if(kelasNum <= 3) {
-        madinHtml = `<div class="madin-highlight p-4 rounded-lg text-center"><label class="flex justify-between items-center text-lg font-bold"><span class="text-emerald-700">✅ LULUS MADIN ULA (CENTANG INI = LANGSUNG 100%)</span><input type="checkbox" id="madinUla" ${s.madinUla?'checked':''}></label><p class="text-sm text-gray-600 mt-2">⚠️ Centang checkbox di atas = santri langsung LULUS 100%</p><div class="bg-yellow-100 p-2 rounded mt-2"><strong>Status saat ini:</strong> ${getStatusHafalan(s)} (${currentProgress}%) ${s.madinUla ? '<span class="text-green-600 font-bold">✓ AKAN JADI 100%</span>' : ''}</div></div>`;
+        madinHtml = `<div class="madin-highlight p-4 rounded-lg text-center"><label class="flex justify-between items-center text-lg font-bold"><span class="text-emerald-700">✅ LULUS MADIN ULA (CENTANG INI = LANGSUNG 100%)</span><input type="checkbox" id="madinUla" ${s.madinUla?'checked':''}></label><p class="text-sm text-gray-600 mt-2">⚠️ Centang checkbox di atas = santri langsung LULUS 100%</p><div class="bg-yellow-100 p-2 rounded mt-2"><strong>Status saat ini:</strong> ${getStatusHafalan(s)} (${currentProgress}%)</div></div>`;
     } else {
-        madinHtml = `<div class="madin-highlight p-4 rounded-lg"><div class="grid grid-cols-2 gap-4"><label class="flex justify-between font-bold"><span>✅ Lulus Madin Ula</span><input type="checkbox" id="madinUla" ${s.madinUla?'checked':''}></label><label class="flex justify-between font-bold text-emerald-700"><span>⭐ LULUS MADIN WUSTHO (CENTANG = 100%)</span><input type="checkbox" id="madinWustho" ${s.madinWustho?'checked':''}></label></div><p class="text-sm text-gray-600 text-center mt-2">⚠️ Centang "LULUS MADIN WUSTHO" = santri langsung LULUS 100%</p><div class="bg-yellow-100 p-2 rounded mt-2 text-center"><strong>Status saat ini:</strong> ${getStatusHafalan(s)} (${currentProgress}%) ${s.madinWustho ? '<span class="text-green-600 font-bold">✓ AKAN JADI 100%</span>' : ''}</div></div>`;
+        madinHtml = `<div class="madin-highlight p-4 rounded-lg"><div class="grid grid-cols-2 gap-4"><label class="flex justify-between font-bold"><span>✅ Lulus Madin Ula</span><input type="checkbox" id="madinUla" ${s.madinUla?'checked':''}></label><label class="flex justify-between font-bold text-emerald-700"><span>⭐ LULUS MADIN WUSTHO (CENTANG = 100%)</span><input type="checkbox" id="madinWustho" ${s.madinWustho?'checked':''}></label></div><p class="text-sm text-gray-600 text-center mt-2">⚠️ Centang salah satu atau keduanya = langsung LULUS 100%</p><div class="bg-yellow-100 p-2 rounded mt-2 text-center"><strong>Status saat ini:</strong> ${getStatusHafalan(s)} (${currentProgress}%)</div></div>`;
     }
     
     let html = `<div class="space-y-4">
@@ -402,7 +466,7 @@ function loadFormHafalan() {
         <div class="bg-orange-50 p-3 rounded"><div class="flex justify-between"><b>4. Praktik Ibadah</b><button onclick="toggleAllPraktik()" class="btn-outline text-sm">Centang Semua</button></div><div class="flex gap-3 mt-2"><label><input type="checkbox" id="praktikShalat" ${s.praktikShalat?'checked':''}> Shalat</label><label><input type="checkbox" id="praktikJenazah" ${s.praktikJenazah?'checked':''}> Jenazah</label><label><input type="checkbox" id="praktikKhotib" ${s.praktikKhotib?'checked':''}> Khotib</label></div><div class="flex gap-3 mt-2"><span>Nilai:</span><select id="nilaiPraktik"><option ${s.nilaiPraktik==='Mumtaz'?'selected':''}>Mumtaz</option><option ${s.nilaiPraktik==='Jayyid Jiddan'?'selected':''}>Jayyid Jiddan</option><option ${s.nilaiPraktik==='Jayyid'?'selected':''}>Jayyid</option></select><button onclick="simpanPraktik()" class="btn-primary text-sm ml-auto">Simpan</button></div></div>
         ${madinHtml}
         <div class="bg-rose-50 p-3 rounded"><div class="flex justify-between"><b>5. Sikap & Adab</b><button onclick="toggleAllSikap()" class="btn-outline text-sm">Centang Semua</button></div><div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2"><label><input type="checkbox" id="sikapJamaah" ${s.sikapJamaah?'checked':''}> Shalat Berjamaah</label><label><input type="checkbox" id="sikapMadin" ${s.sikapMadin?'checked':''}> Keaktifan Madin</label><label><input type="checkbox" id="sikapFormal" ${s.sikapFormal?'checked':''}> Keaktifan Formal</label></div><button onclick="simpanSikap()" class="btn-primary text-sm mt-2">Simpan Sikap</button></div>
-        <button onclick="simpanMadinDanRefresh()" class="btn-success w-full py-3 text-lg">💾 SIMPAN MADIN & UPDATE STATUS</button>
+        <button onclick="simpanMadinDanRefresh()" class="btn-success w-full py-3 text-lg">💾 SIMPAN SEMUA PERUBAHAN</button>
     </div>`;
     document.getElementById('formHafalan').classList.remove('hidden');
     document.getElementById('formHafalan').innerHTML = html;
@@ -413,13 +477,32 @@ function loadFormMapel() {
     if(!s) return;
     let list = mapelByKelas[s.kelas] || [];
     let {done,total} = hitungProgressMapel(s,s.kelas);
-    let html = `<div class="bg-purple-50 p-4 rounded"><h3 class="font-bold">📚 Mapel Kelas ${s.kelas} - ${s.nama}</h3><div>Progress: ${done}/${total}</div><div class="mapel-grid mt-3">`;
+    let html = `<div class="bg-purple-50 p-4 rounded"><h3 class="font-bold">📚 Mapel Kelas ${s.kelas} - ${s.nama}</h3><div>Progress: ${done}/${total} (${Math.round((done/total)*100)}%)</div><div class="mapel-grid mt-3">`;
     for(let m of list) {
         html += `<div class="mapel-item"><span>${m}</span><input type="checkbox" id="mapel_${m.replace(/\s/g,'_')}" class="mapel-cb" ${s.mapelStatus[m]?'checked':''}></div>`;
     }
-    html += `</div><button onclick="simpanMapel()" class="btn-primary mt-4">Simpan Mapel</button></div>`;
+    html += `</div><div class="flex gap-3 mt-4"><button onclick="checkAllMapelSantri()" class="btn-outline"><i class="fas fa-check-double"></i> Centang Semua</button><button onclick="uncheckAllMapelSantri()" class="btn-outline"><i class="fas fa-times"></i> Hapus Semua</button><button onclick="simpanMapel()" class="btn-primary">Simpan Mapel</button></div></div>`;
     document.getElementById('formMapel').classList.remove('hidden');
     document.getElementById('formMapel').innerHTML = html;
+}
+
+function checkAllMapelSantri() {
+    let s = santri.find(x=>x.id===currentMapelSantriId);
+    if(s) {
+        let list = mapelByKelas[s.kelas] || [];
+        list.forEach(m => { s.mapelStatus[m] = true; });
+        saveData(); loadFormMapel(); renderMapelList(); updateDashboard();
+        showToast('Semua mapel dicentang', 'success');
+    }
+}
+function uncheckAllMapelSantri() {
+    let s = santri.find(x=>x.id===currentMapelSantriId);
+    if(s) {
+        let list = mapelByKelas[s.kelas] || [];
+        list.forEach(m => { s.mapelStatus[m] = false; });
+        saveData(); loadFormMapel(); renderMapelList(); updateDashboard();
+        showToast('Semua mapel dihapus', 'success');
+    }
 }
 
 function toggleAllSurat(){ let c=['yasin','waqiah','mulk']; let all=c.every(id=>document.getElementById(id).checked); c.forEach(id=>{let cb=document.getElementById(id);if(cb)cb.checked=!all;}); }
@@ -438,52 +521,58 @@ function simpanMadinDanRefresh(){
     let idx=santri.findIndex(x=>x.id===currentSantriId);
     if(idx===-1)return;
     let kelasNum = getKelasNum(santri[idx].kelas);
-    
     santri[idx].madinUla = document.getElementById('madinUla')?.checked || false;
-    if(kelasNum >= 4) {
-        santri[idx].madinWustho = document.getElementById('madinWustho')?.checked || false;
-    } else {
-        santri[idx].madinWustho = false;
-    }
-    
+    if(kelasNum >= 4) santri[idx].madinWustho = document.getElementById('madinWustho')?.checked || false;
+    else santri[idx].madinWustho = false;
     saveData();
     loadFormHafalan();
     renderHafalanList();
     updateDashboard();
-    
-    let newProgress = hitungProgressHafalan(santri[idx]);
-    let isLulusMadin = (kelasNum <= 3 && santri[idx].madinUla) || (kelasNum >= 4 && (santri[idx].madinUla || santri[idx].madinWustho));
-    
-    if(isLulusMadin) {
-        showToast(`✅ LULUS 100%! Santri dinyatakan Lulus karena Madin dipilih.`, 'success');
-    } else {
-        showToast(`✅ Status diperbarui! Progress: ${newProgress}% - ${getStatusHafalan(santri[idx])}`, 'success');
-    }
+    showToast(`✅ Status diperbarui! Progress: ${hitungProgressHafalan(santri[idx])}%`, 'success');
 }
 
-function simpanMapel(){ let idx=santri.findIndex(x=>x.id===currentMapelSantriId); if(idx===-1)return; let s=santri[idx]; let list=mapelByKelas[s.kelas]||[]; for(let m of list){ let cb=document.getElementById(`mapel_${m.replace(/\s/g,'_')}`); if(cb) s.mapelStatus[m]=cb.checked;} saveData(); loadFormMapel(); renderMapelList(); updateDashboard(); }
+function simpanMapel(){ let idx=santri.findIndex(x=>x.id===currentMapelSantriId); if(idx===-1)return; let s=santri[idx]; let list=mapelByKelas[s.kelas]||[]; for(let m of list){ let cb=document.getElementById(`mapel_${m.replace(/\s/g,'_')}`); if(cb) s.mapelStatus[m]=cb.checked;} saveData(); loadFormMapel(); renderMapelList(); updateDashboard(); showToast('Mapel tersimpan','success'); }
 
 function updateSelectSertifikat(){
     let select = document.getElementById('selectSertifikat');
-    let lulusan = santri.filter(s => getStatusHafalan(s) === 'Lulus' && getStatusMapel(s, s.kelas) === 'Selesai');
-    select.innerHTML = '<option value="">-- Pilih Santri Lulus --</option>' + lulusan.map(s => `<option value="${s.id}">${s.nama} (${s.kelas})</option>`).join('');
+    let lulusan = santri.filter(s => getStatusHafalan(s) === 'Lulus');
+    select.innerHTML = '<option value="">-- Pilih Santri Lulus --</option>' + lulusan.map(s => `<option value="${s.id}">${s.nama} (${s.kelas}) - Hafalan: ${getStatusHafalan(s)} | Tam-taman: ${getStatusMapel(s, s.kelas)}</option>`).join('');
 }
 function loadSertifikat(){
     let id = document.getElementById('selectSertifikat').value;
-    if(!id){ document.getElementById('sertifikatPreview').innerHTML = ''; return; }
+    if(!id){ document.getElementById('sertifikatPreview').innerHTML = '<div class="text-center text-gray-400 p-8">Pilih santri yang lulus terlebih dahulu</div>'; return; }
     let s = santri.find(x=>x.id==parseInt(id));
     if(!s) return;
-    let today = new Date().toLocaleDateString('id-ID');
-    let logoHtml = (profil.logoUrl && profil.logoUrl.trim()) ? `<img src="${profil.logoUrl}" style="width:70px;height:70px;object-fit:cover;border-radius:50%;margin:0 auto 10px;">` : `<i class="fas fa-graduation-cap text-emerald-600 text-5xl mb-2"></i>`;
-    document.getElementById('sertifikatPreview').innerHTML = `<div class="text-center"><div id="sertifikatBox" class="certificate-box">${logoHtml}<h2 class="text-xl font-bold">${profil.namaPesantren}</h2><p>Pengasuh: ${profil.pengasuh} | Ketua: ${profil.ketuaPondok}</p><div class="border-b-2 w-24 mx-auto my-3"></div><p>SERTIFIKAT KELULUSAN</p><h3 class="text-2xl font-bold text-emerald-700 my-3">${s.nama}</h3><p>Telah menyelesaikan seluruh program hafalan & mapel</p><div class="bg-emerald-100 px-6 py-2 rounded-full inline-block my-4"><span class="font-bold text-emerald-800">LULUS & SELESAI</span></div><p class="text-xs">Malang, ${today}</p></div><button onclick="downloadSertifikat()" class="btn-primary mt-4">Download PNG</button></div>`;
+    let today = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+    let logoHtml = (profil.logoUrl && profil.logoUrl.trim()) ? `<img src="${profil.logoUrl}" style="width:80px;height:80px;object-fit:cover;border-radius:50%;margin:0 auto 15px;">` : `<i class="fas fa-graduation-cap text-emerald-600 text-5xl mb-3"></i>`;
+    let statusMapel = getStatusMapel(s, s.kelas);
+    let mapelText = statusMapel === 'Selesai' ? 'dan TAM-TAMAN' : '(Tam-taman masih dalam proses)';
+    document.getElementById('sertifikatPreview').innerHTML = `<div class="text-center"><div id="sertifikatBox" class="certificate-box">${logoHtml}<h2 class="text-xl font-bold">${profil.namaPesantren}</h2><div class="border-b-2 w-24 mx-auto my-3"></div><p class="text-lg font-semibold">SERTIFIKAT KELULUSAN</p><h3 class="text-2xl font-bold text-emerald-700 my-3">${s.nama}</h3><p>Telah dinyatakan <strong>LULUS</strong> dalam program hafalan ${mapelText}</p><div class="bg-emerald-100 px-6 py-2 rounded-full inline-block my-4"><span class="font-bold text-emerald-800">LULUS HAFALAN</span></div><p class="text-xs text-gray-500 mt-4">Malang, ${today}</p><p class="text-xs text-gray-400 mt-2">Kelas: ${s.kelas} | Progress Hafalan: ${hitungProgressHafalan(s)}%</p></div><button onclick="downloadSertifikat()" class="btn-primary mt-4"><i class="fas fa-download"></i> Download Sertifikat PNG</button></div>`;
 }
-function downloadSertifikat(){ let node=document.getElementById('sertifikatBox'); html2canvas(node,{scale:2}).then(c=>{let a=document.createElement('a');a.download='sertifikat.png';a.href=c.toDataURL();a.click();showToast('Terunduh','success');}); }
+function downloadSertifikat(){ let node=document.getElementById('sertifikatBox'); html2canvas(node,{scale:2}).then(c=>{let a=document.createElement('a');a.download='sertifikat.png';a.href=c.toDataURL();a.click();showToast('Sertifikat terunduh','success');}); }
 
 function tambahSantri() { if(currentUserRole!=='admin'){showToast('Hanya admin','error');return;} let nama=document.getElementById('tambahNama').value.trim(); let kelas=document.getElementById('tambahKelas').value.trim(); if(!nama||!kelas){showToast('Lengkapi data','error');return;} let baru=getNewSantri(); baru.id=Date.now(); baru.nama=nama; baru.kelas=kelas; santri.push(baru); saveData(); closeModal(null,'tambahModal'); document.getElementById('tambahNama').value=''; document.getElementById('tambahKelas').value=''; showToast('Santri ditambahkan','success'); }
 function importMassal() { if(currentUserRole!=='admin'){showToast('Hanya admin','error');return;} let text=document.getElementById('massalData').value.trim(); if(!text){showToast('Data kosong','error');return;} let lines=text.split('\n'), added=0; for(let line of lines){ line=line.trim(); if(!line) continue; let parts=line.split(','); if(parts.length<2) continue; let nama=parts[0].trim(), kelas=parts.slice(1).join(',').trim(); if(nama&&kelas){ let baru=getNewSantri(); baru.id=Date.now()+added; baru.nama=nama; baru.kelas=kelas; santri.push(baru); added++; } } if(added>0){ saveData(); closeModal(null,'massalModal'); document.getElementById('massalData').value=''; showToast(`Import ${added} santri`,'success'); } else showToast('Tidak ada data valid','error'); }
 function editSantri(id){ if(currentUserRole!=='admin'){showToast('Hanya admin','error');return;} let s=santri.find(x=>x.id===id); if(!s)return; let nama=prompt('Edit Nama:',s.nama); if(nama) s.nama=nama; let kelas=prompt('Edit Kelas:',s.kelas); if(kelas) s.kelas=kelas; saveData(); }
 function hapusSantri(id){ if(currentUserRole!=='admin'){showToast('Hanya admin','error');return;} if(confirm('Yakin hapus?')){ santri=santri.filter(s=>s.id!==id); saveData(); showToast('Terhapus','success'); } }
-function exportToExcel(){ let data=santri.map((s,i)=>({No:i+1,Nama:s.nama,Kelas:s.kelas,Status_Hafalan:getStatusHafalan(s),Progress_Hafalan:`${hitungProgressHafalan(s)}%`,Status_Mapel:getStatusMapel(s,s.kelas)})); let ws=XLSX.utils.json_to_sheet(data); let wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Data'); XLSX.writeFile(wb,`mutqin_${new Date().toISOString().slice(0,10)}.xlsx`); showToast('Export berhasil','success'); }
+function exportToExcel(){ 
+    let data = santri.map((s,i)=>({
+        No: i+1,
+        Nama: s.nama,
+        Kelas: s.kelas,
+        'Status Hafalan': getStatusHafalan(s),
+        'Progress Hafalan': `${hitungProgressHafalan(s)}%`,
+        'Status Tam-taman': getStatusMapel(s, s.kelas),
+        'Progress Tam-taman': `${hitungProgressMapel(s, s.kelas).persen}%`,
+        'Madin Ula': s.madinUla ? 'Ya' : 'Tidak',
+        'Madin Wustho': s.madinWustho ? 'Ya' : 'Tidak'
+    }));
+    let ws = XLSX.utils.json_to_sheet(data);
+    let wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data Santri');
+    XLSX.writeFile(wb, `mutqin_laporan_${new Date().toISOString().slice(0,10)}.xlsx`);
+    showToast('Export berhasil', 'success');
+}
 
 function updateMenuByRole() {
     let nav = document.getElementById('sidebarNav');
@@ -496,7 +585,7 @@ function updateMenuByRole() {
     } else {
         badge.innerHTML = 'Guru';
         nav.innerHTML = `<div class="nav-item" onclick="showPage('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div><div class="nav-item" onclick="showPage('santri')"><i class="fas fa-users"></i> Data Santri</div><div class="nav-item" onclick="showPage('hafalan')"><i class="fas fa-book-open"></i> Hafalan & Madin</div><div class="nav-item" onclick="showPage('mapel')"><i class="fas fa-check-double"></i> Tam-taman</div><div class="nav-item" onclick="showPage('sertifikat')"><i class="fas fa-certificate"></i> Sertifikat</div><div class="nav-item" onclick="showPage('laporan')"><i class="fas fa-chart-bar"></i> Laporan</div>`;
-        if(btns) btns.innerHTML = `<button onclick="exportToExcel()" class="btn-outline"><i class="fas fa-file-excel"></i> Export</button>`;
+        if(btns) btns.innerHTML = `<button onclick="exportToExcel()" class="btn-outline"><i class="fas fa-file-excel"></i> Export</button><button onclick="syncToCloud()" class="btn-outline"><i class="fas fa-cloud-upload-alt"></i> Sync Cloud</button><button onclick="loadFromCloud()" class="btn-outline"><i class="fas fa-cloud-download-alt"></i> Load Cloud</button>`;
     }
 }
 
@@ -514,9 +603,21 @@ function showPage(p){
 function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
 function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
 function closeModal(e,id){ if(!e||e.target===document.getElementById(id)) document.getElementById(id).classList.add('hidden'); }
+
 function updateLaporanContent(){
-    let html = `<div class="text-center"><h1 class="text-2xl font-bold">${profil.namaPesantren}</h1><p>Pengasuh: ${profil.pengasuh} | Ketua: ${profil.ketuaPondok}</p><p>${new Date().toLocaleDateString('id-ID')}</p></div><table class="w-full text-sm mt-4 border"><thead class="bg-emerald-600 text-white"><tr><th>No</th><th>Nama</th><th>Kelas</th><th>Status Hafalan</th><th>Status Mapel</th></tr></thead><tbody>`;
-    santri.forEach((s,i)=>{ html += `<tr class="border-b"><td class="p-2">${i+1}</td><td class="p-2">${s.nama}</td><td class="p-2">${s.kelas}</td><td class="p-2"><span class="badge-${getStatusHafalan(s)==='Lulus'?'success':(getStatusHafalan(s)==='Proses'?'warning':'danger')}">${getStatusHafalan(s)}</span></td><td class="p-2"><span class="badge-${getStatusMapel(s, s.kelas)==='Selesai'?'success':(getStatusMapel(s, s.kelas)==='Proses'?'warning':'danger')}">${getStatusMapel(s, s.kelas)}</span></td></tr>`; });
+    let html = `<div class="text-center mb-6"><h1 class="text-2xl font-bold">${profil.namaPesantren}</h1><p>Laporan Lengkap Hafalan & Tam-taman</p><p>${new Date().toLocaleDateString('id-ID')}</p></div>
+    <h3 class="font-bold text-lg mt-4 mb-2">📊 Rangkuman Hafalan</h3>
+    <table class="w-full text-sm border mb-6"><thead class="bg-emerald-600 text-white"><tr><th class="p-2">No</th><th>Nama</th><th>Kelas</th><th>Status Hafalan</th><th>Progress</th><th>Madin Ula</th><th>Madin Wustho</th></tr></thead><tbody>`;
+    santri.forEach((s,i)=>{ 
+        html += `<tr class="border-b"><td class="p-2">${i+1}</td><td class="p-2">${s.nama}</td><td class="p-2">${s.kelas}</td><td class="p-2"><span class="badge-${getStatusHafalan(s)==='Lulus'?'success':(getStatusHafalan(s)==='Proses'?'warning':'danger')}">${getStatusHafalan(s)}</span></td><td class="p-2">${hitungProgressHafalan(s)}%</td><td class="p-2">${s.madinUla?'✅':'❌'}</td><td class="p-2">${s.madinWustho?'✅':'❌'}</td></tr>`;
+    });
+    html += `</tbody></table>
+    <h3 class="font-bold text-lg mt-4 mb-2">📚 Rangkuman Tam-taman</h3>
+    <table class="w-full text-sm border"><thead class="bg-purple-600 text-white"><tr><th class="p-2">No</th><th>Nama</th><th>Kelas</th><th>Status Tam-taman</th><th>Progress</th></tr></thead><tbody>`;
+    santri.forEach((s,i)=>{ 
+        let pMapel = hitungProgressMapel(s, s.kelas);
+        html += `<tr class="border-b"><td class="p-2">${i+1}</td><td class="p-2">${s.nama}</td><td class="p-2">${s.kelas}</td><td class="p-2"><span class="badge-${getStatusMapel(s, s.kelas)==='Selesai'?'success':(getStatusMapel(s, s.kelas)==='Proses'?'warning':'danger')}">${getStatusMapel(s, s.kelas)}</span></td><td class="p-2">${pMapel.persen}% (${pMapel.done}/${pMapel.total})</td></tr>`;
+    });
     html += `</tbody></table>`;
     document.getElementById('laporanContent').innerHTML = html;
 }
