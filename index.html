@@ -27,6 +27,9 @@
         .btn-wa { background: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-pdf { background: #d32f2f; color: white; }
         .error-msg { background: #ffebee; color: var(--danger); padding: 8px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 10px; display: none; text-align: center; }
+        .sync-status { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; z-index: 1000; }
+        .sync-status.online { background: #4caf50; }
+        .sync-status.offline { background: #f44336; }
         #main-app { display: none; max-width: 1200px; margin: 0 auto; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         header { text-align: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-radius: 12px; position: relative; }
@@ -124,6 +127,8 @@
     </div>
 
     <div id="main-app">
+        <div id="sync-status" class="sync-status">🔄 Menghubungkan...</div>
+        
         <header>
             <h1 id="app-title">Dashboard</h1>
             <p id="user-label" style="font-size:0.9rem;opacity:0.9;margin-top:4px;"></p>
@@ -134,7 +139,7 @@
             <div class="card">
                 <h2>⚙️ Pengaturan & Aksi</h2>
                 <div class="btn-group">
-                    <button class="btn btn-primary" onclick="loadData()" id="btn-refresh">🔄 Refresh Data</button>
+                    <button class="btn btn-primary" onclick="syncWithServer()" id="btn-refresh">🔄 Sinkronisasi Data</button>
                     <button class="btn btn-pdf" onclick="generatePDF()">📄 Laporan PDF Per Asrama</button>
                     <button class="btn btn-pdf" onclick="generateIndividualPDF()">📄 Laporan PDF Per Individu</button>
                     <button class="btn btn-wa" onclick="waReminder()">🔔 Cek & WA</button>
@@ -153,7 +158,7 @@
                 <div style="overflow-x:auto;">
                     <table class="history-table">
                         <thead><tr><th>Waktu</th><th>Nama</th><th>Asrama</th><th>Kamar</th><th>Kegiatan</th><th>Foto</th><th>Aksi</th></tr></thead>
-                        <tbody id="admin-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;">Klik "Refresh Data" untuk memuat</td></tr></tbody>
+                        <tbody id="admin-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;">Klik "Sinkronisasi Data" untuk memuat</td></tr>
                     </table>
                 </div>
             </div>
@@ -184,7 +189,7 @@
                 <div style="overflow-x:auto;">
                     <table class="history-table">
                         <thead><tr><th>Waktu</th><th>Kegiatan</th><th>Foto</th></tr></thead>
-                        <tbody id="my-tbody"><tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr></tbody>
+                        <tbody id="my-tbody"><tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr>
                     </table>
                 </div>
             </div>
@@ -216,7 +221,10 @@
     <div class="modal" id="p-modal" onclick="this.classList.remove('active')"><img id="p-img"></div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxw54GCCIzsYVmlMw7Fz6XOvZZ0lpuhaA_hkhfKzu5DIb6rKozM-hMnKH4o5ZkP645Z/exec";
+        // ==================== KONFIGURASI GOOGLE SHEETS ====================
+        // URL Google Apps Script yang sudah dideploy
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxhuYUJqJO-oUkaRx5mesLhp4e3B2oAmAPC4fIn6tWjAc8P3B28Vys3Q6lxqO5s9xl/exec";
+        
         const ADMIN_PIN = "1234";
         const WA_ADMIN = "6285893588373";
         const STORAGE_KEY = 'absensi_musyrif_data';
@@ -239,6 +247,23 @@
         ];
 
         let role = null, user = null, data = [], myChart = null, adminChart = null, currentAsrama = null;
+        
+        function updateSyncStatus(isOnline, message) {
+            const statusDiv = document.getElementById('sync-status');
+            if (isOnline) {
+                statusDiv.className = 'sync-status online';
+                statusDiv.innerHTML = message || '✅ Terhubung ke Server';
+            } else {
+                statusDiv.className = 'sync-status offline';
+                statusDiv.innerHTML = message || '⚠️ Offline - Data lokal saja';
+            }
+            setTimeout(() => {
+                if (statusDiv.innerHTML !== '🔄 Menghubungkan...') {
+                    setTimeout(() => { statusDiv.style.opacity = '0.5'; }, 3000);
+                    setTimeout(() => { statusDiv.style.opacity = '1'; }, 100);
+                }
+            }, 2000);
+        }
         
         function switchTab(t) {
             document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -298,9 +323,17 @@
                 document.getElementById('admin-panel').style.display = 'none';
                 document.getElementById('musyrif-view').style.display = 'block';
             }
-            loadData(); renderSched(); updJobs();
+            syncWithServer(); 
+            renderSched(); 
+            updJobs();
         }
-        function showError(m) { const e=document.getElementById('login-error'); e.textContent=m; e.style.display='block'; setTimeout(()=>e.style.display='none',3000); }
+        
+        function showError(m) { 
+            const e=document.getElementById('login-error'); 
+            e.textContent=m; 
+            e.style.display='block'; 
+            setTimeout(()=>e.style.display='none',3000); 
+        }
 
         function renderSched() {
             const now = new Date(), nm = now.getHours()*60+now.getMinutes(), day = now.getDay();
@@ -431,14 +464,44 @@
             });
         }
 
-        async function loadData() {
+        // Fungsi utama sinkronisasi dengan Google Sheets
+        async function syncWithServer() {
             const btnRefresh = document.getElementById('btn-refresh');
             if(btnRefresh) {
                 btnRefresh.disabled = true;
-                btnRefresh.textContent = '⏳ Loading...';
+                btnRefresh.textContent = '⏳ Menyinkronkan...';
             }
             
+            updateSyncStatus(true, '🔄 Menyinkronkan data...');
+            
             try {
+                // 1. Ambil data terbaru dari Google Sheets
+                const response = await fetch(GOOGLE_SCRIPT_URL + "?action=get&_t=" + Date.now());
+                if (response.ok) {
+                    const serverData = await response.json();
+                    if (Array.isArray(serverData)) {
+                        data = serverData;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                        updateSyncStatus(true, `✅ Tersinkron (${data.length} data)`);
+                        
+                        if (role === 'admin') { 
+                            updAdminStats(); 
+                            renderAdminTable(); 
+                        } else { 
+                            renderMyTable(); 
+                            showStats(); 
+                        }
+                    } else {
+                        updateSyncStatus(false, '⚠️ Format data server salah');
+                    }
+                } else {
+                    throw new Error('Gagal mengambil data dari server');
+                }
+            } catch (e) {
+                console.error('Sync error:', e);
+                updateSyncStatus(false, '⚠️ Gagal koneksi - Data lokal');
+                
+                // Gunakan data dari localStorage jika ada
                 const storedData = localStorage.getItem(STORAGE_KEY);
                 if (storedData) {
                     data = JSON.parse(storedData);
@@ -450,61 +513,75 @@
                         showStats(); 
                     }
                 }
-            } catch (e) {
-                console.error('Error loading from localStorage:', e);
             }
             
-            try {
-                const res = await fetch(GOOGLE_SCRIPT_URL);
-                if (res.ok) {
-                    const googleData = await res.json();
-                    data = googleData;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                    
-                    if (role === 'admin') { 
-                        updAdminStats(); 
-                        renderAdminTable(); 
-                    } else { 
-                        renderMyTable(); 
-                        showStats(); 
-                    }
-                }
-            } catch (e) {
-                console.log('Using localStorage data');
-            } finally {
-                if(btnRefresh) {
-                    btnRefresh.disabled = false;
-                    btnRefresh.textContent = '🔄 Refresh Data';
-                }
+            if(btnRefresh) {
+                btnRefresh.disabled = false;
+                btnRefresh.textContent = '🔄 Sinkronisasi Data';
             }
         }
         
         function renderAdminTable() {
-            if (data.length === 0) { 
+            if (!data || data.length === 0) { 
                 document.getElementById('admin-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Belum ada data absensi</td></tr>'; 
                 return; 
             }
             document.getElementById('admin-tbody').innerHTML = data.slice().reverse().map(d=>{
                 const asramaName = d.Asrma || (d.asrama || '-');
+                const photoHtml = d.Foto ? `<img src="${d.Foto}" class="photo-thumb" onclick="viewImg('${d.Foto.replace(/'/g, "\\'")}')" style="cursor:pointer">` : '-';
                 return `<tr>
                     <td>${new Date(d.Timestamp).toLocaleString()}</td>
                     <td>${d['Nama Musyrif']||'-'}</td>
                     <td>${asramaName}</td>
                     <td>${d.Kamar||'-'}</td>
                     <td>${d.Kegiatan||'-'}</td>
-                    <td>${d.Foto?`<img src="${d.Foto}" class="photo-thumb" onclick="viewImg('${d.Foto.replace(/'/g,"\\'")}')"`:'-'}</td>
-                    <td><button class="btn btn-danger" style="padding:4px 8px;font-size:0.7rem;" onclick="delRow('${d.Timestamp}','${d['Nama Musyrif']}')">Hapus</button></td>
+                    <td>${photoHtml}</td>
+                    <td><button class="btn" style="padding:4px 8px;font-size:0.7rem;background:#d32f2f;color:white;border:none;border-radius:4px;" onclick="delRow('${d.Timestamp}','${d['Nama Musyrif']}')">Hapus</button></td>
                 </tr>`;
             }).join('');
         }
         
         function renderMyTable() {
+            if (!data || data.length === 0) { 
+                document.getElementById('my-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr>'; 
+                return; 
+            }
             const my = data.filter(d=>d['Nama Musyrif']===user.name).reverse();
             if (my.length === 0) { document.getElementById('my-tbody').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;">Belum ada riwayat</td></tr>'; return; }
-            document.getElementById('my-tbody').innerHTML = my.map(d=>`<tr><td>${new Date(d.Timestamp).toLocaleString()}</td><td>${d.Kegiatan}</td><td>${d.Foto?`<img src="${d.Foto}" class="photo-thumb" onclick="viewImg('${d.Foto.replace(/'/g,"\\'")}')"`:'-'}</td></tr>`).join('');
+            document.getElementById('my-tbody').innerHTML = my.map(d=>`<tr>
+                <td>${new Date(d.Timestamp).toLocaleString()}</td>
+                <td>${d.Kegiatan}</td>
+                <td>${d.Foto ? `<img src="${d.Foto}" class="photo-thumb" onclick="viewImg('${d.Foto.replace(/'/g, "\\'")}')" style="cursor:pointer">` : '-'}</td>
+            </tr>`).join('');
         }
         
         function viewImg(s) { document.getElementById('p-img').src=s; document.getElementById('p-modal').classList.add('active'); }
+
+        // Fungsi untuk menyimpan ke Google Sheets
+        async function saveToGoogleSheets(record) {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(record)
+                });
+                
+                if (response.ok) {
+                    const result = await response.text();
+                    console.log('Save success:', result);
+                    return true;
+                } else {
+                    console.error('Save failed:', response.status);
+                    return false;
+                }
+            } catch (e) {
+                console.error('Network error:', e);
+                return false;
+            }
+        }
 
         document.getElementById('absen-form').onsubmit = async e => {
             e.preventDefault();
@@ -525,7 +602,7 @@
                     rd.readAsDataURL(photo);
                 });
                 
-                const newData = {
+                const newRecord = {
                     Timestamp: new Date().toISOString(),
                     'Nama Musyrif': user.name,
                     Asrma: currentAsrama ? MUSYRIF_BY_ASMARA[currentAsrama].name : '',
@@ -533,26 +610,31 @@
                     Kamar: user.room,
                     Kegiatan: act,
                     Foto: b64,
-                    Catatan: document.getElementById('notes').value
+                    Catatan: document.getElementById('notes').value || ''
                 };
                 
-                data.push(newData);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                // Kirim ke Google Sheets dulu
+                const saveSuccess = await saveToGoogleSheets(newRecord);
                 
-                try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify(newData),
-                        mode: 'no-cors'
-                    });
-                } catch (e) {
-                    console.log('Saved to localStorage only');
+                if (saveSuccess) {
+                    // Jika berhasil, refresh data dari server
+                    await syncWithServer();
+                    alert('✅ Absensi berhasil disimpan ke server!');
+                } else {
+                    // Jika gagal, simpan ke localStorage saja
+                    data.push(newRecord);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    alert('⚠️ Gagal koneksi ke server, data disimpan lokal. Sinkronkan nanti.');
+                    if (role === 'admin') { 
+                        updAdminStats(); 
+                        renderAdminTable(); 
+                    } else { 
+                        renderMyTable(); 
+                        showStats(); 
+                    }
                 }
                 
-                alert('✅ Absensi berhasil dikirim!');
                 document.getElementById('absen-form').reset();
-                loadData();
-                if(role === 'musyrif') showStats();
             } catch(err) {
                 console.error('Error:', err);
                 alert('❌ Gagal mengirim: ' + err.message);
@@ -566,21 +648,29 @@
             if(!confirm(`Hapus data ${nm}?`)) return;
             
             try {
-                data = data.filter(d => d.Timestamp !== ts);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                // Kirim permintaan hapus ke Google Sheets
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({action: 'delete', timestamp: ts, musyrif: nm})
+                });
                 
-                try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({action: 'delete', timestamp: ts, musyrif: nm}),
-                        mode: 'no-cors'
-                    });
-                } catch (e) {
-                    console.log('Deleted from localStorage only');
+                if (response.ok) {
+                    // Refresh data dari server
+                    await syncWithServer();
+                    alert('✅ Data berhasil dihapus dari server');
+                } else {
+                    // Hapus dari data lokal saja
+                    data = data.filter(d => d.Timestamp !== ts);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    alert('⚠️ Gagal koneksi, data dihapus lokal saja');
+                    if (role === 'admin') { 
+                        updAdminStats(); 
+                        renderAdminTable(); 
+                    }
                 }
-                
-                alert('✅ Data berhasil dihapus');
-                loadData();
             } catch (err) {
                 alert('❌ Gagal menghapus: ' + err.message);
             }
@@ -637,7 +727,7 @@
                     </tr>`;
                 });
                 
-                html += `</tbody></table></div>`;
+                html += `</tbody>}</div>`;
             });
             
             document.getElementById('r-absen').textContent = totalAbsen;
@@ -701,9 +791,13 @@
             
             musyrifData.slice().reverse().forEach((d, idx) => {
                 const date = new Date(d.Timestamp);
-                html += `<tr><td>${idx+1}</td><td>${date.toLocaleDateString('id-ID')}</td><td>${d.Kegiatan}</td></tr>`;
+                html += `<tr>
+                    <td>${idx+1}</td>
+                    <td>${date.toLocaleDateString('id-ID')} ${date.toLocaleTimeString('id-ID')}</td>
+                    <td>${d.Kegiatan}</td>
+                </tr>`;
             });
-            html += `</tbody></table>`;
+            html += `</tbody>}</div>`;
             
             document.getElementById('individual-content').innerHTML = html;
             
