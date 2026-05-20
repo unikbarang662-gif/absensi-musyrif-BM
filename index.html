@@ -3,466 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Absensi BM</title>
+    <title>Musyrif Dashboard - Absensi BM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body {
-            background: linear-gradient(135deg, #f0fdf4 0%, #ccfbf1 30%, #f0fdfa 70%, #ccfbf1 100%);
+            background: linear-gradient(135deg, #f0fdf4, #ccfbf1, #f0fdfa);
             min-height: 100vh;
         }
-        
-        .sidebar-admin {
-            background: linear-gradient(180deg, #0f766e 0%, #0d9488 40%, #14b8a6 80%, #2dd4bf 100%);
-            box-shadow: 8px 0 32px rgba(0, 0, 0, 0.15);
+        .sidebar {
+            background: linear-gradient(180deg, #0f766e, #0d9488, #14b8a6);
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
         }
-        
-        .stat-premium {
-            background: linear-gradient(135deg, #ffffff, #f8fafc);
-            border-radius: 24px;
-            border-bottom: 4px solid #14b8a6;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .stat-premium:hover {
-            transform: translateY(-6px);
-            border-bottom-width: 6px;
-            box-shadow: 0 20px 30px -12px rgba(13, 148, 136, 0.25);
-        }
-        
-        .card-admin-premium {
+        .card {
             background: white;
-            border-radius: 28px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(13, 148, 136, 0.1);
+            border-radius: 24px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
-        
-        .card-admin-premium:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 35px -12px rgba(13, 148, 136, 0.2);
-        }
-        
-        .header-admin {
-            background: linear-gradient(135deg, #0f766e, #0d9488, #14b8a6, #2dd4bf, #5eead4);
+        .card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .header {
+            background: linear-gradient(135deg, #0f766e, #0d9488, #14b8a6, #2dd4bf);
             background-size: 300% 300%;
-            animation: adminFlow 8s ease infinite;
-            border-radius: 32px;
+            animation: gradientBG 5s ease infinite;
+            border-radius: 28px;
         }
-        
-        @keyframes adminFlow {
-            0%, 100% { background-position: 0% 50%; }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        
-        .btn-premium {
-            background: linear-gradient(135deg, #0f766e, #14b8a6);
-            transition: all 0.3s ease;
-            border-radius: 40px;
-        }
-        
-        .btn-premium:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4);
-        }
-        
-        .nav-admin-item {
-            transition: all 0.3s ease;
+        .schedule-item {
+            background: #f8fafc;
+            border-left: 4px solid #14b8a6;
             border-radius: 16px;
+            transition: all 0.3s;
         }
-        
-        .nav-admin-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(5px);
-        }
-        
-        .badge-hadir { background: linear-gradient(135deg, #10b981, #059669); }
-        .badge-sakit { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .badge-izin { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .badge-status {
-            padding: 5px 14px;
+        .schedule-item:hover { transform: translateX(5px); background: #e0f2fe; }
+        .badge-hadir { background: #10b981; padding: 5px 15px; border-radius: 20px; color: white; font-size: 12px; font-weight: bold; }
+        .badge-sakit { background: #f59e0b; padding: 5px 15px; border-radius: 20px; color: white; font-size: 12px; font-weight: bold; }
+        .badge-izin { background: #3b82f6; padding: 5px 15px; border-radius: 20px; color: white; font-size: 12px; font-weight: bold; }
+        .btn-submit {
+            background: linear-gradient(135deg, #0f766e, #14b8a6);
             border-radius: 30px;
-            font-size: 11px;
-            font-weight: 700;
-            color: white;
-            display: inline-block;
+            transition: all 0.3s;
         }
-        
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #14b8a6; border-radius: 10px; }
+        .btn-submit:hover { transform: scale(1.02); opacity: 0.9; }
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            border-bottom: 4px solid #14b8a6;
+        }
     </style>
 </head>
 <body>
-    <!-- Sidebar Admin -->
-    <div class="fixed left-0 top-0 h-full w-80 sidebar-admin text-white shadow-2xl z-30">
+    <div class="fixed left-0 top-0 h-full w-72 sidebar text-white shadow-2xl z-20">
         <div class="p-6 border-b border-white/20">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <i class="fas fa-crown text-2xl"></i>
-                </div>
-                <div>
-                    <span class="font-extrabold text-xl">Admin Panel</span>
-                    <p class="text-xs text-white/70">Absensi BM v2.0</p>
-                </div>
-            </div>
-            <div class="bg-white/10 rounded-2xl p-4">
-                <p class="text-xs text-white/60">Login sebagai</p>
-                <p class="font-bold text-lg" id="adminName">Administrator</p>
-                <p class="text-sm text-white/80">Super Administrator</p>
-            </div>
+            <div class="flex items-center gap-3"><i class="fas fa-calendar-check text-2xl"></i><span class="font-bold text-xl">Absensi BM</span></div>
+            <div class="mt-4 p-3 bg-white/10 rounded-xl"><p class="text-xs text-white/70">Login sebagai</p><p class="font-bold" id="sidebarName"></p><p class="text-sm" id="sidebarAsrama"></p></div>
         </div>
-        
         <nav class="mt-6 px-4">
-            <a href="#" class="nav-admin-item flex items-center px-4 py-3 bg-white/20 mb-2">
-                <i class="fas fa-tachometer-alt w-6"></i><span class="ml-3 font-semibold">Dashboard</span>
-            </a>
-            <a href="#" onclick="showTambahMusyrif()" class="nav-admin-item flex items-center px-4 py-3 hover:bg-white/10 transition mb-2">
-                <i class="fas fa-user-plus w-6"></i><span class="ml-3">Tambah Musyrif</span>
-            </a>
-            <a href="#" onclick="downloadPDFAsrama()" class="nav-admin-item flex items-center px-4 py-3 hover:bg-white/10 transition mb-2">
-                <i class="fas fa-download w-6"></i><span class="ml-3">Download PDF Per Asrama</span>
-            </a>
-            <a href="#" onclick="downloadPDFIndividu()" class="nav-admin-item flex items-center px-4 py-3 hover:bg-white/10 transition mb-2">
-                <i class="fas fa-file-pdf w-6"></i><span class="ml-3">Download PDF Per Individu</span>
-            </a>
-            <a href="#" onclick="showPengaturan()" class="nav-admin-item flex items-center px-4 py-3 hover:bg-white/10 transition mb-2">
-                <i class="fas fa-cog w-6"></i><span class="ml-3">Pengaturan Profil</span>
-            </a>
-            <a href="#" onclick="showPengingatWA()" class="nav-admin-item flex items-center px-4 py-3 hover:bg-white/10 transition mb-2">
-                <i class="fab fa-whatsapp w-6"></i><span class="ml-3">Pengingat WhatsApp</span>
-            </a>
-            <a href="#" onclick="logout()" class="nav-admin-item flex items-center px-4 py-3 hover:bg-red-500/30 transition mt-10">
-                <i class="fas fa-sign-out-alt w-6"></i><span class="ml-3">Keluar</span>
-            </a>
+            <a href="#" class="flex items-center px-4 py-3 bg-white/20 rounded-xl"><i class="fas fa-tachometer-alt w-6"></i><span class="ml-3">Dashboard</span></a>
+            <a href="#" onclick="scrollToRiwayat()" class="flex items-center px-4 py-3 hover:bg-white/10 transition rounded-xl mt-2"><i class="fas fa-history w-6"></i><span class="ml-3">Riwayat Absensi</span></a>
+            <a href="#" onclick="exportData()" class="flex items-center px-4 py-3 hover:bg-white/10 transition rounded-xl mt-2"><i class="fas fa-download w-6"></i><span class="ml-3">Export Data</span></a>
+            <a href="#" onclick="logout()" class="flex items-center px-4 py-3 hover:bg-red-500/30 transition rounded-xl mt-10"><i class="fas fa-sign-out-alt w-6"></i><span class="ml-3">Keluar</span></a>
         </nav>
     </div>
 
-    <!-- Main Content -->
-    <div class="ml-80 p-6">
-        <!-- Header -->
-        <div class="header-admin p-6 mb-6 text-white shadow-2xl">
+    <div class="ml-72 p-6">
+        <div class="header p-6 mb-6 text-white shadow-xl">
             <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-extrabold">Dashboard Administrator</h1>
-                    <div class="flex items-center gap-3 mt-2 text-white/90">
-                        <span><i class="fas fa-clock mr-1"></i><span id="liveClock"></span></span>
-                        <span><i class="fas fa-calendar mr-1"></i><span id="liveDate"></span></span>
-                    </div>
-                </div>
-                <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-lg">
-                    <i class="fas fa-user-shield text-3xl"></i>
-                </div>
+                <div><h1 class="text-3xl font-bold" id="welcomeMsg"></h1><div class="flex gap-4 mt-2"><span><i class="fas fa-clock mr-1"></i><span id="liveClock"></span></span><span><i class="fas fa-calendar mr-1"></i><span id="liveDate"></span></span></div></div>
+                <i class="fas fa-user-circle text-5xl opacity-80"></i>
             </div>
         </div>
 
-        <!-- Stat Cards Premium -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <div class="stat-premium p-5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-sm font-semibold">📅 HARI INI</p>
-                        <p class="text-3xl font-bold text-teal-600" id="statToday">0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center"><i class="fas fa-sun text-teal-600 text-xl"></i></div>
-                </div>
-            </div>
-            <div class="stat-premium p-5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-sm font-semibold">📊 MINGGU INI</p>
-                        <p class="text-3xl font-bold text-teal-600" id="statWeek">0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center"><i class="fas fa-calendar-week text-teal-600 text-xl"></i></div>
-                </div>
-            </div>
-            <div class="stat-premium p-5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-sm font-semibold">📆 BULAN INI</p>
-                        <p class="text-3xl font-bold text-teal-600" id="statMonth">0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center"><i class="fas fa-calendar-alt text-teal-600 text-xl"></i></div>
-                </div>
-            </div>
-            <div class="stat-premium p-5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-sm font-semibold">👥 MUSYRIF AKTIF</p>
-                        <p class="text-3xl font-bold text-teal-600" id="statActive">11</p>
-                    </div>
-                    <div class="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center"><i class="fas fa-users text-teal-600 text-xl"></i></div>
-                </div>
-            </div>
-            <div class="stat-premium p-5">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500 text-sm font-semibold">📋 TOTAL ABSENSI</p>
-                        <p class="text-3xl font-bold text-teal-600" id="statTotal">0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center"><i class="fas fa-clipboard-list text-teal-600 text-xl"></i></div>
-                </div>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
+            <div class="stat-card p-5"><div class="flex justify-between"><div><p class="text-gray-500">TOTAL HADIR</p><p class="text-3xl font-bold text-teal-600" id="totalHadir">0</p></div><i class="fas fa-check-circle text-teal-500 text-3xl"></i></div></div>
+            <div class="stat-card p-5"><div class="flex justify-between"><div><p class="text-gray-500">TOTAL SAKIT</p><p class="text-3xl font-bold text-orange-500" id="totalSakit">0</p></div><i class="fas fa-thermometer-half text-orange-500 text-3xl"></i></div></div>
+            <div class="stat-card p-5"><div class="flex justify-between"><div><p class="text-gray-500">TOTAL IZIN</p><p class="text-3xl font-bold text-blue-500" id="totalIzin">0</p></div><i class="fas fa-envelope text-blue-500 text-3xl"></i></div></div>
+            <div class="stat-card p-5"><div class="flex justify-between"><div><p class="text-gray-500">PERSENTASE</p><p class="text-3xl font-bold text-purple-500" id="persentase">0%</p></div><i class="fas fa-chart-line text-purple-500 text-3xl"></i></div></div>
         </div>
 
-        <!-- Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="card-admin-premium p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">
-                    <i class="fas fa-chart-bar text-teal-500 mr-2"></i> PERFORM MUSYRIF
-                </h2>
-                <canvas id="performChart" height="250"></canvas>
-            </div>
-            <div class="card-admin-premium p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">
-                    <i class="fas fa-chart-line text-teal-500 mr-2"></i> GRAFIK KINERJA DETAIL
-                </h2>
-                <canvas id="detailChart" height="200"></canvas>
-                <div class="flex justify-center gap-3 mt-4">
-                    <button onclick="changeDetailPeriod('monthly')" id="detailMonthly" class="px-4 py-2 bg-teal-500 text-white rounded-full text-sm font-semibold">📅 Bulanan</button>
-                    <button onclick="changeDetailPeriod('yearly')" id="detailYearly" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold">📊 Tahunan</button>
-                </div>
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="card p-6"><h2 class="text-xl font-bold mb-4"><i class="fas fa-chart-line text-teal-500 mr-2"></i> GRAFIK KEHADIRAN</h2><canvas id="attendanceChart" height="200"></canvas><div class="flex justify-center gap-3 mt-4"><button onclick="changePeriod('daily')" id="btnDaily" class="px-4 py-2 bg-teal-500 text-white rounded-full text-sm">Harian</button><button onclick="changePeriod('weekly')" id="btnWeekly" class="px-4 py-2 bg-gray-200 rounded-full text-sm">Mingguan</button><button onclick="changePeriod('monthly')" id="btnMonthly" class="px-4 py-2 bg-gray-200 rounded-full text-sm">Bulanan</button></div></div>
+            <div class="card p-6"><h2 class="text-xl font-bold mb-4"><i class="fas fa-chart-pie text-teal-500 mr-2"></i> STATISTIK</h2><canvas id="pieChart" height="200"></canvas></div>
         </div>
 
-        <!-- Data Table -->
-        <div class="card-admin-premium p-6">
-            <div class="flex justify-between items-center mb-5 flex-wrap gap-3">
-                <h2 class="text-xl font-bold text-gray-800">
-                    <i class="fas fa-database text-teal-500 mr-2"></i> SEMUA DATA ABSENSI
-                </h2>
-                <div class="flex gap-3">
-                    <input type="text" id="searchInput" placeholder="🔍 Cari nama musyrif..." class="px-4 py-2 border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:outline-none">
-                    <select id="filterAsrama" class="px-4 py-2 border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:outline-none">
-                        <option value="all">📌 Semua Asrama</option>
-                        <option value="Al Hakim">🏠 Al Hakim</option>
-                        <option value="Al Fattah">🏠 Al Fattah</option>
-                        <option value="Al Karim">🏠 Al Karim</option>
-                    </select>
-                </div>
-            </div>
-            <div class="overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
-                <table class="w-full">
-                    <thead class="bg-gradient-to-r from-teal-50 to-cyan-50 sticky top-0">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">No</th>
-                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Tanggal</th>
-                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Musyrif</th>
-                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Asrama</th>
-                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Kegiatan</th>
-                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Status</th>
-                            <th class="px-4 py-3 text-left text-sm font-bold text-gray-700">Foto</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dataTableBody"></tbody>
-                </table>
-            </div>
+        <div class="card p-6 mb-6">
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold"><i class="fas fa-calendar-alt text-teal-500 mr-2"></i> JADWAL HARI INI</h2><div class="bg-teal-100 px-4 py-2 rounded-full font-bold" id="dayName"></div></div>
+            <div id="scheduleContainer" class="space-y-3"></div>
         </div>
-    </div>
 
-    <!-- Modal Tambah Musyrif -->
-    <div id="modalMusyrif" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-md">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Tambah Musyrif Baru</h2>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-2xl"></i></button>
-            </div>
-            <form id="tambahMusyrifForm">
-                <div class="mb-4"><label class="block text-gray-700 font-semibold mb-1">Nama Lengkap</label><input type="text" id="newNama" class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:outline-none" required></div>
-                <div class="mb-4"><label class="block text-gray-700 font-semibold mb-1">Asrama</label><select id="newAsrama" class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:outline-none"><option>Al Hakim</option><option>Al Fattah</option><option>Al Karim</option></select></div>
-                <div class="mb-4"><label class="block text-gray-700 font-semibold mb-1">Kamar</label><input type="text" id="newKamar" placeholder="Kamar 1" class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:outline-none"></div>
-                <div class="mb-4"><label class="block text-gray-700 font-semibold mb-1">Password</label><input type="password" id="newPassword" value="musyrif123" class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl focus:border-teal-500 focus:outline-none"></div>
-                <button type="submit" class="btn-premium w-full text-white font-bold py-3">Simpan Musyrif</button>
+        <div class="card p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4"><i class="fas fa-clipboard-list text-teal-500 mr-2"></i> FORM ABSENSI</h2>
+            <form id="absensiForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div><label class="block font-semibold mb-2">Kegiatan</label><select id="kegiatanSelect" class="w-full px-4 py-3 border rounded-2xl" required></select></div>
+                    <div><label class="block font-semibold mb-2">Status</label><select id="statusSelect" class="w-full px-4 py-3 border rounded-2xl"><option value="Hadir">✅ Hadir</option><option value="Sakit">🤒 Sakit</option><option value="Izin">📝 Izin</option></select></div>
+                </div>
+                <div class="mb-4"><label class="block font-semibold mb-2">Foto (URL)</label><input type="url" id="fotoUrl" class="w-full px-4 py-3 border rounded-2xl"></div>
+                <button type="submit" class="btn-submit w-full text-white font-bold py-3">Kirim Absensi</button>
             </form>
+        </div>
+
+        <div class="card p-6" id="riwayatSection">
+            <h2 class="text-xl font-bold mb-4"><i class="fas fa-history text-teal-500 mr-2"></i> RIWAYAT ABSENSI</h2>
+            <div style="overflow-x: auto;"><table class="w-full"><thead class="bg-teal-50"><tr><th class="p-3">No</th><th>Tanggal</th><th>Waktu</th><th>Kegiatan</th><th>Status</th><th>Foto</th></tr></thead><tbody id="riwayatBody"></tbody></table></div>
         </div>
     </div>
 
     <script>
-        let performChart = null;
-        let detailChart = null;
-        let currentDetailPeriod = 'monthly';
+        let currentUser = null;
+        let attendanceChart, pieChart;
+        let currentPeriod = 'daily';
         
-        const musyrifNames = ['Ali Mashuri', 'Ali Zahid', 'Imam Syafi\'i', 'Fattahilah', 'Brian Adi Waskito', 'Babil Yasar Asrama', 'Fahmi', 'Wawan Febi Asrama', 'Bima Julian', 'Irfan Khoirul Aziz', 'Rizki Alfian'];
-        
-        function startClock() {
-            function update() {
-                const now = new Date();
-                document.getElementById('liveClock').innerHTML = now.toLocaleTimeString('id-ID');
-                document.getElementById('liveDate').innerHTML = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            }
-            update();
-            setInterval(update, 1000);
+        const jadwal = {
+            'Senin': ['Membangunkan Santri (03:30-04:30)', 'Pendampingan Pengajian Subuh (04:30-05:45)', 'Menggobraki Sekolah (06:00-07:30)', 'Piket Kamar & Maghrib (16:30-17:30)', 'Pendampingan Dalail (18:00-19:30)', 'Tertibkan Tidur Malam (21:30-22:30)'],
+            'Selasa': ['Membangunkan Santri (03:30-04:30)', 'Pendampingan Pengajian Subuh (04:30-05:45)', 'Menggobraki Sekolah (06:00-07:30)', 'Piket Kamar & Maghrib (16:30-17:30)', 'Muthola\'ah (19:30-20:30)', 'Tertibkan Tidur Malam (21:30-22:30)'],
+            'Rabu': ['Membangunkan Santri (03:30-04:30)', 'Pendampingan Pengajian Subuh (04:30-05:45)', 'Menggobraki Sekolah (06:00-07:30)', 'Piket Kamar & Maghrib (16:30-17:30)', 'Muthola\'ah (19:30-20:30)', 'Tertibkan Tidur Malam (21:30-22:30)'],
+            'Kamis': ['Membangunkan Santri (03:30-04:30)', 'Pendampingan Pengajian Subuh (04:30-05:45)', 'Menggobraki Sekolah (06:00-07:30)', 'Piket Kamar & Maghrib (16:30-17:30)', 'Pendampingan Tawasulan (21:00-23:30)', 'Tertibkan Tidur Malam (21:30-22:30)'],
+            'Jumat': ['Membangunkan Santri (03:30-04:30)', 'Piket Kamar & Maghrib (16:30-17:30)', 'Tertibkan Tidur Malam (21:30-22:30)'],
+            'Sabtu': ['Membangunkan Santri (03:30-04:30)', 'Pendampingan Pengajian Subuh (04:30-05:45)', 'Menggobraki Sekolah (06:00-07:30)', 'Piket Kamar & Maghrib (16:30-17:30)', 'Muthola\'ah (19:30-20:30)', 'Tertibkan Tidur Malam (21:30-22:30)'],
+            'Minggu': ['Membangunkan Santri (03:30-04:30)', 'Pendampingan Pengajian Subuh (04:30-05:45)', 'Piket Kamar & Maghrib (16:30-17:30)', 'Muthola\'ah (19:30-20:30)', 'Tertibkan Tidur Malam (21:30-22:30)']
+        };
+
+        function init() {
+            let userStr = localStorage.getItem('currentUser');
+            if (!userStr) { window.location.href = 'index.html'; return; }
+            currentUser = JSON.parse(userStr);
+            if (currentUser.role !== 'musyrif') { window.location.href = 'dashboard-admin.html'; return; }
+            document.getElementById('sidebarName').innerHTML = currentUser.name;
+            document.getElementById('sidebarAsrama').innerHTML = `Asrama ${currentUser.asrama}`;
+            document.getElementById('welcomeMsg').innerHTML = `Selamat datang, ${currentUser.name}`;
+            updateClock();
+            loadJadwal();
+            loadRiwayat();
+            updateStats();
+            initCharts();
         }
-        
-        function loadAdminStats() {
-            const riwayat = JSON.parse(localStorage.getItem('riwayatAbsensi')) || [];
-            const today = new Date().toLocaleDateString('id-ID');
-            const now = new Date();
-            const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            
-            document.getElementById('statToday').innerHTML = riwayat.filter(r => r.tanggal === today).length;
-            document.getElementById('statWeek').innerHTML = riwayat.filter(r => new Date(r.tanggal.split('/').reverse().join('-')) >= weekStart).length;
-            document.getElementById('statMonth').innerHTML = riwayat.filter(r => new Date(r.tanggal.split('/').reverse().join('-')) >= monthStart).length;
-            document.getElementById('statTotal').innerHTML = riwayat.length;
-            
-            loadPerformChart(riwayat);
-            loadDetailChart(riwayat);
-            loadDataTable(riwayat);
+
+        function updateClock() {
+            let now = new Date();
+            document.getElementById('liveClock').innerHTML = now.toLocaleTimeString('id-ID');
+            document.getElementById('liveDate').innerHTML = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            setTimeout(updateClock, 1000);
         }
-        
-        function loadPerformChart(riwayat) {
-            const data = musyrifNames.map(m => riwayat.filter(r => r.musyrif === m && r.status === 'Hadir').length);
-            if (performChart) performChart.destroy();
-            const ctx = document.getElementById('performChart').getContext('2d');
-            performChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: musyrifNames.map(n => n.split(' ')[0]), datasets: [{ label: 'Total Kehadiran', data: data, backgroundColor: '#14b8a6', borderRadius: 12, barPercentage: 0.7 }] },
-                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, grid: { drawBorder: false } } } }
-            });
+
+        function loadJadwal() {
+            let days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            let today = days[new Date().getDay()];
+            document.getElementById('dayName').innerHTML = today;
+            let schedule = jadwal[today] || jadwal['Senin'];
+            document.getElementById('scheduleContainer').innerHTML = schedule.map((item, i) => `<div class="schedule-item p-4 flex items-center gap-3"><div class="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white">${i+1}</div><div><p class="font-semibold">${item}</p></div></div>`).join('');
+            document.getElementById('kegiatanSelect').innerHTML = schedule.map(item => `<option value="${item}">${item}</option>`).join('');
         }
-        
-        function loadDetailChart(riwayat) {
-            let labels, data;
-            if (currentDetailPeriod === 'monthly') {
-                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                data = labels.map((_, i) => riwayat.filter(r => new Date(r.tanggal.split('/').reverse().join('-')).getMonth() === i && r.status === 'Hadir').length);
-            } else {
-                labels = ['2022', '2023', '2024', '2025'];
-                data = labels.map(y => riwayat.filter(r => new Date(r.tanggal.split('/').reverse().join('-')).getFullYear() == y && r.status === 'Hadir').length);
-            }
-            if (detailChart) detailChart.destroy();
-            const ctx = document.getElementById('detailChart').getContext('2d');
-            detailChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: labels, datasets: [{ label: 'Kehadiran', data: data, borderColor: '#14b8a6', backgroundColor: 'rgba(20,184,166,0.1)', fill: true, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#14b8a6' }] },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-            });
+
+        function updateStats() {
+            let riwayat = JSON.parse(localStorage.getItem('riwayatAbsensi')) || [];
+            riwayat = riwayat.filter(r => r.musyrif === currentUser.name);
+            let hadir = riwayat.filter(r => r.status === 'Hadir').length;
+            let sakit = riwayat.filter(r => r.status === 'Sakit').length;
+            let izin = riwayat.filter(r => r.status === 'Izin').length;
+            let total = hadir + sakit + izin;
+            document.getElementById('totalHadir').innerHTML = hadir;
+            document.getElementById('totalSakit').innerHTML = sakit;
+            document.getElementById('totalIzin').innerHTML = izin;
+            document.getElementById('persentase').innerHTML = total > 0 ? Math.round((hadir/total)*100) + '%' : '0%';
         }
-        
-        function loadDataTable(riwayat) {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const filter = document.getElementById('filterAsrama').value;
-            let filtered = [...riwayat].reverse();
-            if (search) filtered = filtered.filter(r => r.musyrif?.toLowerCase().includes(search));
-            if (filter !== 'all') filtered = filtered.filter(r => r.asrama === filter);
-            
-            const tbody = document.getElementById('dataTableBody');
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Tidak ada data</td></tr>';
-                return;
-            }
-            tbody.innerHTML = filtered.slice(0, 100).map((r, i) => `
-                <tr class="border-b border-gray-100 hover:bg-teal-50 transition">
-                    <td class="px-4 py-3">${i+1}</td>
-                    <td class="px-4 py-3">${r.tanggal}</td>
-                    <td class="px-4 py-3 font-medium">${r.musyrif}</td>
-                    <td class="px-4 py-3"><span class="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-xs font-semibold">${r.asrama}</span></td>
-                    <td class="px-4 py-3 text-sm">${r.kegiatan?.substring(0, 40)}${r.kegiatan?.length > 40 ? '...' : ''}</td>
-                    <td class="px-4 py-3"><span class="badge-status ${r.status === 'Hadir' ? 'badge-hadir' : r.status === 'Sakit' ? 'badge-sakit' : 'badge-izin'}">${r.status}</span></td>
-                    <td class="px-4 py-3">${r.fotoUrl && r.fotoUrl !== '-' ? `<a href="${r.fotoUrl}" target="_blank" class="text-teal-500"><i class="fas fa-image text-lg"></i></a>` : '-'}</td>
-                </tr>
-            `).join('');
+
+        function initCharts() { changePeriod('daily'); }
+
+        function changePeriod(period) {
+            currentPeriod = period;
+            document.getElementById('btnDaily').className = period === 'daily' ? 'px-4 py-2 bg-teal-500 text-white rounded-full text-sm' : 'px-4 py-2 bg-gray-200 rounded-full text-sm';
+            document.getElementById('btnWeekly').className = period === 'weekly' ? 'px-4 py-2 bg-teal-500 text-white rounded-full text-sm' : 'px-4 py-2 bg-gray-200 rounded-full text-sm';
+            document.getElementById('btnMonthly').className = period === 'monthly' ? 'px-4 py-2 bg-teal-500 text-white rounded-full text-sm' : 'px-4 py-2 bg-gray-200 rounded-full text-sm';
+            let labels, hadir, sakit, izin;
+            if (period === 'daily') { labels = ['Sen','Sel','Rab','Kam','Jum','Sab','Min']; hadir = [14,16,15,13,17,12,11]; sakit = [2,1,3,2,1,4,2]; izin = [1,2,1,2,1,1,3]; }
+            else if (period === 'weekly') { labels = ['Minggu 1','Minggu 2','Minggu 3','Minggu 4']; hadir = [85,88,92,90]; sakit = [8,6,5,4]; izin = [7,6,3,6]; }
+            else { labels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']; hadir = [85,88,92,90,95,98,100,102,105,108,110,115]; sakit = [8,6,5,4,3,2,2,1,1,1,0,0]; izin = [7,6,3,6,2,0,0,0,0,0,0,0]; }
+            if (attendanceChart) attendanceChart.destroy();
+            attendanceChart = new Chart(document.getElementById('attendanceChart'), { type: 'line', data: { labels, datasets: [{ label: 'Hadir', data: hadir, borderColor: '#10b981', tension: 0.4, fill: true }, { label: 'Sakit', data: sakit, borderColor: '#f59e0b', tension: 0.4 }, { label: 'Izin', data: izin, borderColor: '#3b82f6', tension: 0.4 }] }, options: { responsive: true } });
+            updatePie();
         }
-        
-        function changeDetailPeriod(period) {
-            currentDetailPeriod = period;
-            document.getElementById('detailMonthly').className = period === 'monthly' ? 'px-4 py-2 bg-teal-500 text-white rounded-full text-sm font-semibold' : 'px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold';
-            document.getElementById('detailYearly').className = period === 'yearly' ? 'px-4 py-2 bg-teal-500 text-white rounded-full text-sm font-semibold' : 'px-4 py-2 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold';
-            loadAdminStats();
+
+        function updatePie() {
+            let riwayat = JSON.parse(localStorage.getItem('riwayatAbsensi')) || [];
+            riwayat = riwayat.filter(r => r.musyrif === currentUser.name);
+            let hadir = riwayat.filter(r => r.status === 'Hadir').length || 50;
+            let sakit = riwayat.filter(r => r.status === 'Sakit').length || 15;
+            let izin = riwayat.filter(r => r.status === 'Izin').length || 10;
+            if (pieChart) pieChart.destroy();
+            pieChart = new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: ['Hadir','Sakit','Izin'], datasets: [{ data: [hadir, sakit, izin], backgroundColor: ['#10b981','#f59e0b','#3b82f6'] }] }, options: { responsive: true } });
         }
-        
-        function showTambahMusyrif() { document.getElementById('modalMusyrif').classList.remove('hidden'); document.getElementById('modalMusyrif').style.display = 'flex'; }
-        function closeModal() { document.getElementById('modalMusyrif').style.display = 'none'; }
-        
-        document.getElementById('tambahMusyrifForm').addEventListener('submit', async (e) => {
+
+        function loadRiwayat() {
+            let riwayat = JSON.parse(localStorage.getItem('riwayatAbsensi')) || [];
+            riwayat = riwayat.filter(r => r.musyrif === currentUser.name).reverse();
+            let tbody = document.getElementById('riwayatBody');
+            if (riwayat.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8">Belum ada data</td></tr>'; return; }
+            tbody.innerHTML = riwayat.slice(0, 30).map((r, i) => `<tr class="border-b"><td class="p-3">${i+1}</td><td>${r.tanggal}</td><td>${r.waktu}</td><td style="font-size:13px">${r.kegiatan}</td><td><span class="${r.status === 'Hadir' ? 'badge-hadir' : r.status === 'Sakit' ? 'badge-sakit' : 'badge-izin'}">${r.status}</span></td><td>${r.fotoUrl && r.fotoUrl !== '-' ? `<a href="${r.fotoUrl}" target="_blank"><i class="fas fa-image text-teal-500"></i></a>` : '-'}</td></tr>`).join('');
+        }
+
+        document.getElementById('absensiForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const newMusyrif = {
-                nama: document.getElementById('newNama').value,
-                asrama: document.getElementById('newAsrama').value,
-                kamar: document.getElementById('newKamar').value,
-                password: document.getElementById('newPassword').value
-            };
-            let list = JSON.parse(localStorage.getItem('daftarMusyrif')) || [];
-            list.push(newMusyrif);
-            localStorage.setItem('daftarMusyrif', JSON.stringify(list));
-            musyrifNames.push(newMusyrif.nama);
-            await Swal.fire('Berhasil!', 'Musyrif baru telah ditambahkan', 'success');
-            closeModal();
-            loadAdminStats();
+            let now = new Date();
+            let absensi = { id: Date.now(), musyrif: currentUser.name, asrama: currentUser.asrama, kegiatan: document.getElementById('kegiatanSelect').value, status: document.getElementById('statusSelect').value, fotoUrl: document.getElementById('fotoUrl').value || '-', waktu: now.toLocaleTimeString('id-ID'), tanggal: now.toLocaleDateString('id-ID') };
+            let riwayat = JSON.parse(localStorage.getItem('riwayatAbsensi')) || [];
+            riwayat.unshift(absensi);
+            localStorage.setItem('riwayatAbsensi', JSON.stringify(riwayat));
+            loadRiwayat(); updateStats(); updatePie();
+            Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Absensi terkirim', timer: 1500, showConfirmButton: false });
+            this.reset();
         });
-        
-        function downloadPDFAsrama() {
-            const riwayat = JSON.parse(localStorage.getItem('riwayatAbsensi')) || [];
-            let html = `<html><head><title>Laporan Absensi Per Asrama</title><style>body{font-family:Arial;padding:30px} h1{color:#0d9488} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:10px} th{background:#0d9488;color:white}</style></head><body>`;
-            html += `<h1>📋 Laporan Absensi Per Asrama</h1><p>Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}</p>`;
-            ['Al Hakim', 'Al Fattah', 'Al Karim'].forEach(asrama => {
-                const data = riwayat.filter(r => r.asrama === asrama);
-                html += `<h2>🏠 Asrama ${asrama}</h2><table><tr><th>No</th><th>Musyrif</th><th>Tanggal</th><th>Kegiatan</th><th>Status</th></tr>`;
-                data.forEach((r,i) => { html += `<tr><td>${i+1}</td><td>${r.musyrif}</td><td>${r.tanggal}</td><td>${r.kegiatan}</td><td>${r.status}</td></tr>`; });
-                html += `</table><br>`;
-            });
-            html += `</body></html>`;
-            const blob = new Blob([html], { type: 'application/pdf' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `laporan_absensi_asrama_${Date.now()}.pdf`;
-            link.click();
-            Swal.fire('Berhasil', 'PDF sedang diunduh', 'success');
-        }
-        
-        function downloadPDFIndividu() {
-            const riwayat = JSON.parse(localStorage.getItem('riwayatAbsensi')) || [];
-            let html = `<html><head><title>Laporan Per Individu</title><style>body{font-family:Arial;padding:30px} h1{color:#0d9488} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:8px} th{background:#0d9488;color:white}</style></head><body>`;
-            html += `<h1>📊 Laporan Absensi Per Individu Musyrif</h1><p>Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}</p>`;
-            musyrifNames.forEach(musyrif => {
-                const data = riwayat.filter(r => r.musyrif === musyrif);
-                html += `<h2>👤 ${musyrif}</h2><table><tr><th>No</th><th>Tanggal</th><th>Kegiatan</th><th>Status</th></tr>`;
-                data.forEach((r,i) => { html += `<tr><td>${i+1}</td><td>${r.tanggal}</td><td>${r.kegiatan}</td><td>${r.status}</td></tr>`; });
-                html += `</table><br>`;
-            });
-            html += `</body></html>`;
-            const blob = new Blob([html], { type: 'application/pdf' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `laporan_absensi_individu_${Date.now()}.pdf`;
-            link.click();
-            Swal.fire('Berhasil', 'PDF sedang diunduh', 'success');
-        }
-        
-        function showPengaturan() {
-            Swal.fire({
-                title: '⚙️ Pengaturan Profil Pondok',
-                html: `<input id="pondokName" class="swal2-input" placeholder="Nama Pondok"><input id="pondokAlamat" class="swal2-input" placeholder="Alamat"><input id="pondokPengasuh" class="swal2-input" placeholder="Pengasuh"><input id="pondokKetua" class="swal2-input" placeholder="Ketua Pondok"><input id="pondokLogo" class="swal2-input" placeholder="URL Logo">`,
-                preConfirm: () => ({ nama: document.getElementById('pondokName').value, alamat: document.getElementById('pondokAlamat').value, pengasuh: document.getElementById('pondokPengasuh').value, ketua: document.getElementById('pondokKetua').value, logo: document.getElementById('pondokLogo').value })
-            }).then(res => { if(res.isConfirmed) { localStorage.setItem('profilPondok', JSON.stringify(res.value)); Swal.fire('Tersimpan!', 'Profil pondok telah disimpan', 'success'); } });
-        }
-        
-        function showPengingatWA() {
-            Swal.fire({
-                title: '📱 Pengingat WhatsApp',
-                html: `<input id="waNumber" class="swal2-input" placeholder="Nomor WA (contoh: 62812xxxx)"><select id="waTime" class="swal2-select"><option>Setiap pagi 03:00</option><option>Setiap subuh 04:30</option><option>Setiap maghrib 17:00</option></select><textarea id="waMessage" class="swal2-textarea" placeholder="Pesan pengingat otomatis"></textarea>`,
-                preConfirm: () => ({ nomor: document.getElementById('waNumber').value, jadwal: document.getElementById('waTime').value, pesan: document.getElementById('waMessage').value })
-            }).then(res => { if(res.isConfirmed) { localStorage.setItem('waReminder', JSON.stringify(res.value)); Swal.fire('Aktif!', 'Pengingat WA telah diaktifkan', 'success'); } });
-        }
-        
-        async function logout() {
-            const result = await Swal.fire({ title: 'Keluar?', text: 'Apakah Anda yakin ingin keluar?', icon: 'question', showCancelButton: true, confirmButtonColor: '#14b8a6', confirmButtonText: 'Ya' });
-            if (result.isConfirmed) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; }
-        }
-        
-        document.getElementById('searchInput').addEventListener('keyup', () => loadAdminStats());
-        document.getElementById('filterAsrama').addEventListener('change', () => loadAdminStats());
-        
-        startClock();
-        loadAdminStats();
-        setInterval(() => loadAdminStats(), 30000);
+
+        function scrollToRiwayat() { document.getElementById('riwayatSection').scrollIntoView({ behavior: 'smooth' }); }
+        function exportData() { let riwayat = JSON.parse(localStorage.getItem('riwayatAbsensi')) || []; riwayat = riwayat.filter(r => r.musyrif === currentUser.name); let blob = new Blob([JSON.stringify(riwayat, null, 2)], { type: 'application/json' }); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `absensi_${currentUser.name}.json`; a.click(); Swal.fire('Berhasil', 'Data diekspor', 'success'); }
+        function logout() { Swal.fire({ title: 'Keluar?', icon: 'question', showCancelButton: true }).then(res => { if(res.isConfirmed) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }); }
+
+        init();
     </script>
 </body>
 </html>
